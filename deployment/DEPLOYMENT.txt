@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T195318Z
-Backup: /var/backups/tmlab/20261114T195318Z
+Current release: /var/www/tmlab-releases/20261114T202024Z
+Backup: /var/backups/tmlab/20261114T202024Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -395,3 +395,26 @@ public files match local SHA-256. Public browser verified AZ/NUMA descriptions,
 EN/RU switching, one description location and no page errors.
 Release: /var/www/tmlab-releases/20261114T195318Z.
 Backup before update: /var/backups/tmlab/20261114T195318Z.
+
+2026-11-14 full-screen system canvas:
+The diagram now fills the viewport with automatic group layout, pan, zoom,
+touch gestures and Fit diagram. The required generator connects to the entry
+group and can submit the retained manual-request draft directly from its card.
+Metrics, activity, notes and traces are fixed, collapsible overlays. Settings
+open on selection in a nonmodal window or a mobile bottom sheet. Short screens
+fold telemetry to leave room for the diagram. Invalid manual drafts reopen
+settings instead of submitting a previous value.
+Source commit: 66c167c (main, pushed to GitHub).
+Local validation: TypeScript, localization, full WASM/Vite/standalone build,
+HTTP/offline Worker checks and all 32 browser scenarios passed. Desktop, mobile
+and landscape screenshots were inspected; touch pinch zoom was also verified.
+Deployment: archive hashes, nginx validation, graceful reload and origin HTML/
+WASM checks passed. All seven public static files match local SHA-256 digests.
+Public Chromium verified English desktop and Russian mobile: fixed overlays,
+zoom/fit, generator RPS edits preserving time, a manual request from the graph,
+trace disclosure and box settings, with no page or console errors. Public
+screenshots were inspected. The nginx configuration is unchanged; prior
+releases and backups are retained.
+Previous release: /var/www/tmlab-releases/20261114T195318Z.
+Current release: /var/www/tmlab-releases/20261114T202024Z.
+Backup before update: /var/backups/tmlab/20261114T202024Z.

@@ -547,10 +547,13 @@ body,
   border-radius: 0;
 }
 .settings-content .panel-head {
-  padding: 16px 20px 0;
+  padding: 16px 20px;
 }
 .settings-content .panel-head h2 {
   font-size: 15px;
+  line-height: 1.4;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .settings-content .control-body {
   padding: 18px 20px;

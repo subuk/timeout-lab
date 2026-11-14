@@ -30,8 +30,9 @@ function fromURL() {
   return presets.some(([v]) => v === id) ? id! : "normal";
 }
 export function App() {
+  const [modelReady, setModelReady] = useState(false);
   const engine = useEngine((v) => v),
-    s = engine.snapshot,
+    s = modelReady ? engine.snapshot : null,
     locale = useLocale();
   const [selection, select] = useState<Selection>({
     node: "db-1",
@@ -94,7 +95,10 @@ export function App() {
     restoredHash.current = location.hash;
     try {
       await command({ type: "preset", preset: id });
-      if (request === presetRequest.current) select(nextSelection);
+      if (request === presetRequest.current) {
+        setModelReady(true);
+        select(nextSelection);
+      }
     } catch {
     } finally {
       if (request === presetRequest.current) changingPreset.current = false;
@@ -114,6 +118,7 @@ export function App() {
       }
       await command({ type: "reset", config });
       if (request === presetRequest.current) {
+        setModelReady(true);
         setPreset("custom");
         setCustomModelVersion((version) => version + 1);
         setShareURL("");
@@ -133,11 +138,11 @@ export function App() {
     startEngine();
   }, []);
   useEffect(() => {
-    if (s && !initialized.current) {
+    if (engine.snapshot && !initialized.current) {
       initialized.current = true;
       void restoreURL();
     }
-  }, [!!s]);
+  }, [!!engine.snapshot]);
   useEffect(() => {
     const restore = () => {
       if (initialized.current) void restoreURL();
@@ -192,6 +197,7 @@ export function App() {
     setSettings("box");
   }
   const sec = (s?.t || 0) / 1000;
+  const error = linkError || engine.error;
   return (
     <main
       className={`lab-workspace ${settings ? "has-settings" : ""} ${metricsOpen ? "has-metrics" : ""} ${activityOpen ? "has-activity" : ""} ${tracesOpen ? "has-traces" : ""}`}
@@ -209,7 +215,7 @@ export function App() {
             id="preset"
             aria-label={t("Scenario")}
             value={preset}
-            disabled={!s}
+            disabled={!engine.snapshot}
             onChange={(e) => choose(e.target.value)}
           >
             {preset === "custom" && (
@@ -243,11 +249,13 @@ export function App() {
         <div className="transport">
           <span
             id="live-state"
-            className={`live-state ${engine.paused ? "paused" : ""}`}
+            className={`live-state ${!s || engine.paused ? "paused" : ""}`}
           >
             {t(
               !s
-                ? "Loading engine…"
+                ? error
+                  ? "Model not loaded"
+                  : "Loading engine…"
                 : engine.paused
                   ? "Paused"
                   : "Simulation running",
@@ -276,6 +284,7 @@ export function App() {
             <select
               id="speed"
               aria-label={t("Simulation speed")}
+              disabled={!s}
               value={engine.speed}
               onChange={(e) =>
                 run(command({ type: "speed", value: +e.target.value }))
@@ -360,9 +369,9 @@ export function App() {
           </select>
         </div>
       </header>
-      {(linkError || engine.error) && (
+      {s && error && (
         <p className="error-banner" role="alert">
-          {t(linkError || engine.error)}
+          {t(error)}
         </p>
       )}
       {s ? (
@@ -459,6 +468,19 @@ export function App() {
             />
           )}
         </>
+      ) : error ? (
+        <div className="model-load-state">
+          <section className="model-load-error floating-block" role="alert">
+            <h1>{t("Unable to open model")}</h1>
+            <p>{t(error)}</p>
+            <button
+              disabled={!engine.snapshot}
+              onClick={() => void choose("normal")}
+            >
+              {t("Open normal scenario")}
+            </button>
+          </section>
+        </div>
       ) : (
         <div className="topology-loading">{t("Loading engine…")}</div>
       )}

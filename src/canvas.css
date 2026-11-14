@@ -614,6 +614,29 @@ body,
   max-width: calc(100% - 32px);
   box-shadow: 0 3px 15px #6b222219;
 }
+.model-load-state {
+  position: absolute;
+  inset: var(--toolbar-bottom) var(--gutter) var(--gutter);
+  display: grid;
+  place-items: center;
+  overflow: auto;
+}
+.model-load-error {
+  width: min(100%, 520px);
+  padding: 28px;
+  border-color: #e9c6c4;
+}
+.model-load-error h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -.4px;
+}
+.model-load-error p {
+  margin: 16px 0 24px;
+  color: #a33128;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 1190px) {
   .lab-toolbar {
     gap: 12px;

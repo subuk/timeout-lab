@@ -68,6 +68,86 @@ test("URL encoding round-trips Unicode and bounds malformed input", () => {
 });
 
 for (const standalone of [false, true]) {
+  test(`invalid initial model shows an error without a default experiment (${standalone ? "offline" : "HTTP"})`, async ({
+    page,
+  }) => {
+    const base = standalone
+      ? pathToFileURL(resolve("dist/standalone.html")).href
+      : "/";
+    // Catch even a brief default diagram before URL validation finishes.
+    await page.addInitScript(() => {
+      (window as any).renderedGroups = [];
+      new MutationObserver((records) => {
+        for (const record of records)
+          for (const node of record.addedNodes)
+            if (node instanceof Element) {
+              const groups = [
+                ...(node.matches("[data-group]") ? [node] : []),
+                ...node.querySelectorAll("[data-group]"),
+              ];
+              (window as any).renderedGroups.push(
+                ...groups.map((group) => group.getAttribute("data-group")),
+              );
+            }
+      }).observe(document, { childList: true, subtree: true });
+    });
+    for (const invalid of [
+      "#model=",
+      "#model=broken!",
+      "#model=_w",
+      hash(null),
+      hash({}),
+      hash({ ...model, entry: "missing" }),
+      hash({ ...model, edges: [] }),
+      "#model=" + "a".repeat(180000),
+    ]) {
+      await page.goto(base + invalid + "&template=numa");
+      const alert = page.getByRole("alert");
+      await expect(alert).toBeVisible();
+      await expect(alert.locator("p")).not.toBeEmpty();
+      await expect(page.locator("#groups")).toHaveCount(0);
+      await expect(page.locator("#metrics")).toHaveCount(0);
+      await expect(page.locator("#pause")).toBeDisabled();
+      await expect(page.locator("#share-model")).toBeDisabled();
+      await expect(page.locator("#clock")).toHaveText("00:00.0");
+      expect(await page.evaluate(() => (window as any).renderedGroups)).toEqual(
+        [],
+      );
+      expect(new URL(page.url()).hash).toBe(invalid + "&template=numa");
+    }
+    await page.reload();
+    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.locator("#groups")).toHaveCount(0);
+    await page.locator("#language").selectOption("ru");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.getByRole("alert")).toContainText(
+      "Ссылка на модель слишком большая.",
+    );
+    const recover = page.getByRole("button", {
+      name: "Открыть обычный сценарий",
+      exact: true,
+    });
+    await expect(recover).toBeInViewport();
+    await page.screenshot({
+      path: `/tmp/timeout-lab-invalid-model-${standalone ? "offline" : "http"}.png`,
+    });
+    await recover.click();
+    await expect(page.getByRole("alert")).toHaveCount(0);
+    await expect(page.locator("#preset")).toHaveValue("normal");
+    await expect(page.locator('[data-group="lb"]')).toBeVisible();
+    expect(new URL(page.url()).hash).toBe("#template=normal");
+
+    await page.goto(base + hash({ ...model, entry: "missing" }));
+    await expect(page.getByRole("alert")).toBeVisible();
+    await page.evaluate((value) => {
+      location.hash = value;
+    }, hash(model));
+    await expect(page.locator('[data-group="api"] .group-title')).toContainText(
+      "API <custom> 🧪",
+    );
+    await expect(page.getByRole("alert")).toHaveCount(0);
+  });
+
   test(`custom model loads, shares edits and reloads (${standalone ? "offline" : "HTTP"})`, async ({
     page,
   }) => {

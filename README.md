@@ -302,7 +302,7 @@ Click **Create with an agent** beside the scenario selector for a short guide an
 
 The agent needs no repository clone, installed skill or credentials. The self-contained instructions in `public/skill.md` include the version 2 format, a complete model, encoding snippets and verification guidance. Vite publishes this file unchanged. It is a public user-facing skill, separate from the contributor skills in `.agents/skills/`.
 
-Custom links use `#model=<base64url>`: UTF-8 JSON encoded as URL-safe base64 without padding. `model` takes precedence over `template`. The fragment is decoded locally and submitted to the same Go validator as the JSON editor after WASM is ready. Invalid links show an error and preserve the running experiment. The payload is limited to 128 KiB of JSON; keep links small enough for the sharing channel. There is no server-side model storage. Anyone with the link can decode the configuration. Use JSON export as a backup for large models.
+Custom links use `#model=<base64url>`: UTF-8 JSON encoded as URL-safe base64 without padding. `model` takes precedence over `template`. The fragment is decoded locally and submitted to the same Go validator as the JSON editor after WASM is ready. On initial load, invalid links show an error with its cause instead of displaying the default model; opening a normal scenario requires an explicit action. When an experiment is already open, invalid links show an error and preserve that experiment. The payload is limited to 128 KiB of JSON; keep links small enough for the sharing channel. There is no server-side model storage. Anyone with the link can decode the configuration. Use JSON export as a backup for large models.
 
 ## Model localization in JSON
 

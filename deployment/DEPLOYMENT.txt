@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T164400Z
-Backup: /var/backups/tmlab/20261114T164400Z
+Current release: /var/www/tmlab-releases/20261114T173946Z
+Backup: /var/backups/tmlab/20261114T173946Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -245,3 +245,23 @@ Release: /var/www/tmlab-releases/20261114T164400Z.
 Backup: /var/backups/tmlab/20261114T164400Z.
 Pre-model release: /var/www/tmlab-releases/20261114T142452Z.
 Pre-model backup: /var/backups/tmlab/20261114T164135Z.
+
+2026-11-14 React/TypeScript/Vite refactor (source commit 8ca8725):
+Published release /var/www/tmlab-releases/20261114T173946Z.
+Previous release: /var/www/tmlab-releases/20261114T164400Z.
+Backup: /var/backups/tmlab/20261114T173946Z.
+The interface now uses React components, generated Go wire types and a typed
+Worker bridge. Vite bundles frontend dependencies locally; standalone.html
+embeds the full application and engine for offline file:// use. Advanced model
+settings use a schema form with a JSON tab; no visual editor was added.
+Only seven generated static files were published, including hashed JS/CSS.
+Source files and repository metadata are excluded.
+Local validation: Go tests, TypeScript, localization, HTTP/offline Worker checks,
+production and development builds, and seven Playwright scenarios passed.
+The 64-instance browser scenario measured a frame-interval p95 of about 17 ms.
+Deployment validation: manifest checks, nginx -t, graceful reload and origin
+HTTP/WASM and HTTPS/HTML checks passed. All seven public files match local
+SHA-256 digests. Public Chromium verified running simulation, settings without
+reset, RU/EN switching, the nested-box preset and a completed manual request;
+no console errors. Screenshot: /tmp/tmlab-react-published.png (local only).
+DNS, TLS and other virtual hosts were not changed.

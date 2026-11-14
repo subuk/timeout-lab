@@ -20,6 +20,10 @@ func referencePresetConfig(id string) (Config, error) {
 	switch id {
 	case "normal":
 	case "slow":
+		c.Description = "Slow disk work makes the database a bottleneck. Watch its queue and the API workers waiting for database responses; compare the effect of timeouts and cancellation."
+		labels := c.I18n["ru"]
+		labels.Description = "Медленная работа диска делает базу данных узким местом. Следите за её очередью и воркерами API, ожидающими ответов базы; сравните влияние таймаутов и отмены запросов."
+		c.I18n["ru"] = labels
 		c.Groups[2].Resources[1].Service = 600
 	case "fanout":
 		c.Name = "Three database calls per request"
@@ -28,9 +32,17 @@ func referencePresetConfig(id string) (Config, error) {
 		c.Groups[1].Stages[1].Calls[0].Calls = 3
 		c.Groups[2].Resources[1].Service = 50
 	case "hang":
+		c.Description = "One API instance is hung and cancellation is disabled. Watch accepted work occupy workers and queues while callers reach their timeouts."
+		labels := c.I18n["ru"]
+		labels.Description = "Один экземпляр API завис, отмена запросов отключена. Наблюдайте, как принятая работа занимает воркеры и очереди, пока вызывающие ящики достигают своих таймаутов."
+		c.I18n["ru"] = labels
 		c.Cancel = false
 		c.Overrides = map[string]NodeConfig{"api-1": {State: "hang"}}
 	case "autoscale":
+		c.Description = "The API starts with one instance. Its autoscaler adds or removes instances based on CPU resource utilization and queue length. Incoming traffic stays constant as the group scales."
+		labels := c.I18n["ru"]
+		labels.Description = "API начинает с одного экземпляра. Автоскейлер добавляет и убирает экземпляры по утилизации ресурса CPU и длине его очереди. Входящий поток не меняется при масштабировании группы."
+		c.I18n["ru"] = labels
 		g := &c.Groups[1]
 		g.Count, g.Workers, g.Service = 1, 32, 0
 		g.Resources[0].Service = 12

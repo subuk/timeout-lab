@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T193505Z
-Backup: /var/backups/tmlab/20261114T193505Z
+Current release: /var/www/tmlab-releases/20261114T195318Z
+Backup: /var/backups/tmlab/20261114T195318Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -382,5 +382,16 @@ verified English desktop and Russian mobile Configuration, live application,
 preserved time and the group editor with no console/page errors. Both dialog
 screenshots were inspected. The nginx configuration is unchanged.
 Previous release: /var/www/tmlab-releases/20261114T193002Z.
-Current release: /var/www/tmlab-releases/20261114T193505Z.
+Current release: /var/www/tmlab-releases/20261114T195318Z.
 Backup before update: /var/backups/tmlab/20261114T193505Z.
+
+2026-11-14 unified preset descriptions: all eight presets use description and
+i18n translations, displayed below preset selection and above the metrics.
+Moved AZ/NUMA explanations out of the diagram into exported model metadata.
+Local validation: Go tests, TypeScript/full build, i18n and manual Worker checks,
+and three browser scenarios covering presets, JSON/localization and standalone.
+Deployment: nginx validation, graceful reload and origin checks passed; all seven
+public files match local SHA-256. Public browser verified AZ/NUMA descriptions,
+EN/RU switching, one description location and no page errors.
+Release: /var/www/tmlab-releases/20261114T195318Z.
+Backup before update: /var/backups/tmlab/20261114T195318Z.

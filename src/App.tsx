@@ -255,7 +255,9 @@ export function App() {
         </section>
         {s && (
           <>
-            <p id="model-description">{I18n.description(s.config)}</p>
+            {I18n.description(s.config) && (
+              <p id="model-description">{I18n.description(s.config)}</p>
+            )}
             <Metrics snapshot={s} />
             <div className="workspace">
               <Generator

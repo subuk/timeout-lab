@@ -323,7 +323,7 @@ Blackhole on a warm connection still causes response timeouts for already sent r
 
 The `#template=fanout` preset is named **3 database calls**. Its description below preset selection explains three parallel calls, waiting for all responses, and disk work of approximately 333.333 ms: at 30 incoming RPS, nominal downstream demand is 90 calls/s before capacity limits. The link ID is unchanged.
 
-Set model descriptions through `description` in JSON, with English as the default, and translations through `i18n.ru.description` or other languages. Descriptions render as plain text, not HTML, and survive export. The optional field accepts up to 4000 UTF-8 bytes per description.
+Set model descriptions through `description` in JSON, with English as the default, and translations through `i18n.ru.description` or other languages. All built-in presets use this same field and display their description below preset selection, above the metrics and diagram. There is no separate diagram explanation field. Descriptions render as plain text, not HTML, and survive export. The optional field accepts up to 4000 UTF-8 bytes per description.
 
 ## Keep-alive and outgoing-call timeouts
 

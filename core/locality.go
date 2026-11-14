@@ -302,7 +302,8 @@ func AZConfig() Config {
 func referenceAZConfig() Config {
 	c := referenceDefaultConfig()
 	c.Name = "Two zones · locality"
-	c.I18n = Localizations{"ru": {Name: "Две зоны · локальность"}}
+	c.Description = "Two zones: each LB prefers backends in its AZ. Select an LB → Locality, disable matching preference and compare cross-zone calls and latency. Scaling inherits group labels; placement of new nodes across zones is manual."
+	c.I18n = Localizations{"ru": {Name: "Две зоны · локальность", Description: "Две зоны: LB предпочитает бекенды в своей AZ. Выберите LB → Локальность, отключите предпочтение совпадения и сравните межзонные вызовы и задержку. Масштабирование наследует метки группы; распределение новых узлов между зонами задаётся вручную."}}
 	c.EntryAffinity = &MatchRule{true, "request", "az"}
 	c.RequestTag = &TagGenerator{"az", "az1", "az2", 50}
 	c.Groups[0].Count = 2
@@ -334,7 +335,8 @@ func NUMAConfig() Config {
 func referenceNUMAConfig() Config {
 	c := referenceDefaultConfig()
 	c.Name = "NUMA · illustrative memory cost"
-	c.I18n = Localizations{"ru": {Name: "NUMA · условная стоимость памяти"}}
+	c.Description = "NUMA: by default, data is distributed 50/50 across nodes. The request label selects the memory holding the data. Access from another CPU node costs ×3. Under Request labels, enable entry preference by request.numa and compare. Times are illustrative; bandwidth and cache coherence are not modeled."
+	c.I18n = Localizations{"ru": {Name: "NUMA · условная стоимость памяти", Description: "NUMA: по умолчанию данные распределены 50/50 между нодами. Метка запроса выбирает память с данными. Доступ из другой CPU-ноды стоит ×3. В «Метках запросов» включите предпочтение входного ящика по request.numa и сравните. Время условное: пропускная способность и когерентность кешей не моделируются."}}
 	c.Entry = "cpu"
 	c.Network = 0
 	c.RPS = 200

@@ -367,20 +367,6 @@ export function Topology({
           )}
         </p>
       </div>
-      {s.config.requestTag?.key === "numa" && (
-        <p className="scenario-explanation">
-          {t(
-            "NUMA: by default, data is distributed 50/50 across nodes. The request label selects the memory holding the data. Access from another CPU node costs ×3. Under Request labels, enable entry preference by request.numa and compare. Times are illustrative; bandwidth and cache coherence are not modeled.",
-          )}
-        </p>
-      )}
-      {s.nodes.some((n) => n.labels?.az) && (
-        <p className="scenario-explanation">
-          {t(
-            "Two zones: each LB prefers backends in its AZ. Select an LB → Locality, disable matching preference and compare cross-zone calls and latency. Scaling inherits group labels; placement of new nodes across zones is manual.",
-          )}
-        </p>
-      )}
     </Panel>
   );
 }

@@ -912,8 +912,6 @@ const russian = {
   "Link: ": "Связь: ",
   "Processing: ": "Обработка: ",
   " · with jitter ": " · с разбросом ",
-  "NUMA: by default, data is distributed 50/50 across nodes. The request label selects the memory holding the data. Access from another CPU node costs ×3. Under Request labels, enable entry preference by request.numa and compare. Times are illustrative; bandwidth and cache coherence are not modeled.": "NUMA: по умолчанию данные распределены 50/50 между нодами. Метка запроса выбирает память с данными. Доступ из другой CPU-ноды стоит ×3. В «Метках запросов» включите предпочтение входного ящика по request.numa и сравните. Время условное: пропускная способность и когерентность кешей не моделируются.",
-  "Two zones: each LB prefers backends in its AZ. Select an LB → Locality, disable matching preference and compare cross-zone calls and latency. Scaling inherits group labels; placement of new nodes across zones is manual.": "Две зоны: LB предпочитает бекенды в своей AZ. Выберите LB → Локальность, отключите предпочтение совпадения и сравните межзонные вызовы и задержку. Масштабирование наследует метки группы; распределение новых узлов между зонами задаётся вручную.",
   "reused · keep-alive": "переиспользовано · keep-alive",
   "new": "новое",
   " · closed": " · закрыто",

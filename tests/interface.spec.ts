@@ -136,6 +136,48 @@ test("manual deadline inherits each preset and keeps edits during updates", asyn
   await page.locator('[data-scenario="normal"]').click();
   await expect(page.locator("#single-deadline")).toHaveValue("20000");
 });
+test("preset descriptions share one location and follow imported JSON and language", async ({ page }) => {
+  await ready(page);
+  await pause(page);
+  const description = page.locator("#model-description");
+  for (const id of ["normal", "slow", "fanout", "hang", "autoscale", "composition", "az", "numa"]) {
+    const previous = await description.textContent();
+    await page.locator(`[data-scenario="${id}"]`).click();
+    if (id !== "normal") await expect(description).not.toHaveText(previous!);
+    const config = JSON.parse(await (await json(page)).inputValue());
+    await page.getByRole("button", { name: "Close", exact: true }).click();
+    expect(config.description).toBeTruthy();
+    expect(config.i18n.ru.description).toBeTruthy();
+    await expect(description).toHaveText(config.description);
+    await expect(page.locator(".scenario-bar + #model-description")).toHaveCount(1);
+    await expect(page.locator(".scenario-explanation")).toHaveCount(0);
+    const box = await description.boundingBox();
+    const metrics = await page.locator(".metrics").boundingBox();
+    expect(box!.y + box!.height).toBeLessThanOrEqual(metrics!.y);
+    const time = await page.locator("#clock").textContent();
+    await page.locator("#language").selectOption("ru");
+    await expect(description).toHaveText(config.i18n.ru.description);
+    await expect(page.locator("#clock")).toHaveText(time!);
+    await page.locator("#language").selectOption("en");
+  }
+  const area = await json(page);
+  const config = JSON.parse(await area.inputValue());
+  config.description = "Custom <b>literal</b> description";
+  delete config.i18n.ru.description;
+  await area.fill(JSON.stringify(config));
+  await page.locator("#apply-config").click();
+  await expect(description).toHaveText(config.description);
+  await expect(description.locator("b")).toHaveCount(0);
+  await page.locator("#language").selectOption("ru");
+  await expect(description).toHaveText(config.description);
+  await page.locator("#language").selectOption("en");
+  expect(JSON.parse(await (await json(page)).inputValue()).description).toBe(config.description);
+  delete config.description;
+  await area.fill(JSON.stringify(config));
+  await page.locator("#apply-config").click();
+  await expect(description).toHaveCount(0);
+  await expect(page.locator(".scenario-explanation")).toHaveCount(0);
+});
 test("standalone loads from file without external requests", async ({
   page,
 }) => {

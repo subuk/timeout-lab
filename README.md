@@ -36,6 +36,8 @@ sh scripts/build.sh
 
 `wasm_exec.js` is copied from the same Go installation that compiles `core.wasm`. The binary is part of the built distribution, not the source repository. WASM provides a shared native/browser engine; no performance advantage over JavaScript is claimed without a comparative benchmark.
 
+For the browser trace-interaction regression checks, serve the project root with `python3 -m http.server 8792 --bind 127.0.0.1`, then open `http://localhost:8792/scripts/check-traces.html`. The checks exercise live snapshots, focus, selection, resource expansion, refresh, manual requests, localization and reset using the real app and Worker.
+
 ## Model
 
 - Generator: Poisson arrivals into `entry` only, with a configurable total RPS for the entry group, mean weight, uniform weight spread, and seed.

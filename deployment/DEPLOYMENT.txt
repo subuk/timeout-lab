@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T131722Z
-Backup: /var/backups/tmlab/20261114T131722Z
+Current release: /var/www/tmlab-releases/20261114T142452Z
+Backup: /var/backups/tmlab/20261114T142452Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -207,3 +207,16 @@ standalone file:// scenario also passed. All eight public files match local
 SHA-256; nginx validation, graceful reload and origin HTML/WASM checks passed.
 Release: /var/www/tmlab-releases/20261114T131722Z.
 Backup: /var/backups/tmlab/20261114T131722Z.
+
+2026-11-14 trace selection fix: retain trace buttons across 100 ms snapshots
+instead of replacing the list, preserving pointer clicks and keyboard focus.
+Update duration, status and selection in place, including pending manual traces.
+JS syntax and localization checks passed; standalone regenerated. Browser
+regression checks cover live selection/focus, resource expansion, refresh,
+manual completion, RU/EN and reset. HTTP and embedded offline Worker integration
+checks passed. All eight public files match local SHA-256; nginx validation,
+graceful reload and origin HTML/WASM checks passed. Public browser verified a
+300 ms pointer press selects the requested trace while the model is running,
+with no console errors or warnings.
+Release: /var/www/tmlab-releases/20261114T142452Z.
+Backup: /var/backups/tmlab/20261114T142452Z.

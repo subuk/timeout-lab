@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Trace interaction regression checks</title>
+<style>body{font:16px system-ui;margin:24px}iframe{width:100%;height:65vh;border:1px solid #ccc}li{margin:8px 0}.pass{color:#167447}.fail{color:#b42318}</style>
+<h1>Trace interaction regression checks</h1>
+<p>Serve the project root after building. Checks use the real app and Worker.</p>
+<ol id="results"></ol>
+<iframe id="app" title="Timeout Lab under test"></iframe>
+<script type="module">
+const frame=document.getElementById('app'),results=document.getElementById('results');
+const assert=(condition,message)=>{if(!condition)throw new Error(message);};
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function until(predicate,message){
+ const deadline=performance.now()+15000;
+ while(!predicate()){assert(performance.now()<deadline,message);await delay(25);}
+}
+function pass(message){const li=document.createElement('li');li.className='pass';li.textContent=message;results.append(li);}
+try{
+ frame.src='../dist/index.html#template=normal';
+ await until(()=>frame.contentDocument?.querySelectorAll('.trace-chip').length>1,'Initial traces did not appear');
+ const doc=frame.contentDocument,$=id=>doc.getElementById(id),chips=()=>[...$('trace-list').children];
+ const summary=()=>doc.querySelector('.trace-summary strong')?.textContent;
+ const change=(id,value)=>{$(id).value=value;$(id).dispatchEvent(new frame.contentWindow.Event('change',{bubbles:true}));};
+ const assertSelected=button=>{
+  assert(button.getAttribute('aria-pressed')==='true','Selected chip lost its pressed state');
+  assert(summary()===`trace #${button.dataset.trace}`,'Trace detail does not match selection');
+ };
+ const original=chips(),target=original[1],clock=$('clock').textContent;
+ target.focus();await delay(350);
+ assert($('clock').textContent!==clock,'Simulation did not advance');
+ assert(original.every((button,i)=>button===chips()[i]),'A snapshot replaced trace buttons during a press');
+ assert(doc.activeElement===target,'A snapshot lost keyboard focus');
+ target.click();assertSelected(target);await delay(250);assertSelected(target);
+ assert(doc.activeElement===target,'Selection lost keyboard focus');
+ pass('Live snapshots preserve button identity, focus and selected trace.');
+
+ doc.querySelector('.trace-expand').click();
+ const expand=doc.querySelector('.trace-expand');await delay(250);
+ assert(expand.isConnected&&expand.getAttribute('aria-expanded')==='true','Snapshots collapsed resource details');
+ pass('Expanded resources remain open while simulation advances.');
+
+ $('refresh-traces').click();
+ assert(original.every(button=>!button.isConnected),'Refresh left stale trace buttons');
+ assert(chips().length===10,'Refresh did not replace the list with recent requests');
+ const older=chips()[1];
+ change('request-mode','single');await until(()=>$('send-request').disabled===false,'Single-request mode did not become ready');
+ change('speed','0.125');$('single-weight').value='10';$('send-request').click();
+ await until(()=>doc.querySelector('.trace-chip.pending'),'Pending trace did not appear');
+ const pending=doc.querySelector('.trace-chip.pending'),duration=pending.textContent;
+ older.click();older.focus();await delay(350);
+ assertSelected(older);
+ assert(older.isConnected&&doc.activeElement===older,'Pending updates replaced or unfocused an older trace');
+ assert(pending.isConnected&&pending.textContent!==duration,'Pending trace duration did not update in place');
+ pending.click();assertSelected(pending);change('speed','5');
+ await until(()=>$('send-request').disabled===false,'Manual request did not finish');
+ assert(pending.isConnected&&!pending.classList.contains('pending'),'Completion replaced the pending button');
+ assertSelected(pending);
+ pass('Refresh, pending duration, historical selection and manual completion preserve correct trace state.');
+
+ const language=$('language').value;
+ for(const lang of ['ru','en']){
+  change('language',lang);assertSelected(pending);
+  assert(pending.isConnected,'Language switching replaced the selected button');
+  assert(pending.textContent.endsWith(lang==='ru'?' мс':' ms'),'Trace duration has the wrong language');
+ }
+ change('language',language);
+ $('reset').click();await until(()=>chips().length===0,'Reset did not clear trace buttons');
+ assert(!pending.isConnected,'Reset retained the previous experiment trace');
+ pass('English/Russian switching preserves selection; reset clears the old experiment.');
+ document.title='PASS — Trace interaction regression checks';
+}catch(error){
+ const li=document.createElement('li');li.className='fail';li.textContent=error.message;results.append(li);
+ document.title='FAIL — Trace interaction regression checks';console.error(error);
+}
+</script>
+</html>

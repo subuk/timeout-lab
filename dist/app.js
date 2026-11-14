@@ -84,7 +84,26 @@ function traces(force=false){
  if(newer){const i=traceCache.findIndex(t=>t.id===traceID);if(i>=0)traceCache[i]=clone(newer);}
  renderTraceList();renderTrace();
 }
-function renderTraceList(){$('trace-list').innerHTML=traceCache.map(t=>TT`<button class="trace-chip ${t.end<0?'pending':t.ok?'':'error'} ${t.id===traceID?'active':''}" data-trace="${t.id}"><i class="dot ${t.end<0?'blue':t.ok?'green':'red'}"></i>#${t.id} <span>${fmt((t.end<0?state.t:t.end)-t.start)} ms</span></button>`).join('');$('trace-list').querySelectorAll('button').forEach(b=>b.onclick=()=>{traceID=+b.dataset.trace;expandedSpans.clear();renderTraceList();renderTrace();});}
+function renderTraceList(){
+ const list=$('trace-list'),buttons=new Map([...list.children].map(b=>[+b.dataset.trace,b]));
+ // Keep each button alive across snapshots so pointer presses and keyboard focus survive.
+ traceCache.forEach((t,index)=>{
+  let button=buttons.get(t.id);
+  if(!button){
+   button=document.createElement('button');button.type='button';button.dataset.trace=t.id;
+   button.append(document.createElement('i'),document.createTextNode(`#${t.id} `),document.createElement('span'));
+   button.onclick=()=>{traceID=t.id;expandedSpans.clear();renderTraceList();renderTrace();};
+  }
+  button.className=`trace-chip ${t.end<0?'pending':t.ok?'':'error'} ${t.id===traceID?'active':''}`;
+  button.setAttribute('aria-pressed',String(t.id===traceID));
+  button.firstElementChild.className=`dot ${t.end<0?'blue':t.ok?'green':'red'}`;
+  const duration=`${fmt((t.end<0?state.t:t.end)-t.start)}${T(' ms')}`;
+  if(button.lastElementChild.textContent!==duration)button.lastElementChild.textContent=duration;
+  if(list.children[index]!==button)list.insertBefore(button,list.children[index]||null);
+  buttons.delete(t.id);
+ });
+ for(const button of buttons.values())button.remove();
+}
 function renderTrace(){
  const trace=traceCache.find(t=>t.id===traceID);
  for(const box of document.querySelectorAll('.box'))box.classList.toggle('trace-path',!!(state.manualMode&&trace?.manual&&trace.spans.some(s=>s.node===box.dataset.node)));

@@ -36,9 +36,15 @@ export function App() {
     [info, setInfo] = useState(false),
     [preset, setPreset] = useState(fromURL);
   const initialized = useRef(false);
-  function choose(id: string, push = true) {
+  const selectedPreset = useRef(fromURL());
+  const presetRequest = useRef(0);
+  const changingPreset = useRef(false);
+  async function choose(id: string, push = true) {
+    const request = ++presetRequest.current;
+    changingPreset.current = true;
+    selectedPreset.current = id;
     setPreset(id);
-    select({
+    const nextSelection: Selection = {
       node:
         id === "numa"
           ? "cpu-1"
@@ -49,14 +55,20 @@ export function App() {
               : "db-1",
       resource: id === "slow" ? "storage" : "",
       scope: id === "autoscale" ? "group" : "node",
-    });
+    };
     const url = new URL(location.href);
     const params = new URLSearchParams(url.hash.slice(1));
     params.set("template", id);
     url.hash = params.toString();
     if (url.href !== location.href)
       history[push ? "pushState" : "replaceState"](null, "", url);
-    run(command({ type: "preset", preset: id }));
+    try {
+      await command({ type: "preset", preset: id });
+      if (request === presetRequest.current) select(nextSelection);
+    } catch {
+    } finally {
+      if (request === presetRequest.current) changingPreset.current = false;
+    }
   }
   useEffect(() => {
     startEngine();
@@ -69,7 +81,9 @@ export function App() {
   }, [!!s]);
   useEffect(() => {
     const restore = () => {
-      if (initialized.current) choose(fromURL(), false);
+      const next = fromURL();
+      if (initialized.current && next !== selectedPreset.current)
+        void choose(next, false);
     };
     addEventListener("popstate", restore);
     addEventListener("hashchange", restore);
@@ -84,6 +98,7 @@ export function App() {
   useEffect(() => {
     if (
       !s ||
+      changingPreset.current ||
       s.nodes.some((node) => node.id === selection.node && !node.retired)
     )
       return;
@@ -259,9 +274,11 @@ export function App() {
             <Metrics snapshot={s} />
             <div className="workspace">
               <Generator
+                key={`generator-${preset}`}
                 config={s.config}
                 manual={s.manualMode}
                 running={s.focusRunning}
+                focus={s.focus}
                 editAdvanced={() => setEditor({})}
               />
               <div className="center-column">
@@ -281,6 +298,7 @@ export function App() {
                 />
               </div>
               <Inspector
+                key={`${engine.epoch}/${selection.node}/${selection.resource}/${selection.scope}`}
                 snapshot={s}
                 selection={selection}
                 select={select}

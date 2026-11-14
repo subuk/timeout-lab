@@ -1,10 +1,45 @@
 import { useEffect, useRef, useState } from "react";
 import type { Config, Group } from "../model";
-import { command, editConfig } from "../engine";
+import { editConfig } from "../engine";
+import { mergeDraft } from "../drafts";
 import { t } from "../locale";
 import { NumberField } from "./Fields";
+import { ProgramEditor } from "./ProgramEditor";
 type JSONValue =
   null | boolean | number | string | JSONValue[] | { [key: string]: JSONValue };
+// A partially edited JSON document can always fall back to the generic form.
+function isFormBox(value: JSONValue): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return (
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    [value.workers, value.service, value.queueLimit].every(
+      (v) => typeof v === "number",
+    ) &&
+    Array.isArray(value.stages) &&
+    value.stages.every(
+      (stage) =>
+        stage &&
+        typeof stage === "object" &&
+        !Array.isArray(stage) &&
+        typeof stage.join === "string" &&
+        Array.isArray(stage.calls) &&
+        stage.calls.every(
+          (call) =>
+            call &&
+            typeof call === "object" &&
+            !Array.isArray(call) &&
+            typeof call.calls === "number" &&
+            typeof call.route === "string" &&
+            typeof call.transport === "string" &&
+            (call.target === undefined || typeof call.target === "string") &&
+            (call.resource === undefined || typeof call.resource === "string"),
+        ),
+    ) &&
+    (value.resources === undefined ||
+      (Array.isArray(value.resources) && value.resources.every(isFormBox)))
+  );
+}
 // A form for the complete wire schema keeps advanced model features accessible.
 function TreeField({
   label,
@@ -72,6 +107,11 @@ export function ModelEditor({
   close: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const [base] = useState(() =>
+    structuredClone(
+      group ? config.groups.find((g) => g.id === group)! : config,
+    ),
+  );
   const [text, setText] = useState(() =>
     JSON.stringify(
       group ? config.groups.find((g) => g.id === group) : config,
@@ -88,6 +128,11 @@ export function ModelEditor({
   }, []);
   async function apply(reset: boolean) {
     try {
+      if (
+        mode === "form" &&
+        dialog.current?.querySelector('[aria-invalid="true"], input:invalid')
+      )
+        throw Error(t("Correct the highlighted fields before applying."));
       const parsed = JSON.parse(text);
       setError("");
       setPending(true);
@@ -95,13 +140,16 @@ export function ModelEditor({
         await editConfig((c) => {
           const i = c.groups.findIndex((g) => g.id === group);
           if (i < 0) throw Error("Group no longer exists");
-          c.groups[i] = parsed as Group;
+          c.groups[i] = mergeDraft(base as Group, parsed as Group, c.groups[i]);
         }, reset);
       else
-        await command({
-          type: reset ? "reset" : "config",
-          config: parsed as Config,
-        });
+        await editConfig((c) => {
+          const merged = mergeDraft(base as Config, parsed as Config, c);
+          for (const key of Object.keys(c))
+            if (!Object.hasOwn(merged, key))
+              delete (c as unknown as Record<string, unknown>)[key];
+          Object.assign(c, merged);
+        }, reset);
       close();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -132,18 +180,21 @@ export function ModelEditor({
           "Changing the structure restarts the experiment. Edit values and names live in the tabs.",
         )}
       </p>
-      <p className="field-note">
-        {t(
-          "Use JSON to add or remove boxes, stages, calls and optional fields. Times are in milliseconds.",
-        )}
-      </p>
       {mode === "form" && tree ? (
         <div className="schema-editor">
-          <TreeField
-            label={group || "Model"}
-            value={tree}
-            change={(v) => setText(JSON.stringify(v, null, 2))}
-          />
+          {group && isFormBox(tree) ? (
+            <ProgramEditor
+              config={config}
+              group={tree as unknown as Group}
+              change={(v) => setText(JSON.stringify(v, null, 2))}
+            />
+          ) : (
+            <TreeField
+              label={group || "Model"}
+              value={tree}
+              change={(v) => setText(JSON.stringify(v, null, 2))}
+            />
+          )}
         </div>
       ) : (
         <textarea

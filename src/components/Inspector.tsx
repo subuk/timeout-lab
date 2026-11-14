@@ -1,8 +1,11 @@
-import type { Snapshot, NodeConfig, DownstreamSettings, Group } from "../model";
+import type { Snapshot, NodeConfig } from "../model";
 import { definition, resources, aggregate } from "../model-utils";
 import { editConfig, command, run } from "../engine";
 import { name, fmt, t } from "../locale";
 import { NumberField, Panel, Select, Toggle } from "./Fields";
+import { Autoscale } from "./Autoscale";
+import { BoxLocality } from "./Locality";
+import { Residence } from "./Residence";
 import type { Selection } from "./Topology";
 const downstreamKeys = [
   "keepalive",
@@ -51,6 +54,10 @@ export function Inspector({
     );
   const settings = all ? effective : one?.downstream || effective;
   function set<K extends keyof NodeConfig>(field: K, value: NodeConfig[K]) {
+    if (!all && one && (field === "service" || field === "workers")) {
+      run(command({ type: "node", id: one.id, [field]: value }));
+      return;
+    }
     run(
       editConfig((c) => {
         if (all) {
@@ -132,6 +139,8 @@ export function Inspector({
           </div>
           <NumberField
             id="service"
+            slider
+            sliderMax={2000}
             label="Processing, ms"
             value={all ? box.service : (one?.service ?? box.service)}
             max={10000}
@@ -139,6 +148,7 @@ export function Inspector({
           />
           <NumberField
             id="workers"
+            slider
             label="Workers"
             value={all ? box.workers : (one?.workers ?? box.workers)}
             min={1}
@@ -185,18 +195,25 @@ export function Inspector({
               id="keepalive"
               label="Keep-alive"
               value={settings.keepalive ?? true}
+              disabled={!box.stages.length || (!all && !!one?.draining)}
               onChange={(v) => set("keepalive", v)}
             />
             <Toggle
               id="retry-connect"
               label="Retry connection failures"
               value={settings.retryConnect ?? true}
+              disabled={!box.stages.length || (!all && !!one?.draining)}
               onChange={(v) => set("retryConnect", v)}
             />
             <NumberField
               id="keepalive-timeout"
               label="Idle timeout, s"
               value={(settings.keepaliveTimeout ?? 30000) / 1000}
+              disabled={
+                !settings.keepalive ||
+                !box.stages.length ||
+                (!all && !!one?.draining)
+              }
               max={3600}
               onChange={(v) => set("keepaliveTimeout", v * 1000)}
             />
@@ -204,6 +221,7 @@ export function Inspector({
               id="connect"
               label="Connect timeout, ms"
               value={settings.connectTimeout ?? 200}
+              disabled={!box.stages.length || (!all && !!one?.draining)}
               min={1}
               max={60000}
               onChange={(v) => set("connectTimeout", v)}
@@ -212,6 +230,7 @@ export function Inspector({
               id="timeout"
               label="Call timeout, ms"
               value={settings.timeout ?? 500}
+              disabled={!box.stages.length || (!all && !!one?.draining)}
               min={1}
               max={60000}
               onChange={(v) => set("timeout", v)}
@@ -219,6 +238,7 @@ export function Inspector({
             {!all && one && (
               <button
                 id="inherit-downstream"
+                disabled={!box.stages.length || !!one.draining}
                 onClick={() =>
                   run(
                     editConfig((c) => {
@@ -233,136 +253,22 @@ export function Inspector({
               </button>
             )}
           </details>
-          <details>
-            <summary>{t("Locality")}</summary>
-            <p>
-              {Object.entries(one?.labels || {})
-                .map(([k, v]) => `${k}=${v}`)
-                .join(" · ")}
-            </p>
-            <button onClick={() => edit()}>
-              {t("Own labels · key=value")} / {t("Processing time of this box")}
-            </button>
-          </details>
+          <BoxLocality
+            config={s.config}
+            group={g.id}
+            path={path}
+            box={box}
+            all={all}
+            one={one}
+            views={views}
+          />
           <button id="edit-resources" onClick={() => edit(g.id)}>
             {t("Boxes and request paths")}
           </button>
-          {g.autoscale && (
-            <details id="auto-controls">
-              <summary>{t("Autoscaling")}</summary>
-              <Toggle
-                id="auto-enabled"
-                label="Enabled"
-                value={g.autoscale.enabled}
-                onChange={(v) =>
-                  run(
-                    editConfig((c) => {
-                      c.groups.find((v) => v.id === g.id)!.autoscale!.enabled =
-                        v;
-                    }),
-                  )
-                }
-              />
-              <Select
-                label="Signal"
-                value={g.autoscale.signal || "queue"}
-                options={["queue", "utilization", "both"]}
-                onChange={(v) =>
-                  run(
-                    editConfig((c) => {
-                      c.groups.find((v) => v.id === g.id)!.autoscale!.signal =
-                        v;
-                    }),
-                  )
-                }
-              />
-              <Select
-                label="Resource"
-                value={g.autoscale.resource || ""}
-                options={[
-                  ["", t("Requests")],
-                  ...resources(g).map(
-                    (r) => [r.path, name(r.box)] as [string, string],
-                  ),
-                ]}
-                onChange={(v) =>
-                  run(
-                    editConfig((c) => {
-                      c.groups.find((v) => v.id === g.id)!.autoscale!.resource =
-                        v;
-                    }),
-                  )
-                }
-              />
-              {(
-                [
-                  "min",
-                  "max",
-                  "upQueue",
-                  "upUtilization",
-                  "downUtilization",
-                  "window",
-                  "upDelay",
-                  "downDelay",
-                  "cooldown",
-                ] as const
-              ).map((key) => (
-                <NumberField
-                  key={key}
-                  label={
-                    key +
-                    (["window", "upDelay", "downDelay", "cooldown"].includes(
-                      key,
-                    )
-                      ? " (ms)"
-                      : "")
-                  }
-                  value={g.autoscale![key]}
-                  onChange={(v) =>
-                    run(
-                      editConfig((c) => {
-                        c.groups.find((v) => v.id === g.id)!.autoscale![key] =
-                          v;
-                      }),
-                    )
-                  }
-                />
-              ))}
-              <p>
-                {t(s.autoscalers?.find((a) => a.group === g.id)?.message || "")}
-              </p>
-              {s.scaleEvents
-                ?.filter((e) => e.group === g.id)
-                .slice(0, 4)
-                .map((e, i) => (
-                  <p key={i}>
-                    {fmt(e.t / 1000, 1)} s · {e.from} → {e.to} · {t(e.reason)}
-                  </p>
-                ))}
-            </details>
-          )}
+          <Autoscale group={g} snapshot={s} />
         </div>
       </Panel>
-      <Panel title="Little’s law">
-        <div className="control-body">
-          <p>L = {fmt(stats.l, 2)}</p>
-          <p>
-            λ = {fmt(stats.lambda, 1)} /s · W = {fmt(stats.meanW / 1000, 3)} s
-          </p>
-          <p>
-            {fmt(stats.l, 2)} = {fmt(stats.little, 2)} +{" "}
-            {fmt(stats.unfinished, 2)} {t("unfinished")}
-          </p>
-          <p>
-            {t("Queue")}: {fmt(stats.wQueue, 1)} ms · {t("Local processing")}:{" "}
-            {fmt(stats.wLocal, 1)} ms · {t("Waiting for children")}:{" "}
-            {fmt(stats.wChildren, 1)} ms
-          </p>
-          <p>
-            {t("Utilization")}: {fmt(stats.utilization, 1)}% · Q {stats.queue}
-          </p>
-        </div>
-      </Panel>
+      <Residence stats={stats} />
     </div>
   );
 }

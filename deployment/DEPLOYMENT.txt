@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T175506Z
-Backup: /var/backups/tmlab/20261114T175506Z
+Current release: /var/www/tmlab-releases/20261114T182632Z
+Backup: /var/backups/tmlab/20261114T182632Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -286,3 +286,27 @@ console/page errors. Screenshot: /tmp/tmlab-ui-fixes-published.png (local only).
 Release: /var/www/tmlab-releases/20261114T175506Z.
 Previous release: /var/www/tmlab-releases/20261114T173946Z.
 Backup: /var/backups/tmlab/20261114T175506Z.
+
+2026-11-14 React regression recovery: completed the 13-item interface audit.
+Editors merge changed fields into the live configuration and reject concurrent
+same-field edits; preset selection waits for the new model, with one reset on
+back navigation. Draining nodes accept worker/service edits. Numeric inputs
+retain invalid drafts with range/integer errors, manual load status is explicit,
+and autoscaler resource names remain literal across languages.
+Restored nested resource/stage/call forms, scoped locality and request-tag forms,
+autoscaler sensors/targets/timers, sliders, four metric sparklines, activity axes,
+Little accounting and residence bars, topology legends/queues/tooltips/programs,
+and contextual locality hints. Traces show connection state, locality arithmetic,
+and resource expansion per call. Mobile editor actions remain visible.
+Validation: Go tests, TypeScript, i18n, full WASM/Vite/standalone build, HTTP and
+embedded Worker checks, 18 browser scenarios; the final modal layout also passed
+three focused browser scenarios. Checked desktop/mobile forms, English/Russian,
+offline operation, and 64-instance rendering (frame p95 approximately 16.7 ms).
+The installer verified hashes, nginx configuration and origin responses. All
+seven public HTTPS files match local SHA-256. Live browser checks passed for
+preset transitions, card selection, autoscale readings, structured editing,
+manual traces, per-call resource expansion and Russian UI with no page errors.
+Source: src/, tests/regressions.spec.ts and README.md; Go semantics unchanged.
+Previous release: /var/www/tmlab-releases/20261114T175506Z.
+Current release: /var/www/tmlab-releases/20261114T182632Z.
+Backup before update: /var/backups/tmlab/20261114T182632Z.

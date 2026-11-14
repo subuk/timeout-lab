@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import type { Snapshot, Span, Trace, TraceEvent } from "../model";
+import type {
+  Snapshot,
+  Span,
+  Trace,
+  TraceEvent,
+  LocalityDecision,
+} from "../model";
 import { fmt, name, t } from "../locale";
 import { Panel } from "./Fields";
 
@@ -52,6 +58,9 @@ function eventDetail(event: TraceEvent) {
 
 function TraceDetail({ trace, now }: { trace: Trace; now: number }) {
   const [expanded, setExpanded] = useState(!!trace.manual);
+  const [expandedSpans, setExpandedSpans] = useState<Record<number, boolean>>(
+    {},
+  );
   const byID = new Map(trace.spans.map((span) => [span.id, span]));
   const children = new Map<number, Span[]>();
   for (const span of trace.spans) {
@@ -59,12 +68,13 @@ function TraceDetail({ trace, now }: { trace: Trace; now: number }) {
     siblings.push(span);
     children.set(span.parent, siblings);
   }
-  const rows: { span: Span; depth: number }[] = [];
-  function visit(parent: number, depth: number) {
+  const rows: { span: Span; depth: number; open: boolean }[] = [];
+  function visit(parent: number, depth: number, showResources = expanded) {
     for (const span of children.get(parent) || []) {
-      const visible = expanded || !span.resource;
-      if (visible) rows.push({ span, depth });
-      visit(span.id, depth + (visible ? 1 : 0));
+      const visible = showResources || !span.resource;
+      const open = expandedSpans[span.id] ?? showResources;
+      if (visible) rows.push({ span, depth, open });
+      visit(span.id, depth + (visible ? 1 : 0), open);
     }
   }
   visit(0, 0);
@@ -115,7 +125,10 @@ function TraceDetail({ trace, now }: { trace: Trace; now: number }) {
           <button
             className="trace-expand"
             aria-expanded={expanded}
-            onClick={() => setExpanded(!expanded)}
+            onClick={() => {
+              setExpanded(!expanded);
+              setExpandedSpans({});
+            }}
           >
             <span aria-hidden="true">{expanded ? "▾" : "▸"}</span>{" "}
             {t(expanded ? "Hide resources" : "Show resources")}
@@ -134,7 +147,7 @@ function TraceDetail({ trace, now }: { trace: Trace; now: number }) {
           </div>
           <span>{t("In box")}</span>
         </div>
-        {rows.map(({ span, depth }) => {
+        {rows.map(({ span, depth, open }) => {
           const finish = span.end < 0 ? now : span.end;
           const arrive = span.arrive < 0 ? finish : span.arrive;
           const work = span.workStart < 0 ? finish : span.workStart;
@@ -162,6 +175,18 @@ function TraceDetail({ trace, now }: { trace: Trace; now: number }) {
                 title={`${span.node} · #${span.id} ← ${parent ? `#${parent.id} ${spanName(parent)}` : t("Client")} · ${status}`}
               >
                 <span className="trace-node-name">
+                  {children.get(span.id)?.some((child) => child.resource) && (
+                    <button
+                      className="span-expand"
+                      aria-label={`${t("Resources of call")} #${span.id}`}
+                      aria-expanded={open}
+                      onClick={() =>
+                        setExpandedSpans({ ...expandedSpans, [span.id]: !open })
+                      }
+                    >
+                      {open ? "▾" : "▸"}
+                    </button>
+                  )}
                   {depth > 0 && (
                     <span className="trace-branch" aria-hidden="true">
                       ↳{" "}
@@ -177,6 +202,11 @@ function TraceDetail({ trace, now }: { trace: Trace; now: number }) {
                 >
                   #{span.id} · {status}
                 </small>
+                {span.connection && (
+                  <small className="connection-state">
+                    {connectionStatus(span)}
+                  </small>
+                )}
               </div>
               <div className="trace-track">
                 {segments
@@ -290,29 +320,74 @@ function TraceDetail({ trace, now }: { trace: Trace; now: number }) {
               #{span.id} {spanName(span)}
             </b>
             <p>
-              {t(span.connection || "Ideal link")} · {t("One-way network")}:{" "}
+              {connectionStatus(span)} · {t("One-way network")}:{" "}
               {fmt(span.networkDelay, 3)} {t("ms")}
-              {span.workCost
-                ? ` · ${t("Processing")}: ${fmt(span.workCost.base)} × ${fmt(span.workCost.weight, 2)} × ${fmt(span.workCost.factor, 2)}`
-                : ""}
             </p>
-            <pre>
-              {JSON.stringify(
-                {
-                  labels: span.labels,
-                  callerLabels: span.callerLabels,
-                  routing: span.routingLocality,
-                  network: span.networkLocality,
-                  work: span.workCost,
-                },
-                null,
-                2,
-              )}
-            </pre>
+            <LocalityLine label="Routing: " value={span.routingLocality} />
+            <LocalityLine label="Link: " value={span.networkLocality} />
+            {span.networkLocality && (
+              <p>
+                {fmt(span.networkBase, 3)} ms ×{" "}
+                {fmt(span.networkLocality.factor, 2)} ={" "}
+                {fmt(span.networkDelay, 3)} ms
+              </p>
+            )}
+            <LocalityLine
+              label="Processing: "
+              value={span.workCost?.locality}
+            />
+            {span.workCost && (
+              <p>
+                {t("Processing: ")}
+                {fmt(span.workCost.base, 3)} ms × {fmt(span.workCost.weight, 2)}{" "}
+                × {fmt(span.workCost.factor, 2)} ={" "}
+                {fmt(span.workCost.nominal, 3)} ms{t(" · with jitter ")}
+                {fmt(span.workCost.duration, 3)} ms
+              </p>
+            )}
+            {!!Object.keys(span.labels || {}).length && (
+              <p>
+                {t("Effective labels: ")}
+                {Object.entries(span.labels!)
+                  .map(([k, v]) => `${k}=${v}`)
+                  .join(" · ")}
+              </p>
+            )}
           </div>
         ))}
       </details>
     </div>
+  );
+}
+
+function connectionStatus(span: Span) {
+  if (!span.connection) return t("Ideal link");
+  const state = !span.connectionEstablished
+    ? span.end < 0
+      ? "Connecting"
+      : "Not established"
+    : span.connectionClosed
+      ? "Closed"
+      : "Established";
+  return `${t(span.connection)} · ${t(state)}`;
+}
+function LocalityLine({
+  label,
+  value,
+}: {
+  label: string;
+  value?: LocalityDecision;
+}) {
+  if (!value) return null;
+  return (
+    <p>
+      {t(label)}
+      {t(value.source)}.{value.key}: {value.from || "∅"} → {value.to || "∅"} ·{" "}
+      {t(
+        value.result === "missing" ? "missing label, no penalty" : value.result,
+      )}{" "}
+      · ×{fmt(value.factor, 2)}
+    </p>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { t } from "../locale";
 export function Panel({
   title,
@@ -23,7 +23,7 @@ export function Panel({
     </section>
   );
 }
-// Drafts survive snapshots and locale switches; only blur/Enter commits numbers.
+// Drafts survive snapshots and locale switches; invalid input stays reviewable.
 export function NumberField({
   id,
   label,
@@ -33,6 +33,9 @@ export function NumberField({
   max,
   step = "any",
   disabled = false,
+  slider = false,
+  sliderMax,
+  note,
 }: {
   id?: string;
   label: string;
@@ -42,34 +45,98 @@ export function NumberField({
   max?: number;
   step?: number | "any";
   disabled?: boolean;
+  slider?: boolean;
+  sliderMax?: number;
+  note?: string;
 }) {
+  const uid = useId(),
+    inputID = id || uid;
   const [draft, setDraft] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const rangeMax = Math.max(value, sliderMax ?? max ?? 100);
   return (
-    <label className="number-row">
-      {t(label)}
-      <input
-        id={id}
-        type="number"
-        value={draft ?? value}
-        min={min}
-        max={max}
-        step={step}
-        disabled={disabled}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={(e) => {
-          if (
-            draft !== null &&
-            e.target.value !== "" &&
-            e.target.checkValidity()
-          )
+    <div className={`number-field ${disabled ? "disabled-control" : ""}`}>
+      <label className="number-row" htmlFor={inputID}>
+        <span>{t(label)}</span>
+        <input
+          id={inputID}
+          type="number"
+          value={draft ?? value}
+          min={min}
+          max={max}
+          step={step}
+          disabled={disabled}
+          aria-invalid={!!error}
+          aria-describedby={
+            error ? `${uid}-error` : note ? `${uid}-note` : undefined
+          }
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setError("");
+          }}
+          onBlur={(e) => {
+            if (draft === null) return;
+            const input = e.currentTarget;
+            if (input.value === "" || !Number.isFinite(input.valueAsNumber)) {
+              setError(t("Enter a number."));
+              return;
+            }
+            if (!input.checkValidity()) {
+              setError(
+                input.validity.stepMismatch
+                  ? t(
+                      step === 1
+                        ? "Enter a whole number."
+                        : "Use the allowed step.",
+                    )
+                  : `${t("Allowed range")}: ${min}–${max ?? "∞"}`,
+              );
+              return;
+            }
+            onChange(input.valueAsNumber);
+            setDraft(null);
+            setError("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.currentTarget.blur();
+            }
+            if (e.key === "Escape") {
+              setDraft(null);
+              setError("");
+            }
+          }}
+        />
+      </label>
+      {slider && (
+        <input
+          className="field-slider"
+          type="range"
+          aria-label={`${t(label)} · ${t("Slider")}`}
+          min={min}
+          max={rangeMax}
+          step={step === "any" ? 0.1 : step}
+          value={Math.min(rangeMax, value)}
+          disabled={disabled}
+          onChange={(e) => {
+            setDraft(null);
+            setError("");
             onChange(e.target.valueAsNumber);
-          setDraft(null);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") e.currentTarget.blur();
-        }}
-      />
-    </label>
+          }}
+        />
+      )}
+      {note && (
+        <p className="field-note" id={`${uid}-note`}>
+          {t(note)}
+        </p>
+      )}
+      {error && (
+        <p className="field-error" id={`${uid}-error`} role="alert">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 export function Toggle({
@@ -105,22 +172,29 @@ export function Select({
   value,
   options,
   onChange,
+  translateOptions = true,
 }: {
   id?: string;
   label: string;
   value: string;
   options: (string | [string, string])[];
+  translateOptions?: boolean;
   onChange: (v: string) => void;
 }) {
   return (
     <label className="select-row">
       {t(label)}
-      <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+      <select
+        id={id}
+        aria-label={t(label)}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
         {options.map((o) => {
           const [v, l] = typeof o === "string" ? [o, o] : o;
           return (
             <option key={v} value={v}>
-              {t(l)}
+              {translateOptions ? t(l) : l}
             </option>
           );
         })}

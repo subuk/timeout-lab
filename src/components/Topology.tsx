@@ -24,6 +24,9 @@ export function Topology({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const root = useRef<HTMLDivElement>(null);
   const [paths, setPaths] = useState<string[]>([]);
+  const bottleneck = [...s.nodes, ...(s.resources || [])]
+    .filter((n) => !n.retired)
+    .sort((a, b) => b.queue - a.queue || b.utilization - a.utilization)[0];
   // Measure only topology/layout changes; metrics do not rebuild SVG geometry.
   const layout = JSON.stringify([
     s.config.groups.map((g) => [g.id, g.count, name(g), outgoing(g)]),
@@ -77,6 +80,7 @@ export function Topology({
           return (
             <button
               key={r.path}
+              title={`${name(r.box)} · ${t("Utilization")}: ${fmt(v.utilization, 1)}% · ${t("Queue")}: ${v.queue} · ${t("Time inside this box")}: ${fmt(v.w, 1)} ms`}
               className={`resource-bar ${v.utilization > 80 ? "hot" : ""}`}
               aria-pressed={
                 selection.resource === r.path &&
@@ -211,6 +215,7 @@ export function Topology({
                     <div
                       key={n.id}
                       data-node={n.id}
+                      title={`${t("State")}: ${t(n.state)} · ${t("Queue")}: ${n.queue} · ${t("Oldest wait")}: ${fmt(n.oldest, 1)} ms · p95: ${fmt(n.p95, 1)} ms · ${t("User errors")}: ${fmt(n.errorRate, 1)}%`}
                       onClick={() =>
                         select({
                           node: n.id,
@@ -273,21 +278,109 @@ export function Topology({
                           Q {n.queue} · {fmt(n.rps)}/s
                         </span>
                       </div>
+                      <div
+                        className="queue-track"
+                        title={`${t("Queue")}: ${n.queue}`}
+                      >
+                        <span
+                          style={{
+                            width: `${Math.min(100, (n.queue / Math.max(1, g.queueLimit || n.workers)) * 100)}%`,
+                          }}
+                        />
+                      </div>
                       {bars(g, n)}
                     </div>
                   ))
                 )}
                 <div className="group-foot">
-                  {outgoing(g)
-                    .filter((c) => c.target)
-                    .map((c) => `→ ${c.target} ×${c.calls}`)
-                    .join(" · ") || t("return response ↩")}
+                  <details className="execution-plan">
+                    <summary>{t("Execution plan")}</summary>
+                    {[{ path: "", box: g }, ...resources(g)].map(
+                      ({ path, box }) => (
+                        <div key={path}>
+                          <b>{name(box)}</b>
+                          {box.stages.map((stage, i) => (
+                            <p key={i}>
+                              {i + 1}.{" "}
+                              {stage.calls
+                                .map(
+                                  (c) =>
+                                    `→ ${c.target || c.resource} ×${c.calls} · ${t(c.route)} · ${t(c.transport)}`,
+                                )
+                                .join(" + ")}{" "}
+                              · {t(stage.join)}
+                              {stage.join === "quorum"
+                                ? ` ${stage.quorum}`
+                                : ""}
+                            </p>
+                          ))}
+                          {!box.stages.length && (
+                            <p>{t("return response ↩")}</p>
+                          )}
+                        </div>
+                      ),
+                    )}
+                  </details>
                 </div>
               </section>
             );
           })}
         </div>
       </div>
+      <div className="diagram-legend">
+        <span>
+          <i className="dot trace-local" />
+          {t("Processing")}
+        </span>
+        <span>
+          <i className="dot worker-children-key" />
+          {t("Waiting for children")}
+        </span>
+        <span>
+          <i className="dot red" />
+          {t("hang")}
+        </span>
+        <span>
+          <i className="dot idle-key" />
+          {t("idle")}
+        </span>
+        <span>
+          Q · {t("Queue")} · ◇ {t("Shared")}
+        </span>
+      </div>
+      <div className="topology-insight" role="status">
+        <strong>
+          {t(bottleneck?.queue ? "Largest queue" : "Highest utilization")}
+        </strong>
+        {bottleneck && (
+          <span>
+            {" "}
+            · {bottleneck.id} · Q {bottleneck.queue} ·{" "}
+            {fmt(bottleneck.utilization, 1)}%
+          </span>
+        )}
+        <p>
+          {t(
+            bottleneck?.queue
+              ? "Accepted work is waiting here. Compare processing time, workers and child waits in the inspector."
+              : "Watch queues and resource utilization as you change the load. Service workers remain occupied while waiting for children.",
+          )}
+        </p>
+      </div>
+      {s.config.requestTag?.key === "numa" && (
+        <p className="scenario-explanation">
+          {t(
+            "NUMA: by default, data is distributed 50/50 across nodes. The request label selects the memory holding the data. Access from another CPU node costs ×3. Under Request labels, enable entry preference by request.numa and compare. Times are illustrative; bandwidth and cache coherence are not modeled.",
+          )}
+        </p>
+      )}
+      {s.nodes.some((n) => n.labels?.az) && (
+        <p className="scenario-explanation">
+          {t(
+            "Two zones: each LB prefers backends in its AZ. Select an LB → Locality, disable matching preference and compare cross-zone calls and latency. Scaling inherits group labels; placement of new nodes across zones is manual.",
+          )}
+        </p>
+      )}
     </Panel>
   );
 }

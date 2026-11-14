@@ -1,17 +1,20 @@
 import { memo, useState } from "react";
 import { command, editConfig, run } from "../engine";
-import type { Config } from "../model";
+import type { Config, Trace } from "../model";
 import { NumberField, Panel, Select, Toggle } from "./Fields";
 import { t, useLocale } from "../locale";
+import { RequestLocality } from "./Locality";
 export const Generator = memo(function Generator({
   config: c,
   manual,
   running,
+  focus,
   editAdvanced,
 }: {
   config: Config;
   manual: boolean;
   running: boolean;
+  focus?: Trace;
   editAdvanced: () => void;
 }) {
   useLocale();
@@ -71,6 +74,11 @@ export const Generator = memo(function Generator({
               }
             }}
           >
+            <p className="field-note">
+              {t(
+                "Background arrivals stop. Existing work and connections remain. Restart ↺ for an empty system.",
+              )}
+            </p>
             <NumberField
               id="single-weight"
               label="Request weight"
@@ -108,19 +116,23 @@ export const Generator = memo(function Generator({
             <p role="status">
               {error ||
                 t(
-                  running
-                    ? "Request in progress. Pause or step to inspect."
-                    : "Ready to send one request.",
+                  !focus
+                    ? "Ready to send one request."
+                    : running
+                      ? focus.end >= 0
+                        ? "User response received; downstream work is still running."
+                        : "Request in progress. Pause or step to inspect."
+                      : "Request finished. Send another to reuse connections.",
                 )}
             </p>
           </form>
         )}
         {(
           [
-            ["rps", "Traffic into the entry group", 0, 10000],
+            ["rps", "Traffic into the entry group", 0, 2000],
             ["weight", "Request weight", 0.01, 10],
             ["deadline", "Deadline, ms", 1, 60000],
-            ["network", "Network, ms", 0, 10000],
+            ["network", "Network, ms", 0, 5000],
             ["spread", "Weight spread, %", 0, 100],
             ["jitter", "Jitter, %", 0, 100],
             ["seed", "Seed", 1, Number.MAX_SAFE_INTEGER],
@@ -131,6 +143,9 @@ export const Generator = memo(function Generator({
             id={key}
             label={label}
             value={c[key]}
+            step={key === "seed" ? 1 : "any"}
+            slider={["rps", "weight", "deadline", "network"].includes(key)}
+            sliderMax={key === "network" ? 250 : undefined}
             min={min}
             max={max}
             disabled={
@@ -164,6 +179,7 @@ export const Generator = memo(function Generator({
               id="client-idle"
               label="Idle timeout, s"
               value={c.client.keepaliveTimeout / 1000}
+              disabled={!c.client.keepalive}
               max={3600}
               onChange={(v) =>
                 run(
@@ -189,9 +205,8 @@ export const Generator = memo(function Generator({
             />
           </details>
         )}
-        <button onClick={editAdvanced}>
-          {t("Request labels")} / {t("Locality")}
-        </button>
+        <RequestLocality config={c} />
+        <button onClick={editAdvanced}>{t("System model")}</button>
         <p className="field-note">
           {t("Scaling does not change total incoming RPS.")}
         </p>

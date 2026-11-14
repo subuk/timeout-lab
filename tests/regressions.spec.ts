@@ -39,7 +39,6 @@ async function pause(page: Page) {
 }
 async function json(page: Page) {
   await page.locator("#edit-config").click();
-  await page.getByRole("button", { name: "JSON", exact: true }).click();
   return page.locator("#config-editor");
 }
 async function number(page: Page, selector: string, value: string) {

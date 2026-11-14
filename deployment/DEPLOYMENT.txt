@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T193002Z
-Backup: /var/backups/tmlab/20261114T193002Z
+Current release: /var/www/tmlab-releases/20261114T193505Z
+Backup: /var/backups/tmlab/20261114T193505Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -366,3 +366,21 @@ no console/page errors. The nginx configuration matches the prior version.
 Previous release: /var/www/tmlab-releases/20261114T185345Z.
 Current release: /var/www/tmlab-releases/20261114T193002Z.
 Backup before update: /var/backups/tmlab/20261114T193002Z.
+
+2026-11-14 JSON-only Configuration:
+Removed the duplicate System model button from Generator. Configuration now
+opens the complete model directly as JSON, without Settings or a tab selector.
+Boxes and request paths retains its structured editor and JSON tab. Updated
+English/Russian guidance, documentation and browser coverage for the new flow.
+Local validation: TypeScript, localization, WASM/Vite/standalone build, HTTP and
+offline Worker integration, and 19 interface/regression browser scenarios passed.
+Checks cover invalid JSON drafts, live application without resetting time,
+structural restart, export, localization, offline use and the group editor.
+Deployment: manifest validation, nginx -t, graceful reload and origin HTML/WASM
+checks passed. All seven public files match local SHA-256 digests. Public Chromium
+verified English desktop and Russian mobile Configuration, live application,
+preserved time and the group editor with no console/page errors. Both dialog
+screenshots were inspected. The nginx configuration is unchanged.
+Previous release: /var/www/tmlab-releases/20261114T193002Z.
+Current release: /var/www/tmlab-releases/20261114T193505Z.
+Backup before update: /var/backups/tmlab/20261114T193505Z.

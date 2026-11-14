@@ -9,13 +9,11 @@ export const Generator = memo(function Generator({
   manual,
   running,
   focus,
-  editAdvanced,
 }: {
   config: Config;
   manual: boolean;
   running: boolean;
   focus?: Trace;
-  editAdvanced: () => void;
 }) {
   useLocale();
   const [weight, setWeight] = useState(1),
@@ -207,7 +205,6 @@ export const Generator = memo(function Generator({
           </details>
         )}
         <RequestLocality config={c} />
-        <button onClick={editAdvanced}>{t("System model")}</button>
         <p className="field-note">
           {t("Scaling does not change total incoming RPS.")}
         </p>

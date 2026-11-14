@@ -22,7 +22,9 @@ async function pause(page: Page) {
 }
 async function json(page: Page) {
   await page.locator("#edit-config").click();
-  await page.getByRole("button", { name: "JSON", exact: true }).click();
+  await expect(page.locator("#config-editor")).toBeVisible();
+  await expect(page.locator("#config-dialog .editor-tabs")).toHaveCount(0);
+  await expect(page.locator("#config-dialog .schema-editor")).toHaveCount(0);
   return page.locator("#config-editor");
 }
 test("live settings, drafts, selection and localization preserve virtual time", async ({
@@ -48,6 +50,8 @@ test("live settings, drafts, selection and localization preserve virtual time", 
   );
   await expect(page.locator("#clock")).toHaveText(time!);
   await expect(page.locator("#workers")).toHaveValue("37");
+  expect(JSON.parse(await (await json(page)).inputValue())).toEqual(config);
+  await page.getByRole("button", { name: "Закрыть", exact: true }).click();
   await page.locator("#language").selectOption("en");
   await page.locator('[data-scope="group"]').click();
   await input.fill("22");
@@ -145,6 +149,8 @@ test("standalone loads from file without external requests", async ({
   await page.locator("#send-request").click();
   await expect(page.locator("#trace-events tbody tr").first()).toBeVisible();
   await expect(page.locator("#send-request")).toBeEnabled();
+  await json(page);
+  await page.getByRole("button", { name: "Close", exact: true }).click();
   expect(network).toEqual([]);
   await page.screenshot({ path: "/tmp/timeout-lab-react.png", fullPage: true });
 });
@@ -189,10 +195,13 @@ test("rendering remains responsive at 64 instances", async ({ page }) => {
   expect(frames[Math.floor(frames.length * 0.95)]).toBeLessThan(100);
 });
 
-test("resource overrides, form drafts, live programs and export retain the model", async ({
+test("resource overrides, JSON drafts, live programs and export retain the model", async ({
   page,
 }) => {
   await ready(page);
+  await expect(
+    page.getByRole("button", { name: "System model", exact: true }),
+  ).toHaveCount(0);
   await pause(page);
   const before = await page.locator("#clock").textContent();
   await page
@@ -212,21 +221,26 @@ test("resource overrides, form drafts, live programs and export retain the model
     .click();
   await expect(page.locator("#config-dialog")).toHaveCount(0);
   await expect(page.locator("#clock")).toHaveText(before!);
-  await page.locator("#edit-config").click();
-  await page.locator(".schema-editor > details > summary").click();
-  const rps = page
-    .locator(".schema-editor")
-    .getByRole("spinbutton", { name: "rps", exact: true });
-  await rps.fill("");
+  area = await json(page);
+  const draft = JSON.parse(await area.inputValue());
+  await area.fill("{");
   await page.waitForTimeout(250);
-  await expect(rps).toBeFocused();
-  await rps.fill("123");
-  await rps.blur();
+  await expect(area).toBeFocused();
+  await expect(area).toHaveValue("{");
+  await page
+    .getByRole("button", { name: "Apply without reset", exact: true })
+    .click();
+  await expect(page.locator("#config-error")).not.toBeEmpty();
+  await expect(area).toHaveValue("{");
+  await expect(page.locator("#clock")).toHaveText(before!);
+  draft.rps = 123;
+  await area.fill(JSON.stringify(draft));
   await page
     .getByRole("button", { name: "Apply without reset", exact: true })
     .click();
   await expect(page.locator("#config-dialog")).toHaveCount(0);
   await expect(page.locator("#rps")).toHaveValue("123");
+  await expect(page.locator("#clock")).toHaveText(before!);
   const downloading = page.waitForEvent("download");
   await page.locator("#export").click();
   const download = await downloading;

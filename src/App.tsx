@@ -264,7 +264,6 @@ export function App() {
                 manual={s.manualMode}
                 running={s.focusRunning}
                 focus={s.focus}
-                editAdvanced={() => setEditor({})}
               />
               <div className="center-column">
                 <Topology

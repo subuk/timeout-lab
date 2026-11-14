@@ -119,7 +119,7 @@ export function ModelEditor({
       2,
     ),
   );
-  const [mode, setMode] = useState<"form" | "json">("form"),
+  const [mode, setMode] = useState<"form" | "json">(group ? "form" : "json"),
     [error, setError] = useState(""),
     [pending, setPending] = useState(false);
   useEffect(() => {
@@ -164,20 +164,22 @@ export function ModelEditor({
     <dialog id="config-dialog" ref={dialog} onCancel={close}>
       <div className="modal-head">
         <h2>
-          {t(group ? "Boxes and request paths" : "System model")}
+          {t(group ? "Boxes and request paths" : "Configuration")}
           {group ? " · " + group : ""}
         </h2>
         <button aria-label={t("Close")} onClick={close}>
           ×
         </button>
       </div>
-      <div className="editor-tabs">
-        <button onClick={() => setMode("form")}>{t("Settings")}</button>
-        <button onClick={() => setMode("json")}>JSON</button>
-      </div>
+      {group && (
+        <div className="editor-tabs">
+          <button onClick={() => setMode("form")}>{t("Settings")}</button>
+          <button onClick={() => setMode("json")}>JSON</button>
+        </div>
+      )}
       <p className="field-note">
         {t(
-          "Changing the structure restarts the experiment. Edit values and names live in the tabs.",
+          "Changing the structure can require a restart. Apply value changes without resetting the experiment.",
         )}
       </p>
       {mode === "form" && tree ? (

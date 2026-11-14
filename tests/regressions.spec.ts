@@ -124,11 +124,12 @@ test("editor merges numeric edits with live autoscaling and reports same-field c
 }) => {
   await ready(page, "autoscale");
   await expect(page.locator("#node-count")).toHaveValue("1");
+  await page.locator("#speed").selectOption("5");
   await page.locator("#edit-resources").click();
   await page.getByRole("button", { name: "JSON", exact: true }).click();
   const area = page.locator("#config-editor"),
     draft = JSON.parse(await area.inputValue());
-  draft.resources[0].service = 13;
+  draft.resources[0].service = 81;
   await area.fill(JSON.stringify(draft));
   await page.waitForFunction(
     () =>
@@ -149,7 +150,7 @@ test("editor merges numeric edits with live autoscaling and reports same-field c
     t: window.audit.snapshot.t,
   }));
   expect(after.group.count).toBeGreaterThanOrEqual(before.count);
-  expect(after.group.resources![0].service).toBe(13);
+  expect(after.group.resources![0].service).toBe(81);
   expect(after.t).toBeGreaterThanOrEqual(before.t);
   await page.locator("#edit-resources").click();
   await page.getByRole("button", { name: "JSON", exact: true }).click();

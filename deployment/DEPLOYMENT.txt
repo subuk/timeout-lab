@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T185345Z
-Backup: /var/backups/tmlab/20261114T185345Z
+Current release: /var/www/tmlab-releases/20261114T193002Z
+Backup: /var/backups/tmlab/20261114T193002Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -343,3 +343,26 @@ state with no page errors. Previous releases and backups are retained.
 Previous release: /var/www/tmlab-releases/20261114T183142Z.
 Current release: /var/www/tmlab-releases/20261114T185345Z.
 Backup before update: /var/backups/tmlab/20261114T185345Z.
+
+
+2026-11-14 30 RPS presets and browser measurements:
+All eight presets now start at 30 RPS. Processing at every nesting level,
+network delay, caller/client budgets, idle timeouts and autoscaler timings are
+retimed from the original workloads. Workers, queue limits and routing preserve
+the scenarios; imports and live RPS edits retain literal values. Manual-request
+deadlines inherit the selected model until edited. English/Russian explanations
+and regression coverage reflect the new settings.
+Local validation: Go tests, TypeScript, localization, full WASM/Vite/standalone
+build, HTTP/offline Worker integration and browser regressions passed. Retimed
+scenarios preserve healthy operation, overload, hanging work and scale-up/down.
+The 48-run Chromium benchmark is recorded in benchmarks/browser-30rps.json and
+README.md. Normal-mode median browser CPU fell 8.6%, while synchronous engine
+and snapshot time fell 37.2%; improvement varies by scenario and run.
+Deployment: manifest validation, nginx -t, graceful reload and origin HTML/WASM
+checks passed. All seven public files match local SHA-256 digests. Public
+Chromium verified all eight presets at 30 RPS with retimed parameters, a completed
+manual request with the 20-second default deadline, Russian localization and
+no console/page errors. The nginx configuration matches the prior version.
+Previous release: /var/www/tmlab-releases/20261114T185345Z.
+Current release: /var/www/tmlab-releases/20261114T193002Z.
+Backup before update: /var/backups/tmlab/20261114T193002Z.

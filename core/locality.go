@@ -296,7 +296,11 @@ func (e *Engine) processingCost(s *Span) float64 {
 	return s.WorkCost.Duration
 }
 func AZConfig() Config {
-	c := DefaultConfig()
+	return retimePreset(referenceAZConfig())
+}
+
+func referenceAZConfig() Config {
+	c := referenceDefaultConfig()
 	c.Name = "Two zones · locality"
 	c.I18n = Localizations{"ru": {Name: "Две зоны · локальность"}}
 	c.EntryAffinity = &MatchRule{true, "request", "az"}
@@ -324,7 +328,11 @@ func AZConfig() Config {
 	return c
 }
 func NUMAConfig() Config {
-	c := DefaultConfig()
+	return retimePreset(referenceNUMAConfig())
+}
+
+func referenceNUMAConfig() Config {
+	c := referenceDefaultConfig()
 	c.Name = "NUMA · illustrative memory cost"
 	c.I18n = Localizations{"ru": {Name: "NUMA · условная стоимость памяти"}}
 	c.Entry = "cpu"

@@ -1,0 +1,4467 @@
+{
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M1 Pro",
+    "chromium": "159.0.8154.6"
+  },
+  "settings": {
+    "presets": [
+      "normal",
+      "slow",
+      "fanout",
+      "hang",
+      "autoscale",
+      "az",
+      "numa",
+      "composition"
+    ],
+    "repeats": 3,
+    "seconds": 10,
+    "viewport": {
+      "width": 1440,
+      "height": 1100
+    },
+    "speed": 1,
+    "referenceWarmupSeconds": 60,
+    "realWarmupSeconds": 3
+  },
+  "builds": {
+    "before": "/tmp/timeout-lab-30rps-before",
+    "after": "/Users/subuk/workspace/timeout-lab/dist"
+  },
+  "runs": [
+    {
+      "variant": "before",
+      "preset": "normal",
+      "repeat": 1,
+      "wallSeconds": 10.004180167000001,
+      "cpuMsPerSecond": 268.84561804193663,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.17272779689634246,
+        "renderer": 241.6603819246271,
+        "GPU": 27.004811537796844,
+        "network.mojom.NetworkService": 0.007696782616330171
+      },
+      "mainTaskMsPerSecond": 76.28211280293708,
+      "wasmMsPerSecond": 121.09937838978972,
+      "snapshotsPerSecond": 9.995821579649485,
+      "virtualMsPerSecond": 999.5821579649485,
+      "jsHeapMiB": 13.52816390991211,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 195.9,
+          "outRps": 195.9,
+          "p95": 58.768640416637936,
+          "errorRate": 0,
+          "pending": 14,
+          "busy": 20,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12693,
+          "ok": 12679,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 201.1,
+          "outRps": 201.1,
+          "p95": 58.880666920522344,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 17,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14701,
+          "ok": 14690,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "normal",
+      "repeat": 1,
+      "wallSeconds": 10.003337375000003,
+      "cpuMsPerSecond": 213.07198988677507,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.17164271638893874,
+        "renderer": 186.21115435487343,
+        "GPU": 26.67439775317984,
+        "network.mojom.NetworkService": 0.014795062332884905
+      },
+      "mainTaskMsPerSecond": 73.49917057056169,
+      "wasmMsPerSecond": 70.15658604007248,
+      "snapshotsPerSecond": 9.996663738435592,
+      "virtualMsPerSecond": 999.6663738435591,
+      "jsHeapMiB": 14.974884033203125,
+      "start": {
+        "snapshots": 95,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 29.3,
+          "outRps": 29.3,
+          "p95": 391.6749176942976,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 25,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12013,
+          "ok": 12002,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 195,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 29.6,
+          "outRps": 29.6,
+          "p95": 394.66928677697433,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 14,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12307,
+          "ok": 12298,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "slow",
+      "repeat": 1,
+      "wallSeconds": 10.004365249999996,
+      "cpuMsPerSecond": 399.9880951967444,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.34674863555186586,
+        "renderer": 340.2642661412229,
+        "GPU": 59.361087401322166,
+        "network.mojom.NetworkService": 0.015993018647534933
+      },
+      "mainTaskMsPerSecond": 160.6899548174734,
+      "wasmMsPerSecond": 97.40747910481637,
+      "snapshotsPerSecond": 9.995636654709307,
+      "virtualMsPerSecond": 999.5636654709307,
+      "jsHeapMiB": 11.134273529052734,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 203,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 592,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 583,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12571,
+          "ok": 4,
+          "failed": 11975
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 203.4,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 599,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 590,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 14612,
+          "ok": 4,
+          "failed": 14009
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "slow",
+      "repeat": 1,
+      "wallSeconds": 10.003387667000002,
+      "cpuMsPerSecond": 391.46858347982084,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.23861916377333175,
+        "renderer": 321.4922891181399,
+        "GPU": 69.71338342715053,
+        "network.mojom.NetworkService": 0.02429177075698351
+      },
+      "mainTaskMsPerSecond": 174.3651309000099,
+      "wasmMsPerSecond": 54.69147257919803,
+      "snapshotsPerSecond": 9.996613480240121,
+      "virtualMsPerSecond": 999.6613480240121,
+      "jsHeapMiB": 17.217632293701172,
+      "start": {
+        "snapshots": 91,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 30.2,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 586,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 575,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12059,
+          "ok": 4,
+          "failed": 11469
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 191,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 31.7,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 565,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 556,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12355,
+          "ok": 4,
+          "failed": 11786
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "fanout",
+      "repeat": 1,
+      "wallSeconds": 10.005509375000008,
+      "cpuMsPerSecond": 414.7438020865378,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.15351542259686388,
+        "renderer": 365.2751562186206,
+        "GPU": 49.286346303583336,
+        "network.mojom.NetworkService": 0.028784141736911458
+      },
+      "mainTaskMsPerSecond": 142.2600236182377,
+      "wasmMsPerSecond": 132.87679323940827,
+      "snapshotsPerSecond": 9.99449365864993,
+      "virtualMsPerSecond": 999.449365864993,
+      "jsHeapMiB": 15.46500015258789,
+      "start": {
+        "snapshots": 49,
+        "t": 63100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 202.8,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 594,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 715,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12707,
+          "ok": 27,
+          "failed": 12086
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 149,
+        "t": 73100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 205.9,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 606,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 713,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 14778,
+          "ok": 27,
+          "failed": 14145
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "fanout",
+      "repeat": 1,
+      "wallSeconds": 10.004429917000001,
+      "cpuMsPerSecond": 382.0655481333209,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.16942494615508052,
+        "renderer": 327.59068004774144,
+        "GPU": 54.305443139424405,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 168.22557746545507,
+      "wasmMsPerSecond": 62.25242276016955,
+      "snapshotsPerSecond": 9.995572044547512,
+      "virtualMsPerSecond": 999.5572044547512,
+      "jsHeapMiB": 7.9975738525390625,
+      "start": {
+        "snapshots": 103,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 29.2,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 592,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 697,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12275,
+          "ok": 27,
+          "failed": 11656
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 203,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 30.1,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 607,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 730,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12591,
+          "ok": 27,
+          "failed": 11957
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "hang",
+      "repeat": 1,
+      "wallSeconds": 10.003945000000007,
+      "cpuMsPerSecond": 240.83978870335636,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.3426648187290112,
+        "renderer": 213.66920749764202,
+        "GPU": 26.80172671880941,
+        "network.mojom.NetworkService": 0.026189668175904422
+      },
+      "mainTaskMsPerSecond": 69.00477761523075,
+      "wasmMsPerSecond": 108.09735579341103,
+      "snapshotsPerSecond": 9.996056555688774,
+      "virtualMsPerSecond": 999.6056555688774,
+      "jsHeapMiB": 8.253524780273438,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 150.7,
+          "outRps": 201.2,
+          "p95": 58.854328091932985,
+          "errorRate": 25.099403578528825,
+          "pending": 14,
+          "busy": 40,
+          "capacity": 344,
+          "queue": 501,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 8
+          },
+          "arrivals": 12549,
+          "ok": 9398,
+          "failed": 3137
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 146.5,
+          "outRps": 195.1,
+          "p95": 58.649251670984086,
+          "errorRate": 24.910302409021014,
+          "pending": 7,
+          "busy": 26,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 4
+          },
+          "arrivals": 14493,
+          "ok": 10863,
+          "failed": 3623
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "hang",
+      "repeat": 1,
+      "wallSeconds": 10.004015125000006,
+      "cpuMsPerSecond": 211.91391391463924,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.3173725709456077,
+        "renderer": 184.46563474183063,
+        "GPU": 27.104317277808978,
+        "network.mojom.NetworkService": 0.026589324054025976
+      },
+      "mainTaskMsPerSecond": 72.93781455573315,
+      "wasmMsPerSecond": 74.79996689736457,
+      "snapshotsPerSecond": 9.995986486475843,
+      "virtualMsPerSecond": 999.5986486475844,
+      "jsHeapMiB": 9.13775634765625,
+      "start": {
+        "snapshots": 93,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 24.1,
+          "outRps": 32.2,
+          "p95": 394.27918264304753,
+          "errorRate": 25.15527950310559,
+          "pending": 12,
+          "busy": 32,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 6
+          },
+          "arrivals": 12019,
+          "ok": 9003,
+          "failed": 3004
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 193,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 24.4,
+          "outRps": 32.4,
+          "p95": 393.43139149271883,
+          "errorRate": 24.691358024691358,
+          "pending": 8,
+          "busy": 29,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 5
+          },
+          "arrivals": 12339,
+          "ok": 9247,
+          "failed": 3084
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "autoscale",
+      "repeat": 1,
+      "wallSeconds": 10.005599957999992,
+      "cpuMsPerSecond": 274.49178575284407,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.2083833062237251,
+        "renderer": 247.6599114897375,
+        "GPU": 26.619892971739397,
+        "network.mojom.NetworkService": 0.00359798514343135
+      },
+      "mainTaskMsPerSecond": 78.7632928867893,
+      "wasmMsPerSecond": 124.090510064426,
+      "snapshotsPerSecond": 9.99440317619783,
+      "virtualMsPerSecond": 999.4403176197831,
+      "jsHeapMiB": 7.424602508544922,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 204.1,
+          "outRps": 204.1,
+          "p95": 70.4992853500662,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 21,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12487,
+          "ok": 11966,
+          "failed": 510
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 194.2,
+          "outRps": 194.2,
+          "p95": 70.14728978383937,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 10,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14427,
+          "ok": 13908,
+          "failed": 510
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "autoscale",
+      "repeat": 1,
+      "wallSeconds": 10.002728292000015,
+      "cpuMsPerSecond": 224.66380515377062,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.1845496494667755,
+        "renderer": 196.57556844492134,
+        "GPU": 27.89189027788895,
+        "network.mojom.NetworkService": 0.011796781493542529
+      },
+      "mainTaskMsPerSecond": 75.29425752795393,
+      "wasmMsPerSecond": 75.5793797859601,
+      "snapshotsPerSecond": 9.997272452154682,
+      "virtualMsPerSecond": 999.7272452154682,
+      "jsHeapMiB": 11.235626220703125,
+      "start": {
+        "snapshots": 96,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.7,
+          "outRps": 27.7,
+          "p95": 461.54479678877397,
+          "errorRate": 0,
+          "pending": 15,
+          "busy": 28,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12088,
+          "ok": 11512,
+          "failed": 561
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 196,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 32.1,
+          "outRps": 32.1,
+          "p95": 484.35164932132466,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 16,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12405,
+          "ok": 11833,
+          "failed": 561
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "az",
+      "repeat": 1,
+      "wallSeconds": 10.004693792000005,
+      "cpuMsPerSecond": 285.64262529305387,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.12774004148152152,
+        "renderer": 259.1735493267557,
+        "GPU": 26.34133592481667,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 82.86300582861453,
+      "wasmMsPerSecond": 123.62197434028774,
+      "snapshotsPerSecond": 9.995308410134694,
+      "virtualMsPerSecond": 999.5308410134693,
+      "jsHeapMiB": 10.859943389892578,
+      "start": {
+        "snapshots": 49,
+        "t": 63100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 203.3,
+          "outRps": 203.3,
+          "p95": 59.32445262862166,
+          "errorRate": 0,
+          "pending": 16,
+          "busy": 27,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12577,
+          "ok": 12561,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 149,
+        "t": 73100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 203.7,
+          "outRps": 203.7,
+          "p95": 59.7923253718036,
+          "errorRate": 0,
+          "pending": 10,
+          "busy": 14,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14608,
+          "ok": 14598,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "az",
+      "repeat": 1,
+      "wallSeconds": 10.004531416000013,
+      "cpuMsPerSecond": 246.8834268489439,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.09535678987166621,
+        "renderer": 220.38733333115428,
+        "GPU": 26.4007367279179,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 88.00702035798363,
+      "wasmMsPerSecond": 87.38040438004441,
+      "snapshotsPerSecond": 9.995470636443036,
+      "virtualMsPerSecond": 999.5470636443036,
+      "jsHeapMiB": 18.725406646728516,
+      "start": {
+        "snapshots": 105,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 31.4,
+          "outRps": 31.4,
+          "p95": 396.9587191968458,
+          "errorRate": 0,
+          "pending": 10,
+          "busy": 14,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 11902,
+          "ok": 11892,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 205,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 28.7,
+          "outRps": 28.7,
+          "p95": 395.2218098946614,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 14,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12188,
+          "ok": 12179,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "numa",
+      "repeat": 1,
+      "wallSeconds": 10.004229166000005,
+      "cpuMsPerSecond": 167.30044586425652,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.1679289800467172,
+        "renderer": 139.47001581510946,
+        "GPU": 27.65090597285903,
+        "network.mojom.NetworkService": 0.011595096241320747
+      },
+      "mainTaskMsPerSecond": 52.41353344664073,
+      "wasmMsPerSecond": 54.44697373801521,
+      "snapshotsPerSecond": 9.995772621828397,
+      "virtualMsPerSecond": 999.5772621828398,
+      "jsHeapMiB": 15.214763641357422,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 199.4,
+          "outRps": 199.4,
+          "p95": 25.57387863445183,
+          "errorRate": 0,
+          "pending": 3,
+          "busy": 5,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12453,
+          "ok": 12450,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 195,
+          "outRps": 195,
+          "p95": 25.704397032473935,
+          "errorRate": 0,
+          "pending": 2,
+          "busy": 4,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14402,
+          "ok": 14400,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "numa",
+      "repeat": 1,
+      "wallSeconds": 10.003804499999998,
+      "cpuMsPerSecond": 165.51982798144448,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.18952789411268575,
+        "renderer": 137.67502153805586,
+        "GPU": 27.64208356930606,
+        "network.mojom.NetworkService": 0.013194979969870483
+      },
+      "mainTaskMsPerSecond": 54.27195223577192,
+      "wasmMsPerSecond": 50.65072972006966,
+      "snapshotsPerSecond": 9.996196946871565,
+      "virtualMsPerSecond": 999.6196946871565,
+      "jsHeapMiB": 18.23653793334961,
+      "start": {
+        "snapshots": 85,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.5,
+          "outRps": 27.5,
+          "p95": 171.89987122506136,
+          "errorRate": 0,
+          "pending": 2,
+          "busy": 4,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 11914,
+          "ok": 11912,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 185,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 30.5,
+          "outRps": 30.5,
+          "p95": 168.8615045414772,
+          "errorRate": 0,
+          "pending": 3,
+          "busy": 5,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12220,
+          "ok": 12217,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "composition",
+      "repeat": 1,
+      "wallSeconds": 10.00582566600002,
+      "cpuMsPerSecond": 247.57127324508744,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.4245526697946362,
+        "renderer": 215.79968231279352,
+        "GPU": 31.298766384083372,
+        "network.mojom.NetworkService": 0.04827187841591596
+      },
+      "mainTaskMsPerSecond": 83.70313734786576,
+      "wasmMsPerSecond": 93.77536952551765,
+      "snapshotsPerSecond": 9.994177725862428,
+      "virtualMsPerSecond": 999.4177725862429,
+      "jsHeapMiB": 16.023948669433594,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 80,
+        "metrics": {
+          "goodput": 80.4,
+          "outRps": 80.4,
+          "p95": 54.02688322949689,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 7,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5023,
+          "ok": 5019,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 80,
+        "metrics": {
+          "goodput": 73.6,
+          "outRps": 73.6,
+          "p95": 54.14516191603616,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 8,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5759,
+          "ok": 5755,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "composition",
+      "repeat": 1,
+      "wallSeconds": 10.003676084000006,
+      "cpuMsPerSecond": 279.8020424188695,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.23531349678195035,
+        "renderer": 241.948757604335,
+        "GPU": 37.596379255176195,
+        "network.mojom.NetworkService": 0.02159206257642366
+      },
+      "mainTaskMsPerSecond": 110.66102007946614,
+      "wasmMsPerSecond": 82.07982666134453,
+      "snapshotsPerSecond": 9.996325266862764,
+      "virtualMsPerSecond": 999.6325266862764,
+      "jsHeapMiB": 13.484260559082031,
+      "start": {
+        "snapshots": 62,
+        "t": 163000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.7,
+          "outRps": 27.7,
+          "p95": 143.87028930793167,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 7,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 4795,
+          "ok": 4791,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 162,
+        "t": 173000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 28.1,
+          "outRps": 28.1,
+          "p95": 144.2088753338321,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 10,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5081,
+          "ok": 5072,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "normal",
+      "repeat": 2,
+      "wallSeconds": 10.004237708,
+      "cpuMsPerSecond": 261.3373528609083,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.18842015304100948,
+        "renderer": 228.8757091576297,
+        "GPU": 32.259829226360885,
+        "network.mojom.NetworkService": 0.013394323876655548
+      },
+      "mainTaskMsPerSecond": 95.75951991163944,
+      "wasmMsPerSecond": 80.98568056660055,
+      "snapshotsPerSecond": 9.995764087056218,
+      "virtualMsPerSecond": 999.5764087056217,
+      "jsHeapMiB": 15.501697540283203,
+      "start": {
+        "snapshots": 95,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 29.3,
+          "outRps": 29.3,
+          "p95": 391.6749176942976,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 25,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12013,
+          "ok": 12002,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 195,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 29.6,
+          "outRps": 29.6,
+          "p95": 394.66928677697433,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 14,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12307,
+          "ok": 12298,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "normal",
+      "repeat": 2,
+      "wallSeconds": 10.004667083000008,
+      "cpuMsPerSecond": 285.88717408299175,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.172819343777859,
+        "renderer": 256.7934523643957,
+        "GPU": 28.913205966795662,
+        "network.mojom.NetworkService": 0.007696408022495776
+      },
+      "mainTaskMsPerSecond": 83.5023287700936,
+      "wasmMsPerSecond": 124.67181479138533,
+      "snapshotsPerSecond": 9.99533509415027,
+      "virtualMsPerSecond": 999.5335094150271,
+      "jsHeapMiB": 13.534168243408203,
+      "start": {
+        "snapshots": 49,
+        "t": 63100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 195.9,
+          "outRps": 195.9,
+          "p95": 58.77685169526376,
+          "errorRate": 0,
+          "pending": 14,
+          "busy": 19,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12716,
+          "ok": 12702,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 149,
+        "t": 73100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 200.8,
+          "outRps": 200.8,
+          "p95": 58.88895744072215,
+          "errorRate": 0,
+          "pending": 8,
+          "busy": 12,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14718,
+          "ok": 14710,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "slow",
+      "repeat": 2,
+      "wallSeconds": 10.002855250000023,
+      "cpuMsPerSecond": 406.1941214234796,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.2897172784740642,
+        "renderer": 332.58213948462287,
+        "GPU": 73.30207042634133,
+        "network.mojom.NetworkService": 0.020194234041325382
+      },
+      "mainTaskMsPerSecond": 170.92549649761213,
+      "wasmMsPerSecond": 59.58298785349529,
+      "snapshotsPerSecond": 9.997145565012527,
+      "virtualMsPerSecond": 999.7145565012527,
+      "jsHeapMiB": 16.718002319335938,
+      "start": {
+        "snapshots": 91,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 30.2,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 586,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 575,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12059,
+          "ok": 4,
+          "failed": 11469
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 191,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 31.7,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 565,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 556,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12355,
+          "ok": 4,
+          "failed": 11786
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "slow",
+      "repeat": 2,
+      "wallSeconds": 10.005502957999997,
+      "cpuMsPerSecond": 408.318603987164,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.2307730065837242,
+        "renderer": 350.86871841790327,
+        "GPU": 57.189828677476086,
+        "network.mojom.NetworkService": 0.029283885200966392
+      },
+      "mainTaskMsPerSecond": 154.017444846974,
+      "wasmMsPerSecond": 106.04164587070343,
+      "snapshotsPerSecond": 9.994500068589158,
+      "virtualMsPerSecond": 999.4500068589158,
+      "jsHeapMiB": 14.049030303955078,
+      "start": {
+        "snapshots": 49,
+        "t": 63100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 201.3,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 605,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 599,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12601,
+          "ok": 4,
+          "failed": 11992
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 149,
+        "t": 73100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 204.7,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 580,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 571,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 14623,
+          "ok": 4,
+          "failed": 14039
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "fanout",
+      "repeat": 2,
+      "wallSeconds": 10.01550225000002,
+      "cpuMsPerSecond": 410.38301399213333,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.12730265224592305,
+        "renderer": 349.8023276865614,
+        "GPU": 60.4533836533259,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 178.67820857411286,
+      "wasmMsPerSecond": 69.68197759959827,
+      "snapshotsPerSecond": 9.984521744778181,
+      "virtualMsPerSecond": 998.4521744778181,
+      "jsHeapMiB": 8.559452056884766,
+      "start": {
+        "snapshots": 103,
+        "t": 403100,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 29.2,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 595,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 711,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12280,
+          "ok": 27,
+          "failed": 11658
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 203,
+        "t": 413100,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 30,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 611,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 729,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12596,
+          "ok": 27,
+          "failed": 11958
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "fanout",
+      "repeat": 2,
+      "wallSeconds": 10.00430800000002,
+      "cpuMsPerSecond": 433.2345625504524,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.14883588150224897,
+        "renderer": 383.7292894221162,
+        "GPU": 49.34554194053193,
+        "network.mojom.NetworkService": 0.010895306302044857
+      },
+      "mainTaskMsPerSecond": 147.38090830470205,
+      "wasmMsPerSecond": 148.06621299914573,
+      "snapshotsPerSecond": 9.99569385508721,
+      "virtualMsPerSecond": 999.5693855087209,
+      "jsHeapMiB": 15.458045959472656,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 202.5,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 590,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 700,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12683,
+          "ok": 27,
+          "failed": 12066
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 205.8,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 603,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 714,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 14754,
+          "ok": 27,
+          "failed": 14124
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "hang",
+      "repeat": 2,
+      "wallSeconds": 10.005227249999995,
+      "cpuMsPerSecond": 231.3927452272512,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.2958453542372069,
+        "renderer": 201.65738864152246,
+        "GPU": 29.406528472404275,
+        "network.mojom.NetworkService": 0.03298275908725652
+      },
+      "mainTaskMsPerSecond": 80.95078500091044,
+      "wasmMsPerSecond": 77.74935880973896,
+      "snapshotsPerSecond": 9.994775480986705,
+      "virtualMsPerSecond": 999.4775480986706,
+      "jsHeapMiB": 11.292617797851562,
+      "start": {
+        "snapshots": 92,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 24.1,
+          "outRps": 32.2,
+          "p95": 394.27918264304753,
+          "errorRate": 25.15527950310559,
+          "pending": 12,
+          "busy": 32,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 6
+          },
+          "arrivals": 12019,
+          "ok": 9003,
+          "failed": 3004
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 192,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 24.4,
+          "outRps": 32.4,
+          "p95": 393.43139149271883,
+          "errorRate": 24.691358024691358,
+          "pending": 8,
+          "busy": 29,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 5
+          },
+          "arrivals": 12339,
+          "ok": 9247,
+          "failed": 3084
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "hang",
+      "repeat": 2,
+      "wallSeconds": 10.004332834000001,
+      "cpuMsPerSecond": 272.0963051877608,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.1766234719815391,
+        "renderer": 242.5200201011225,
+        "GPU": 29.38746689842486,
+        "network.mojom.NetworkService": 0.012194716231889415
+      },
+      "mainTaskMsPerSecond": 78.84123939973266,
+      "wasmMsPerSecond": 121.89718354470986,
+      "snapshotsPerSecond": 9.995669042531976,
+      "virtualMsPerSecond": 999.5669042531975,
+      "jsHeapMiB": 8.255741119384766,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 150.7,
+          "outRps": 201.2,
+          "p95": 58.854328091932985,
+          "errorRate": 25.099403578528825,
+          "pending": 14,
+          "busy": 40,
+          "capacity": 344,
+          "queue": 501,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 8
+          },
+          "arrivals": 12549,
+          "ok": 9398,
+          "failed": 3137
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 146.5,
+          "outRps": 195.1,
+          "p95": 58.649251670984086,
+          "errorRate": 24.910302409021014,
+          "pending": 7,
+          "busy": 26,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 4
+          },
+          "arrivals": 14493,
+          "ok": 10863,
+          "failed": 3623
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "autoscale",
+      "repeat": 2,
+      "wallSeconds": 10.003488667000028,
+      "cpuMsPerSecond": 241.9333974939957,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.202829239632507,
+        "renderer": 214.67930553911762,
+        "GPU": 27.0284706666324,
+        "network.mojom.NetworkService": 0.02279204861321391
+      },
+      "mainTaskMsPerSecond": 84.49292323269822,
+      "wasmMsPerSecond": 81.20167141224947,
+      "snapshotsPerSecond": 9.996512549655266,
+      "virtualMsPerSecond": 999.6512549655265,
+      "jsHeapMiB": 11.235843658447266,
+      "start": {
+        "snapshots": 96,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.7,
+          "outRps": 27.7,
+          "p95": 461.54479678877397,
+          "errorRate": 0,
+          "pending": 15,
+          "busy": 28,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12088,
+          "ok": 11512,
+          "failed": 561
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 196,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 32.1,
+          "outRps": 32.1,
+          "p95": 484.35164932132466,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 16,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12405,
+          "ok": 11833,
+          "failed": 561
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "autoscale",
+      "repeat": 2,
+      "wallSeconds": 10.00413949999999,
+      "cpuMsPerSecond": 254.2349594385406,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.26169167273207233,
+        "renderer": 227.57149677890857,
+        "GPU": 26.390175786733103,
+        "network.mojom.NetworkService": 0.011595200166890732
+      },
+      "mainTaskMsPerSecond": 77.52710765378679,
+      "wasmMsPerSecond": 104.36679768834628,
+      "snapshotsPerSecond": 9.995862212837006,
+      "virtualMsPerSecond": 999.5862212837006,
+      "jsHeapMiB": 7.498065948486328,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 204.1,
+          "outRps": 204.1,
+          "p95": 70.4992853500662,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 21,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12487,
+          "ok": 11966,
+          "failed": 510
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 194.2,
+          "outRps": 194.2,
+          "p95": 70.14728978383937,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 10,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14427,
+          "ok": 13908,
+          "failed": 510
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "az",
+      "repeat": 2,
+      "wallSeconds": 10.004640165999998,
+      "cpuMsPerSecond": 238.48164055998504,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.13523724767214115,
+        "renderer": 210.37818103172356,
+        "GPU": 27.96822228058933,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 92.62851882962966,
+      "wasmMsPerSecond": 64.62001543088269,
+      "snapshotsPerSecond": 9.995361986115435,
+      "virtualMsPerSecond": 999.5361986115436,
+      "jsHeapMiB": 18.7247314453125,
+      "start": {
+        "snapshots": 104,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 31.4,
+          "outRps": 31.4,
+          "p95": 396.9587191968458,
+          "errorRate": 0,
+          "pending": 10,
+          "busy": 14,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 11902,
+          "ok": 11892,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 204,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 28.7,
+          "outRps": 28.7,
+          "p95": 395.2218098946614,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 14,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12188,
+          "ok": 12179,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "az",
+      "repeat": 2,
+      "wallSeconds": 10.003327500000013,
+      "cpuMsPerSecond": 299.87851542399227,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.10966350946722332,
+        "renderer": 273.566070889911,
+        "GPU": 26.202781024614026,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 86.73593861642529,
+      "wasmMsPerSecond": 131.07638450471725,
+      "snapshotsPerSecond": 9.996673606857305,
+      "virtualMsPerSecond": 999.6673606857305,
+      "jsHeapMiB": 8.96759033203125,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 202.3,
+          "outRps": 202.3,
+          "p95": 59.3189694169414,
+          "errorRate": 0,
+          "pending": 12,
+          "busy": 22,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12550,
+          "ok": 12538,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 204,
+          "outRps": 204,
+          "p95": 59.78615351188637,
+          "errorRate": 0,
+          "pending": 13,
+          "busy": 26,
+          "capacity": 624,
+          "queue": 1,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14591,
+          "ok": 14578,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "numa",
+      "repeat": 2,
+      "wallSeconds": 10.003873750000029,
+      "cpuMsPerSecond": 169.91138057894773,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.17953045439023066,
+        "renderer": 140.7870626116204,
+        "GPU": 28.93029312769957,
+        "network.mojom.NetworkService": 0.014494385237518503
+      },
+      "mainTaskMsPerSecond": 55.90594343516164,
+      "wasmMsPerSecond": 52.93949269753055,
+      "snapshotsPerSecond": 9.99612775001281,
+      "virtualMsPerSecond": 999.612775001281,
+      "jsHeapMiB": 18.492191314697266,
+      "start": {
+        "snapshots": 84,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.5,
+          "outRps": 27.5,
+          "p95": 171.89987122506136,
+          "errorRate": 0,
+          "pending": 2,
+          "busy": 4,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 11914,
+          "ok": 11912,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 184,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 30.5,
+          "outRps": 30.5,
+          "p95": 168.8615045414772,
+          "errorRate": 0,
+          "pending": 3,
+          "busy": 5,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12220,
+          "ok": 12217,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "numa",
+      "repeat": 2,
+      "wallSeconds": 10.003560958999966,
+      "cpuMsPerSecond": 209.74401101762777,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.16644073113804927,
+        "renderer": 175.92845259933662,
+        "GPU": 33.63472281310874,
+        "network.mojom.NetworkService": 0.014394874044371661
+      },
+      "mainTaskMsPerSecond": 63.58615723011383,
+      "wasmMsPerSecond": 73.09397156502146,
+      "snapshotsPerSecond": 9.99644030859155,
+      "virtualMsPerSecond": 999.644030859155,
+      "jsHeapMiB": 15.195690155029297,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 199.4,
+          "outRps": 199.4,
+          "p95": 25.57387863445183,
+          "errorRate": 0,
+          "pending": 3,
+          "busy": 5,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12453,
+          "ok": 12450,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 195,
+          "outRps": 195,
+          "p95": 25.704397032473935,
+          "errorRate": 0,
+          "pending": 2,
+          "busy": 4,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14402,
+          "ok": 14400,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "composition",
+      "repeat": 2,
+      "wallSeconds": 10.00371225000004,
+      "cpuMsPerSecond": 244.22933596475548,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.19062923366273335,
+        "renderer": 211.78947845086122,
+        "GPU": 32.21783993237098,
+        "network.mojom.NetworkService": 0.03138834786056551
+      },
+      "mainTaskMsPerSecond": 103.51677198631897,
+      "wasmMsPerSecond": 65.09583458899608,
+      "snapshotsPerSecond": 9.996289127568579,
+      "virtualMsPerSecond": 999.6289127568577,
+      "jsHeapMiB": 13.48178482055664,
+      "start": {
+        "snapshots": 62,
+        "t": 163000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.7,
+          "outRps": 27.7,
+          "p95": 143.87028930793167,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 7,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 4795,
+          "ok": 4791,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 162,
+        "t": 173000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 28.1,
+          "outRps": 28.1,
+          "p95": 144.2088753338321,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 10,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5081,
+          "ok": 5072,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "composition",
+      "repeat": 2,
+      "wallSeconds": 10.004611374999978,
+      "cpuMsPerSecond": 287.50681982387414,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.22899440209390504,
+        "renderer": 250.95227649459855,
+        "GPU": 36.28986538220239,
+        "network.mojom.NetworkService": 0.03568354497927751
+      },
+      "mainTaskMsPerSecond": 106.63302751227577,
+      "wasmMsPerSecond": 94.60637302450617,
+      "snapshotsPerSecond": 9.995390750497814,
+      "virtualMsPerSecond": 999.5390750497814,
+      "jsHeapMiB": 16.085819244384766,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 80,
+        "metrics": {
+          "goodput": 80.4,
+          "outRps": 80.4,
+          "p95": 54.02688322949689,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 7,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5023,
+          "ok": 5019,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 80,
+        "metrics": {
+          "goodput": 73.6,
+          "outRps": 73.6,
+          "p95": 54.14516191603616,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 8,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5759,
+          "ok": 5755,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "normal",
+      "repeat": 3,
+      "wallSeconds": 10.00401120800001,
+      "cpuMsPerSecond": 299.4722754412968,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.1979206099266091,
+        "renderer": 267.8130746052635,
+        "GPU": 31.442187884442017,
+        "network.mojom.NetworkService": 0.019092341664637955
+      },
+      "mainTaskMsPerSecond": 87.93482751164058,
+      "wasmMsPerSecond": 128.2785448265497,
+      "snapshotsPerSecond": 9.995990400333815,
+      "virtualMsPerSecond": 999.5990400333816,
+      "jsHeapMiB": 13.009025573730469,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 195.9,
+          "outRps": 195.9,
+          "p95": 58.768640416637936,
+          "errorRate": 0,
+          "pending": 14,
+          "busy": 20,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12693,
+          "ok": 12679,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 201.1,
+          "outRps": 201.1,
+          "p95": 58.880666920522344,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 17,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14701,
+          "ok": 14690,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "normal",
+      "repeat": 3,
+      "wallSeconds": 10.005028249999974,
+      "cpuMsPerSecond": 287.4828464377407,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.17001451245277718,
+        "renderer": 250.76670822993492,
+        "GPU": 36.530731434966306,
+        "network.mojom.NetworkService": 0.015392260386671248
+      },
+      "mainTaskMsPerSecond": 110.53512017819668,
+      "wasmMsPerSecond": 78.29063338828908,
+      "snapshotsPerSecond": 9.994974277059164,
+      "virtualMsPerSecond": 999.4974277059164,
+      "jsHeapMiB": 15.511016845703125,
+      "start": {
+        "snapshots": 95,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 29.3,
+          "outRps": 29.3,
+          "p95": 391.6749176942976,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 25,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12013,
+          "ok": 12002,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 195,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 29.6,
+          "outRps": 29.6,
+          "p95": 394.66928677697433,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 14,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12307,
+          "ok": 12298,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "slow",
+      "repeat": 3,
+      "wallSeconds": 10.00428345799999,
+      "cpuMsPerSecond": 417.77264884051465,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.24839360164398927,
+        "renderer": 361.4429774186835,
+        "GPU": 56.05788783918726,
+        "network.mojom.NetworkService": 0.023389980999876454
+      },
+      "mainTaskMsPerSecond": 156.0814431693606,
+      "wasmMsPerSecond": 102.67601904404094,
+      "snapshotsPerSecond": 9.99571837601566,
+      "virtualMsPerSecond": 999.571837601566,
+      "jsHeapMiB": 11.550975799560547,
+      "start": {
+        "snapshots": 49,
+        "t": 63100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 201.3,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 605,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 599,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12601,
+          "ok": 4,
+          "failed": 11992
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 149,
+        "t": 73100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 204.7,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 580,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 571,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 14623,
+          "ok": 4,
+          "failed": 14039
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "slow",
+      "repeat": 3,
+      "wallSeconds": 10.005165749999927,
+      "cpuMsPerSecond": 426.9159658849261,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.34861991166913253,
+        "renderer": 359.64021885394817,
+        "GPU": 66.90263976886189,
+        "network.mojom.NetworkService": 0.024487350446943265
+      },
+      "mainTaskMsPerSecond": 181.37550594801624,
+      "wasmMsPerSecond": 64.93645528848519,
+      "snapshotsPerSecond": 9.994836917119612,
+      "virtualMsPerSecond": 999.4836917119612,
+      "jsHeapMiB": 16.726177215576172,
+      "start": {
+        "snapshots": 91,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 30.2,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 586,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 575,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12059,
+          "ok": 4,
+          "failed": 11469
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 191,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 31.7,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 565,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 556,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12355,
+          "ok": 4,
+          "failed": 11786
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "fanout",
+      "repeat": 3,
+      "wallSeconds": 10.005893583000056,
+      "cpuMsPerSecond": 433.0527767516808,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.12372708041822038,
+        "renderer": 382.9260193721948,
+        "GPU": 50.00303029906782,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 148.0407509546858,
+      "wasmMsPerSecond": 145.8740276354188,
+      "snapshotsPerSecond": 9.994109888386111,
+      "virtualMsPerSecond": 999.4109888386112,
+      "jsHeapMiB": 15.408618927001953,
+      "start": {
+        "snapshots": 49,
+        "t": 63100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 202.8,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 594,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 715,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12707,
+          "ok": 27,
+          "failed": 12086
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 149,
+        "t": 73100,
+        "rps": 200,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 205.9,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 606,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 713,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 14778,
+          "ok": 27,
+          "failed": 14145
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "fanout",
+      "repeat": 3,
+      "wallSeconds": 10.003114082999993,
+      "cpuMsPerSecond": 431.4224514678069,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.11066553783299461,
+        "renderer": 374.79708507689145,
+        "GPU": 56.514700853082374,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 183.93032257092983,
+      "wasmMsPerSecond": 86.10318681972515,
+      "snapshotsPerSecond": 9.996886886449406,
+      "virtualMsPerSecond": 999.6886886449406,
+      "jsHeapMiB": 8.019428253173828,
+      "start": {
+        "snapshots": 102,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 29.2,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 592,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 697,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12275,
+          "ok": 27,
+          "failed": 11656
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 202,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 0,
+          "outRps": 30.1,
+          "p95": 0,
+          "errorRate": 100,
+          "pending": 607,
+          "busy": 344,
+          "capacity": 344,
+          "queue": 730,
+          "ghosts": 0,
+          "reasons": {
+            "client_deadline": 24
+          },
+          "arrivals": 12591,
+          "ok": 27,
+          "failed": 11957
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "hang",
+      "repeat": 3,
+      "wallSeconds": 10.00458908299997,
+      "cpuMsPerSecond": 291.2829278467637,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.2321934445011141,
+        "renderer": 258.78394190115563,
+        "GPU": 32.25109970266242,
+        "network.mojom.NetworkService": 0.015692798444544055
+      },
+      "mainTaskMsPerSecond": 84.7698983900389,
+      "wasmMsPerSecond": 126.00217649816683,
+      "snapshotsPerSecond": 9.995413022002305,
+      "virtualMsPerSecond": 999.5413022002305,
+      "jsHeapMiB": 8.254150390625,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 150.7,
+          "outRps": 201.2,
+          "p95": 58.854328091932985,
+          "errorRate": 25.099403578528825,
+          "pending": 14,
+          "busy": 40,
+          "capacity": 344,
+          "queue": 501,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 8
+          },
+          "arrivals": 12549,
+          "ok": 9398,
+          "failed": 3137
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 146.5,
+          "outRps": 195.1,
+          "p95": 58.649251670984086,
+          "errorRate": 24.910302409021014,
+          "pending": 7,
+          "busy": 26,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 4
+          },
+          "arrivals": 14493,
+          "ok": 10863,
+          "failed": 3623
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "hang",
+      "repeat": 3,
+      "wallSeconds": 10.004065458000056,
+      "cpuMsPerSecond": 265.6644952152596,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.22360909266253526,
+        "renderer": 229.83376204933938,
+        "GPU": 35.587532038317256,
+        "network.mojom.NetworkService": 0.019592034940481555
+      },
+      "mainTaskMsPerSecond": 99.21966266286644,
+      "wasmMsPerSecond": 79.45769681661783,
+      "snapshotsPerSecond": 9.995936194123155,
+      "virtualMsPerSecond": 999.5936194123155,
+      "jsHeapMiB": 10.758544921875,
+      "start": {
+        "snapshots": 92,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 24.1,
+          "outRps": 32.2,
+          "p95": 394.27918264304753,
+          "errorRate": 25.15527950310559,
+          "pending": 12,
+          "busy": 32,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 6
+          },
+          "arrivals": 12019,
+          "ok": 9003,
+          "failed": 3004
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 192,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 24.4,
+          "outRps": 32.4,
+          "p95": 393.43139149271883,
+          "errorRate": 24.691358024691358,
+          "pending": 8,
+          "busy": 29,
+          "capacity": 344,
+          "queue": 500,
+          "ghosts": 16,
+          "reasons": {
+            "queue_full": 5
+          },
+          "arrivals": 12339,
+          "ok": 9247,
+          "failed": 3084
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "autoscale",
+      "repeat": 3,
+      "wallSeconds": 10.003325333000044,
+      "cpuMsPerSecond": 297.6534203258815,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.19583487838163602,
+        "renderer": 267.74096721262646,
+        "GPU": 29.707521259920487,
+        "network.mojom.NetworkService": 0.009096974952898936
+      },
+      "mainTaskMsPerSecond": 87.21699744402346,
+      "wasmMsPerSecond": 128.28734015881798,
+      "snapshotsPerSecond": 9.996675772416324,
+      "virtualMsPerSecond": 999.6675772416324,
+      "jsHeapMiB": 7.342872619628906,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 204.1,
+          "outRps": 204.1,
+          "p95": 70.4992853500662,
+          "errorRate": 0,
+          "pending": 11,
+          "busy": 21,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12487,
+          "ok": 11966,
+          "failed": 510
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 194.2,
+          "outRps": 194.2,
+          "p95": 70.14728978383937,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 10,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14427,
+          "ok": 13908,
+          "failed": 510
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "autoscale",
+      "repeat": 3,
+      "wallSeconds": 10.005590042000055,
+      "cpuMsPerSecond": 279.68585443269,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.22327518823202128,
+        "renderer": 244.3569034646629,
+        "GPU": 35.08288851797013,
+        "network.mojom.NetworkService": 0.022787261824933142
+      },
+      "mainTaskMsPerSecond": 108.60958678482642,
+      "wasmMsPerSecond": 70.21075160886281,
+      "snapshotsPerSecond": 9.99441308111107,
+      "virtualMsPerSecond": 999.4413081111069,
+      "jsHeapMiB": 11.140090942382812,
+      "start": {
+        "snapshots": 96,
+        "t": 403100,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.6,
+          "outRps": 27.6,
+          "p95": 462.5726763459388,
+          "errorRate": 0,
+          "pending": 17,
+          "busy": 27,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12093,
+          "ok": 11515,
+          "failed": 561
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 196,
+        "t": 413100,
+        "rps": 30,
+        "metrics": {
+          "goodput": 32.1,
+          "outRps": 32.1,
+          "p95": 484.29336797457654,
+          "errorRate": 0,
+          "pending": 8,
+          "busy": 17,
+          "capacity": 408,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12405,
+          "ok": 11836,
+          "failed": 561
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "az",
+      "repeat": 3,
+      "wallSeconds": 10.00421412499994,
+      "cpuMsPerSecond": 334.4775469807349,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.16343112807973884,
+        "renderer": 306.0277360866681,
+        "GPU": 28.286379765987036,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 93.81026718078223,
+      "wasmMsPerSecond": 151.9359719960998,
+      "snapshotsPerSecond": 9.995787650136947,
+      "virtualMsPerSecond": 999.5787650136946,
+      "jsHeapMiB": 8.967018127441406,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 202.3,
+          "outRps": 202.3,
+          "p95": 59.3189694169414,
+          "errorRate": 0,
+          "pending": 12,
+          "busy": 22,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12550,
+          "ok": 12538,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 204,
+          "outRps": 204,
+          "p95": 59.78615351188637,
+          "errorRate": 0,
+          "pending": 13,
+          "busy": 26,
+          "capacity": 624,
+          "queue": 1,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14591,
+          "ok": 14578,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "az",
+      "repeat": 3,
+      "wallSeconds": 10.004907958999974,
+      "cpuMsPerSecond": 289.6053628752836,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.11034584271281556,
+        "renderer": 256.19875869964585,
+        "GPU": 33.29625833292495,
+        "network.mojom.NetworkService": 0
+      },
+      "mainTaskMsPerSecond": 106.9862915667431,
+      "wasmMsPerSecond": 84.938312881777,
+      "snapshotsPerSecond": 9.995094448624528,
+      "virtualMsPerSecond": 999.5094448624528,
+      "jsHeapMiB": 18.08892059326172,
+      "start": {
+        "snapshots": 104,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 31.4,
+          "outRps": 31.4,
+          "p95": 396.9587191968458,
+          "errorRate": 0,
+          "pending": 10,
+          "busy": 14,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 11902,
+          "ok": 11892,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 204,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 28.7,
+          "outRps": 28.7,
+          "p95": 395.2218098946614,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 14,
+          "capacity": 624,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12188,
+          "ok": 12179,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 2
+          },
+          {
+            "id": "api",
+            "count": 4
+          },
+          {
+            "id": "db",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "numa",
+      "repeat": 3,
+      "wallSeconds": 10.004724416999961,
+      "cpuMsPerSecond": 215.5918454220435,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.17321816451588573,
+        "renderer": 183.1610670740984,
+        "GPU": 32.24276717226456,
+        "network.mojom.NetworkService": 0.014793011164657538
+      },
+      "mainTaskMsPerSecond": 64.06383357355824,
+      "wasmMsPerSecond": 80.31205737813323,
+      "snapshotsPerSecond": 9.99527781395764,
+      "virtualMsPerSecond": 999.527781395764,
+      "jsHeapMiB": 15.19925308227539,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 199.4,
+          "outRps": 199.4,
+          "p95": 25.57387863445183,
+          "errorRate": 0,
+          "pending": 3,
+          "busy": 5,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12453,
+          "ok": 12450,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 200,
+        "metrics": {
+          "goodput": 195,
+          "outRps": 195,
+          "p95": 25.704397032473935,
+          "errorRate": 0,
+          "pending": 2,
+          "busy": 4,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 14402,
+          "ok": 14400,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "numa",
+      "repeat": 3,
+      "wallSeconds": 10.003637583000003,
+      "cpuMsPerSecond": 160.95355180961474,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.24071243885245341,
+        "renderer": 133.38927854279902,
+        "GPU": 27.303967955033414,
+        "network.mojom.NetworkService": 0.019592872929850395
+      },
+      "mainTaskMsPerSecond": 55.401347300088396,
+      "wasmMsPerSecond": 41.94474233766399,
+      "snapshotsPerSecond": 9.996363739719854,
+      "virtualMsPerSecond": 999.6363739719854,
+      "jsHeapMiB": 17.64706039428711,
+      "start": {
+        "snapshots": 84,
+        "t": 403000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.5,
+          "outRps": 27.5,
+          "p95": 171.89987122506136,
+          "errorRate": 0,
+          "pending": 2,
+          "busy": 4,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 11914,
+          "ok": 11912,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 184,
+        "t": 413000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 30.5,
+          "outRps": 30.5,
+          "p95": 168.8615045414772,
+          "errorRate": 0,
+          "pending": 3,
+          "busy": 5,
+          "capacity": 16,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 12220,
+          "ok": 12217,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "cpu",
+            "count": 2
+          },
+          {
+            "id": "memory",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "variant": "before",
+      "preset": "composition",
+      "repeat": 3,
+      "wallSeconds": 10.004656542000012,
+      "cpuMsPerSecond": 280.45020718313395,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.2847673968656265,
+        "renderer": 244.4108890429911,
+        "GPU": 35.71956703358858,
+        "network.mojom.NetworkService": 0.03498370968865147
+      },
+      "mainTaskMsPerSecond": 101.48054515792882,
+      "wasmMsPerSecond": 96.03528016762684,
+      "snapshotsPerSecond": 9.995345625329103,
+      "virtualMsPerSecond": 999.5345625329102,
+      "jsHeapMiB": 16.629894256591797,
+      "start": {
+        "snapshots": 48,
+        "t": 63000,
+        "rps": 80,
+        "metrics": {
+          "goodput": 80.4,
+          "outRps": 80.4,
+          "p95": 54.02688322949689,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 7,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5023,
+          "ok": 5019,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 148,
+        "t": 73000,
+        "rps": 80,
+        "metrics": {
+          "goodput": 73.6,
+          "outRps": 73.6,
+          "p95": 54.14516191603616,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 8,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5759,
+          "ok": 5755,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "variant": "after",
+      "preset": "composition",
+      "repeat": 3,
+      "wallSeconds": 10.003927916000015,
+      "cpuMsPerSecond": 255.68237011275122,
+      "cpuByTypeMsPerSecond": {
+        "browser": 0.2410053351288069,
+        "renderer": 223.3318771146568,
+        "GPU": 32.07120270097711,
+        "network.mojom.NetworkService": 0.03828496198852467
+      },
+      "mainTaskMsPerSecond": 94.15491673960584,
+      "wasmMsPerSecond": 84.40684547123445,
+      "snapshotsPerSecond": 9.996073626246615,
+      "virtualMsPerSecond": 999.6073626246614,
+      "jsHeapMiB": 13.485088348388672,
+      "start": {
+        "snapshots": 62,
+        "t": 163000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 27.7,
+          "outRps": 27.7,
+          "p95": 143.87028930793167,
+          "errorRate": 0,
+          "pending": 4,
+          "busy": 7,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 4795,
+          "ok": 4791,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      },
+      "end": {
+        "snapshots": 162,
+        "t": 173000,
+        "rps": 30,
+        "metrics": {
+          "goodput": 28.1,
+          "outRps": 28.1,
+          "p95": 144.2088753338321,
+          "errorRate": 0,
+          "pending": 9,
+          "busy": 10,
+          "capacity": 344,
+          "queue": 0,
+          "ghosts": 0,
+          "reasons": {},
+          "arrivals": 5081,
+          "ok": 5072,
+          "failed": 0
+        },
+        "groups": [
+          {
+            "id": "lb",
+            "count": 1
+          },
+          {
+            "id": "api",
+            "count": 2
+          },
+          {
+            "id": "db",
+            "count": 1
+          },
+          {
+            "id": "cache",
+            "count": 1
+          },
+          {
+            "id": "audit",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ],
+  "buildHashes": {
+    "before": {
+      "core.wasm": "7ea9402da27d4d40e503bbc9193665e8cd8af5a2127be171527cb26854a19266",
+      "worker.js": "1d2649e1e5e121eecfc3075bbeaf46cadc7af8d7abeb11593f3178280acb81e9",
+      "standalone.html": "4db0439d2dadb42fdc8e503cc8fbc44b42d776ae5dbc6d717102a607e71ce76c"
+    },
+    "after": {
+      "core.wasm": "2e5741a17786bdb6c6b3b2bb3cd160efddbecb5c29a694b445f28b2dd54f2cc8",
+      "worker.js": "8f31f807215a2f9b0aaa75a356918b0e7235e4e485974b83ffca4af03a944cb4",
+      "standalone.html": "8564a17c2429655e3a9f69fea3dc5e6e4c994b4664630051f2f5b1e7389ab6b7"
+    }
+  },
+  "measuredOn": "2026-11-14",
+  "baselineCommit": "534f910668b7ee4aa0169ab9646810284e805920",
+  "summary": {
+    "normal": {
+      "medians": {
+        "before": {
+          "cpuMsPerSecond": 285.88717408299175,
+          "mainTaskMsPerSecond": 83.5023287700936,
+          "wasmMsPerSecond": 124.67181479138533
+        },
+        "after": {
+          "cpuMsPerSecond": 261.3373528609083,
+          "mainTaskMsPerSecond": 95.75951991163944,
+          "wasmMsPerSecond": 78.29063338828908
+        }
+      },
+      "cpuChangePercent": -8.58724120829455,
+      "wasmChangePercent": -37.202619919110326,
+      "pairedCPUChangePercent": [
+        -20.745596882468643,
+        -8.58724120829455,
+        -4.003518851916654
+      ]
+    },
+    "slow": {
+      "medians": {
+        "before": {
+          "cpuMsPerSecond": 408.318603987164,
+          "mainTaskMsPerSecond": 156.0814431693606,
+          "wasmMsPerSecond": 102.67601904404094
+        },
+        "after": {
+          "cpuMsPerSecond": 406.1941214234796,
+          "mainTaskMsPerSecond": 174.3651309000099,
+          "wasmMsPerSecond": 59.58298785349529
+        }
+      },
+      "cpuChangePercent": -0.5203002123682743,
+      "wasmChangePercent": -41.96990844771816,
+      "pairedCPUChangePercent": [
+        -2.129941320561801,
+        -0.5203002123682743,
+        2.188586799491965
+      ]
+    },
+    "fanout": {
+      "medians": {
+        "before": {
+          "cpuMsPerSecond": 433.0527767516808,
+          "mainTaskMsPerSecond": 147.38090830470205,
+          "wasmMsPerSecond": 145.8740276354188
+        },
+        "after": {
+          "cpuMsPerSecond": 410.38301399213333,
+          "mainTaskMsPerSecond": 178.67820857411286,
+          "wasmMsPerSecond": 69.68197759959827
+        }
+      },
+      "cpuChangePercent": -5.234872970817294,
+      "wasmChangePercent": -52.23140216999177,
+      "pairedCPUChangePercent": [
+        -7.879142205095202,
+        -5.274636544183354,
+        -0.376472654465565
+      ]
+    },
+    "hang": {
+      "medians": {
+        "before": {
+          "cpuMsPerSecond": 272.0963051877608,
+          "mainTaskMsPerSecond": 78.84123939973266,
+          "wasmMsPerSecond": 121.89718354470986
+        },
+        "after": {
+          "cpuMsPerSecond": 231.3927452272512,
+          "mainTaskMsPerSecond": 80.95078500091044,
+          "wasmMsPerSecond": 77.74935880973896
+        }
+      },
+      "cpuChangePercent": -14.959247584204416,
+      "wasmChangePercent": -36.217263968841586,
+      "pairedCPUChangePercent": [
+        -12.010421925899163,
+        -14.959247584204416,
+        -8.795034031304883
+      ]
+    },
+    "autoscale": {
+      "medians": {
+        "before": {
+          "cpuMsPerSecond": 274.49178575284407,
+          "mainTaskMsPerSecond": 78.7632928867893,
+          "wasmMsPerSecond": 124.090510064426
+        },
+        "after": {
+          "cpuMsPerSecond": 241.9333974939957,
+          "mainTaskMsPerSecond": 84.49292323269822,
+          "wasmMsPerSecond": 75.5793797859601
+        }
+      },
+      "cpuChangePercent": -11.86133427255428,
+      "wasmChangePercent": -39.09334424790391,
+      "pairedCPUChangePercent": [
+        -18.152813011293244,
+        -4.838658684750518,
+        -6.0364049818476655
+      ]
+    },
+    "az": {
+      "medians": {
+        "before": {
+          "cpuMsPerSecond": 299.87851542399227,
+          "mainTaskMsPerSecond": 86.73593861642529,
+          "wasmMsPerSecond": 131.07638450471725
+        },
+        "after": {
+          "cpuMsPerSecond": 246.8834268489439,
+          "mainTaskMsPerSecond": 92.62851882962966,
+          "wasmMsPerSecond": 84.938312881777
+        }
+      },
+      "cpuChangePercent": -17.67218585170053,
+      "wasmChangePercent": -35.19937767377145,
+      "pairedCPUChangePercent": [
+        -13.569122747119799,
+        -20.47391583795172,
+        -13.415604279122462
+      ]
+    },
+    "numa": {
+      "medians": {
+        "before": {
+          "cpuMsPerSecond": 209.74401101762777,
+          "mainTaskMsPerSecond": 63.58615723011383,
+          "wasmMsPerSecond": 73.09397156502146
+        },
+        "after": {
+          "cpuMsPerSecond": 165.51982798144448,
+          "mainTaskMsPerSecond": 55.401347300088396,
+          "wasmMsPerSecond": 50.65072972006966
+        }
+      },
+      "cpuChangePercent": -21.08483709337784,
+      "wasmChangePercent": -30.704641387542054,
+      "pairedCPUChangePercent": [
+        -1.064323453301963,
+        -18.9910692779363,
+        -25.343395296546866
+      ]
+    },
+    "composition": {
+      "medians": {
+        "before": {
+          "cpuMsPerSecond": 280.45020718313395,
+          "mainTaskMsPerSecond": 101.48054515792882,
+          "wasmMsPerSecond": 94.60637302450617
+        },
+        "after": {
+          "cpuMsPerSecond": 255.68237011275122,
+          "mainTaskMsPerSecond": 103.51677198631897,
+          "wasmMsPerSecond": 82.07982666134453
+        }
+      },
+      "cpuChangePercent": -8.831456150149798,
+      "wasmChangePercent": -13.240700348925605,
+      "pairedCPUChangePercent": [
+        13.018783945047897,
+        -15.052680797495633,
+        -8.831456150149798
+      ]
+    }
+  }
+}

@@ -145,11 +145,11 @@ func TestKeepalivePostConnectResetAndResources(t *testing.T) {
 }
 func TestKeepaliveBlackholeDefaultScenarioRecovers(t *testing.T) {
 	c := DefaultConfig()
-	c.Groups[0].ConnectTimeout = 15
+	c.Groups[0].ConnectTimeout = 3 * c.Network
 	e := engine(t, c)
-	e.Advance(5000)
+	advanceUntil(e, 2*c.Groups[0].Timeout)
 	setFault(t, e, "api-1", "blackhole")
-	e.Advance(5000)
+	advanceUntil(e, e.Now+2*c.Groups[0].Timeout)
 	if e.Failed == 0 {
 		t.Fatal("already connected requests should fail")
 	}

@@ -24,7 +24,7 @@ const topics = [
   {
     title: "Traffic and scaling",
     paragraphs: [
-      "RPS means requests per second. The generator sets the total for the entry group: 200 RPS across four instances is still 200 RPS, not 800. Downstream traffic depends on the calls each request makes.",
+    "RPS means requests per second. The generator sets the total for the entry group: 30 RPS across four instances is still 30 RPS, not 120. Downstream traffic depends on the calls each request makes.",
       "Adding instances adds capacity. Removing an instance stops new assignments, but lets accepted work finish there; its queue does not move. Autoscaling adjusts the instance count using queue length or utilization.",
       "Changing numeric settings or instance counts preserves time, queues and history. New settings do not recalculate work already scheduled. Changing the structure can require a restart, which the editor indicates.",
     ],

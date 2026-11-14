@@ -3,7 +3,11 @@ package core
 // CompositionConfig demonstrates nested callers, sibling resources, parallel
 // downstream work and two request paths without introducing physical box types.
 func CompositionConfig() Config {
-	c := DefaultConfig()
+	return retimePreset(referenceCompositionConfig())
+}
+
+func referenceCompositionConfig() Config {
+	c := referenceDefaultConfig()
 	c.Name = "Nested boxes · request paths"
 	c.Description = "Read and write tags select different downstream boxes. Each backend contains an application and CPU; CPU calls its own memory box. Application and CPU share the same queue-and-worker mechanism."
 	c.I18n = Localizations{"ru": {Name: "Вложенные ящики · пути запросов", Description: "Теги read и write выбирают разные ящики ниже по графу. В каждом бекенде есть приложение и CPU; CPU вызывает собственный ящик памяти. Приложение и CPU используют один механизм очередей и воркеров."}}

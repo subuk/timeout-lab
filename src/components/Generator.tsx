@@ -19,9 +19,10 @@ export const Generator = memo(function Generator({
 }) {
   useLocale();
   const [weight, setWeight] = useState(1),
-    [deadline, setDeadline] = useState(3000),
+    [deadlineDraft, setDeadline] = useState<number | null>(null),
     [labels, setLabels] = useState(""),
     [error, setError] = useState("");
+  const deadline = deadlineDraft ?? c.deadline;
   const set = <K extends keyof Config>(key: K, value: Config[K]) =>
     run(
       editConfig((c) => {

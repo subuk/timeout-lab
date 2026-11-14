@@ -292,7 +292,7 @@ func TestNUMAPresetUsesBothNodes(t *testing.T) {
 		e := engine(t, c)
 		e.Advance(10000)
 		for _, n := range e.Nodes {
-			if n.Arrivals < 500 {
+			if float64(n.Arrivals) < c.RPS*10/3 {
 				t.Fatalf("pinned=%v: %s received only %d requests", pinned, n.ID, n.Arrivals)
 			}
 		}

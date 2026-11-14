@@ -70,6 +70,7 @@ test("manual request, trace focus, invalid import and structural restart", async
   await page.locator("#send-request").click();
   await expect(page.locator("#send-request")).toBeEnabled();
   await expect(page.locator("#trace-events tbody tr").first()).toBeVisible();
+  await expect(page.locator(".trace-summary .result")).toHaveText("success");
   const chip = page.locator("#trace-list button").first();
   await chip.click();
   await chip.focus();
@@ -98,6 +99,7 @@ test("manual request, trace focus, invalid import and structural restart", async
 test("preset deep links, back navigation and all presets", async ({ page }) => {
   await ready(page, "/#template=numa");
   await expect(page.locator('[data-scenario="numa"]')).toHaveClass("active");
+  await expect(page.locator("#rps")).toHaveValue("30");
   for (const id of [
     "normal",
     "slow",
@@ -110,11 +112,25 @@ test("preset deep links, back navigation and all presets", async ({ page }) => {
     await page.locator(`[data-scenario="${id}"]`).click();
     await expect(page.locator(`[data-scenario="${id}"]`)).toHaveClass("active");
     await expect(page.locator("#groups .box").first()).toBeVisible();
+    await expect(page.locator("#rps")).toHaveValue("30");
   }
   await page.goBack();
   await expect(page.locator('[data-scenario="az"]')).toHaveClass("active");
   await page.reload();
   await expect(page.locator('[data-scenario="az"]')).toHaveClass("active");
+});
+test("manual deadline inherits each preset and keeps edits during updates", async ({ page }) => {
+  await ready(page);
+  await page.locator("#request-mode").selectOption("single");
+  await expect(page.locator("#single-deadline")).toHaveValue("20000");
+  await page.locator('[data-scenario="composition"]').click();
+  await expect(page.locator("#single-deadline")).toHaveValue("8000");
+  await page.locator("#single-deadline").fill("1234");
+  await page.locator("#single-deadline").blur();
+  await page.locator("#language").selectOption("ru");
+  await expect(page.locator("#single-deadline")).toHaveValue("1234");
+  await page.locator('[data-scenario="normal"]').click();
+  await expect(page.locator("#single-deadline")).toHaveValue("20000");
 });
 test("standalone loads from file without external requests", async ({
   page,
@@ -124,6 +140,7 @@ test("standalone loads from file without external requests", async ({
     if (/^https?:/.test(r.url())) network.push(r.url());
   });
   await ready(page, "file://" + resolve("dist/standalone.html"));
+  await expect(page.locator("#rps")).toHaveValue("30");
   await page.locator("#request-mode").selectOption("single");
   await page.locator("#send-request").click();
   await expect(page.locator("#trace-events tbody tr").first()).toBeVisible();
@@ -338,7 +355,7 @@ test("trace selection, call hierarchy and event units survive snapshots and loca
   await expect(page.locator(".trace-legend")).toContainText(
     "Network / connect",
   );
-  await expect(page.locator("#trace-events")).toContainText("Budget: 3,000 ms");
+  await expect(page.locator("#trace-events")).toContainText("Budget: 20,000 ms");
   await expect(page.locator("#trace-events")).toContainText("Queue depth: 1");
   await expect(page.locator("#trace-events")).toContainText("Budget: 0 ms");
   await expect(page.locator("#trace-events")).toContainText(

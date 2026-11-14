@@ -76,6 +76,12 @@ type Config struct {
 }
 
 func DefaultConfig() Config {
+	return retimePreset(referenceDefaultConfig())
+}
+
+// Reference workloads use their original rates; built-in presets are retimed
+// once, after the complete graph has been assembled.
+func referenceDefaultConfig() Config {
 	return Config{Version: 2, Name: "Load balancer → backends → database", I18n: Localizations{"ru": {Name: "Балансер → бекенды → база"}}, Entry: "lb", RPS: 200, Weight: 1, Spread: 20, Network: 5, Jitter: 10, Deadline: 3000, Cancel: true, Seed: 42, Groups: []Group{
 		{ID: "lb", Name: "Load balancer", I18n: Localizations{"ru": {Name: "Балансер"}}, Count: 1, Workers: 256, Service: 2, Timeout: 1500, ConnectTimeout: 200, QueueLimit: 500, Stages: []Stage{{Calls: []Call{{Target: "api", Calls: 1, Route: "round_robin", Transport: "network"}}, Join: "all", Quorum: 1}}},
 		{ID: "api", Name: "Backends", I18n: Localizations{"ru": {Name: "Бекенды"}}, Count: 4, Workers: 16, Service: 0, Resources: []ResourceConfig{{ID: "compute", Name: "CPU", Scope: "instance", Workers: 2, Service: 8, QueueLimit: 500, Stages: []Stage{}}}, Stages: []Stage{{Calls: []Call{{Resource: "compute", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}, {Calls: []Call{{Target: "db", Calls: 1, Route: "round_robin", Transport: "network"}}, Join: "all", Quorum: 1}, {Calls: []Call{{Resource: "compute", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}, Timeout: 700, ConnectTimeout: 200, QueueLimit: 500},

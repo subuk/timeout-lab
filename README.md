@@ -2,7 +2,23 @@
 
 A static interactive simulator of queues, bounded resources, timeouts, and scaling. A generic Go engine compiles to WebAssembly and runs in a Web Worker; the interface uses React and TypeScript, bundled locally by Vite. Deployment remains static, with no backend or runtime CDN dependencies.
 
-The first preset is a load balancer → 4 backends → database. The generator sends a total of 200 RPS only to the entry group (`entry`, the load balancer in this preset). Traffic is distributed round-robin among its active nodes. Further requests arise only from outgoing graph edges; their rate depends on call counts, fan-out, processing, and routing. Scaling any group does not change the configured total incoming RPS.
+The first preset is a load balancer → 4 backends → database. The generator sends a total of 30 RPS only to the entry group (`entry`, the load balancer in this preset). Traffic is distributed round-robin among its active nodes. Further requests arise only from outgoing graph edges; their rate depends on call counts, fan-out, processing, and routing. Scaling any group does not change the configured total incoming RPS.
+
+All eight built-in presets start at 30 RPS. Their original reference workloads (200 RPS, or 80 for Nested boxes) are retimed by `reference RPS / 30`: local processing at every nesting level, network delays, caller/client timeouts, idle expiry, and autoscaler windows/delays/cooldowns all use the same factor. Workers, queues, routing, fan-out, cost multipliers, and request weights keep their original values. This preserves offered work per slot and relative budgets while producing fewer events per second. Scenarios unfold 6⅔ times more slowly (2⅔ for Nested boxes); overload, hanging work and scaling therefore need longer observation at 1× playback. Live RPS edits and imported JSON are never automatically retimed. The 10-second metric windows, 5-second card utilization window, 60-second charts and 500 ms controller sampling remain literal virtual time, so shorter-window statistics and exact event sequences need not match the reference runs.
+
+Representative preset settings (milliseconds; rounded to 0.001 ms):
+
+| Setting | Original reference | 30 RPS preset |
+| --- | ---: | ---: |
+| Normal: backend CPU per visit, two visits/request | 8 | 53.333 |
+| Normal: database disk per visit | 4 | 26.667 |
+| Slow database: disk per visit | 600 | 4000 |
+| Three database calls: disk per visit | 50 | 333.333 |
+| Autoscaling: backend CPU per visit, two visits/request | 12 | 80 |
+| Normal: one-way network delay | 5 | 33.333 |
+| Normal: user deadline | 3000 | 20000 |
+| Normal: LB / API outgoing-call budgets | 1500 / 700 | 10000 / 4666.667 |
+| Nested boxes: CPU / nested memory per visit | 4 / 2 | 10.667 / 5.333 |
 
 English is the project's primary language: documentation, contributor instructions, source comments, and default interface/model text use English. Russian is supported through explicit localization.
 
@@ -41,6 +57,37 @@ npm run test:browser
 
 Install a test browser once with `npx playwright install chromium`. `npm run test:browser` starts its own local server and exercises the built HTTP app and offline `file://` artifact: live settings, group overrides, focused drafts, language changes, trace selection, manual requests, validation, resets, preset history, and rendering at 64 instances. Tests use the real Go/WASM Worker.
 
+## Browser workload benchmark
+
+Keep a copy of each production build and compare them with:
+
+```sh
+BENCH_SECONDS=10 node scripts/benchmark-browser.mjs /tmp/timeout-lab-before dist /tmp/browser-comparison.json
+```
+
+The script runs all eight presets sequentially in fresh headless Chromium browsers at 1×, 1440×1100, with three repetitions and alternating before/after order. `BENCH_PRESETS`, `BENCH_REPEATS`, and `BENCH_SECONDS` override the selection and duration. Each run first advances the engine to 60 reference seconds (400 seconds at 30 RPS; 160 for Nested boxes), warming equal expected arrival counts, then runs normally for three seconds before measurement. This compares established workloads, not initial loading or equal wall-clock time since reset. Avoid concurrent builds/tests during measurement.
+
+CPU is the sum of Chromium process CPU-time deltas, including renderers, the Worker, GPU process and browser, expressed as milliseconds per wall second (100 ms/s = 10% of one core). The synchronous WASM timer includes engine advancement, snapshot metrics and JSON encoding; it excludes Worker-side JSON parsing/message cloning and rendering. Main-thread task duration is recorded separately. These measurements overlap and must not be added. Snapshots and virtual-time progress are also recorded to verify that a lower CPU cost is not caused by fewer updates or slower playback. Build hashes, environment and individual samples are kept in the output JSON. Results describe this machine and Chromium configuration, not every browser or battery usage.
+
+### 30 RPS comparison — 2026-11-14
+
+Measured on Apple M1 Pro, macOS arm64, headless Chromium 159.0.8154.6. The baseline is commit `534f910668b7ee4aa0169ab9646810284e805920`; both builds used the same installed toolchain. Each value is the median of three 10-second measurements; CPU ranges show the minimum and maximum individual runs. Negative changes mean less work per wall second. Raw samples and exact build hashes: [`benchmarks/browser-30rps.json`](benchmarks/browser-30rps.json).
+
+| Preset | Before CPU, ms/s (range) | 30 RPS CPU, ms/s (range) | CPU change | WASM time change |
+| --- | ---: | ---: | ---: | ---: |
+| Normal operation | 285.9 (268.8–299.5) | 261.3 (213.1–287.5) | -8.6% | -37.2% |
+| Slow database | 408.3 (400.0–417.8) | 406.2 (391.5–426.9) | -0.5% | -42.0% |
+| 3 database calls | 433.1 (414.7–433.2) | 410.4 (382.1–431.4) | -5.2% | -52.2% |
+| Hung backend | 272.1 (240.8–291.3) | 231.4 (211.9–265.7) | -15.0% | -36.2% |
+| Autoscaling | 274.5 (254.2–297.7) | 241.9 (224.7–279.7) | -11.9% | -39.1% |
+| Two zones | 299.9 (285.6–334.5) | 246.9 (238.5–289.6) | -17.7% | -35.2% |
+| NUMA | 209.7 (167.3–215.6) | 165.5 (161.0–169.9) | -21.1% | -30.7% |
+| Nested boxes | 280.5 (247.6–287.5) | 255.7 (244.2–279.8) | -8.8% | -13.2% |
+
+All 48 runs maintained 9.98–10.00 snapshots/s and 998.5–999.7 virtual ms per wall second. The normal preset reduced median total CPU from about 28.6% to 26.1% of one core; its paired reductions ranged from 4.0% to 20.7%. The slow-database result is effectively unchanged within run-to-run variation. NUMA and Nested boxes are especially variable: one Nested boxes pair increased total CPU by 13.0%, while the other two decreased it.
+
+The engine/snapshot work decreased more consistently than total browser CPU. Main-thread task time did not show a consistent reduction; frequent snapshot handling, DOM work and painting remain material costs. These short measurements support a moderate, scenario-dependent benefit, not a 6⅔-fold browser speedup. Increasing playback speed also increases real event throughput and reduces the saving.
+
 ## Frontend architecture
 
 - `src/App.tsx` and `src/components/`: React components for playback, generator, topology, inspector, model forms, charts, and traces.
@@ -69,7 +116,7 @@ The engine uses discrete events: an event heap, virtual time in milliseconds, an
 
 ## Single-request mode
 
-Select **Generator → Request mode → Single request**, enter a weight (greater than 0, up to 10), deadline (1–60000 ms) and optional `key=value` labels, then click **Send one request**. Weight and labels are exact: generator weight variation and label distribution do not apply. Network, processing variation, cancellation, routing and caller connection settings still come from the model. These per-request inputs do not modify the model defaults.
+Select **Generator → Request mode → Single request**, enter a weight (greater than 0, up to 10), deadline (1–60000 ms) and optional `key=value` labels, then click **Send one request**. Until edited, the single-request deadline follows the model deadline; a user-entered value is retained during live updates. Selecting another preset starts fresh per-request inputs. Weight and labels are exact: generator weight variation and label distribution do not apply. Network, processing variation, cancellation, routing and caller connection settings still come from the model. These per-request inputs do not modify the model defaults.
 
 Entering this mode pauses playback and stops background arrivals without resetting virtual time, queues, RNG, history or reusable connections. Accepted work remains; use **↺** explicitly for an empty-system experiment. Sending starts playback; it pauses automatically after this request and all its descendant work finish. **Pause**, speed and **+10 ms** allow closer inspection. With cancellation disabled, a user deadline can expire while downstream work continues; the UI reports this and waits for the work to finish before enabling another send. Recover a hung node or restart if work cannot finish. Switching back to Continuous load preserves configured RPS; press Resume to continue.
 
@@ -134,7 +181,7 @@ Each step changes the count by one node without resetting the experiment. New bo
 
 Manual count changes start cooldown; policy changes reset accumulated condition time. Quorum, total-node, and fan-out limits are checked before acting; an impossible step is blocked with an explanation. Groups are processed in configuration order. Status shows the reason, metrics, and countdown; the log shows recent decisions.
 
-The Autoscaling preset starts the backend group with one node (32 handlers, a private compute resource with two slots, 12 ms per visit, twice per request) and scales it using compute utilization/queue at 200 incoming req/s. The database remains one node with its original settings. Reduce incoming RPS to see the backend group shrink.
+The Autoscaling preset starts the backend group with one node (32 handlers, a private compute resource with two slots, 80 ms per visit, twice per request) and scales it using compute utilization/queue at 30 incoming req/s. Its window is about 33.33 s, up delay 13.33 s, down delay 66.67 s, and cooldown 20 s. The database remains one node. Reduce incoming RPS to see the backend group shrink; the longer window and down delay intentionally require a sustained reduction.
 
 Implementation: `core/autoscale.go`; tests: `core/autoscale_test.go`.
 
@@ -216,7 +263,7 @@ Scaling preserves the experiment. Instance resources scale with the service; sha
 
 The interface offers resource bars on cards, inspector tabs, separate metrics and Little's law, and expandable internal spans. Groups can collapse; those with more than six nodes start collapsed. The summary bar shows aggregate utilization. The **Boxes and request paths** dialog edits the group's nested model through a structured form and JSON. The form supports adding/removing/reordering children, stages and calls; ownership, relative resource targets, join policies, conditions, transport and optional network/timeout overrides are explicit controls. Resource bars, tabs and autoscaling sensors include all nesting levels. A stage captures its conditions, calls, join policy and budgets when it begins; executing work and attempts retain their scheduled durations/budgets. Numeric settings, conditions, call counts, join policies and transport settings apply without resetting time, RNG, queues, or history. Changes to child identities/ownership, call targets, or stage order/count require an explicit restart. Invalid updates are rejected before engine state changes. Model JSON preserves all nested programs and overrides.
 
-Composite-box tests: `core/resources_test.go` and `core/program_test.go`. Format rejection and all eight preset round-trips are covered by `core/schema_test.go`; `core/presets_test.go` compares 10 seconds of deterministic outcomes and occupancy with results recorded before removing implicit programs. All presets are defined by `core.PresetConfig`; the interface and WASM bridge use that single source. Browser checks: `npm run test:browser` exercises the HTTP and embedded builds.
+Composite-box tests: `core/resources_test.go` and `core/program_test.go`. Format rejection and all eight preset round-trips are covered by `core/schema_test.go`; `core/presets_test.go` preserves the original reference fixtures and compares outcomes and time-average occupancy after retiming at equal expected arrival counts. It also checks overload, hanging work, scale-up/down, and literal imports/live load edits. All presets are defined by `core.PresetConfig`; the interface and WASM bridge use that single source. Browser checks: `npm run test:browser` exercises the HTTP and embedded builds.
 
 ## Locality and illustrative cost
 
@@ -274,13 +321,13 @@ Eviction is tied to connection identity: a late failure from an old call cannot 
 
 Blackhole on a warm connection still causes response timeouts for already sent requests. These are not retried after establishment. After eviction, subsequent requests establish new connections, receive connect timeouts, and may retry on the next node. The 10-second error metric initially includes the first wave of failures, then declines.
 
-The `#template=fanout` preset is named **3 database calls**. Its description below preset selection explains three parallel calls, waiting for all responses, and disk work increased to 50 ms. The link ID and experiment parameters remain unchanged.
+The `#template=fanout` preset is named **3 database calls**. Its description below preset selection explains three parallel calls, waiting for all responses, and disk work of approximately 333.333 ms: at 30 incoming RPS, nominal downstream demand is 90 calls/s before capacity limits. The link ID is unchanged.
 
 Set model descriptions through `description` in JSON, with English as the default, and translations through `i18n.ru.description` or other languages. Descriptions render as plain text, not HTML, and survive export. The optional field accepts up to 4000 UTF-8 bytes per description.
 
 ## Keep-alive and outgoing-call timeouts
 
-Settings belong to the **calling box**, not the receiver. Each group defines `keepalive` (default true), `keepaliveTimeout` (idle timeout, default 30000 ms), `connectTimeout`, `timeout`, and `retryConnect`. The same fields can be overridden in `overrides["api-1"]`. The interface places them under Downstream calls; This node / Whole group controls edit scope. A group edit removes individual overrides only for that field. Inherit group settings clears the selected node's overrides for all five connection settings. New instances inherit the group; draining boxes retain their settings until work finishes.
+Settings belong to the **calling box**, not the receiver. Each group defines `keepalive` (default true), `keepaliveTimeout` (idle timeout, 30000 ms when omitted; explicitly retimed in built-in presets), `connectTimeout`, `timeout`, and `retryConnect`. The same fields can be overridden in `overrides["api-1"]`. The interface places them under Downstream calls; This node / Whole group controls edit scope. A group edit removes individual overrides only for that field. Inherit group settings clears the selected node's overrides for all five connection settings. New instances inherit the group; draining boxes retain their settings until work finishes.
 
 Example individual settings:
 
@@ -290,6 +337,6 @@ Example individual settings:
 
 Idle timeout starts when the last response returns over the connection, including return network time. Concurrent calls keep it active until the last response. Idle expiry never interrupts active work. `0` retains idle connections indefinitely; `keepalive: false` prevents reuse. The interface shows idle timeout in seconds; JSON uses milliseconds (0–3600000). Connect/call timeout is 1–60000 ms. Changes apply without reset: shortening idle timeout accounts for elapsed idle time, lengthening it moves expiry, and started-call budgets are preserved. Disabling keep-alive removes only that box's outgoing cache without interrupting active calls.
 
-Generator-to-entry connections are configured separately in `client`: `keepalive`, `keepaliveTimeout`, and `connectTimeout` (defaults true / 30000 / 200). The total budget remains `deadline`. The interface exposes these under Connections to entry group. LB settings no longer control the generator's connect timeout.
+Generator-to-entry connections are configured separately in `client`: `keepalive`, `keepaliveTimeout`, and `connectTimeout` (defaults true / 30000 / 200 when omitted in imported models). Built-in presets explicitly carry their retimed values: true / 200000 / approximately 1333.33 for the normal preset. The total budget remains `deadline`. The interface exposes these under Connections to entry group. LB settings no longer control the generator's connect timeout.
 
 Internal boxes can have downstream calls and their own optional `keepalive`, `keepaliveTimeout`, `connectTimeout`, `timeout`, and `retryConnect`. Missing fields inherit their containing definition’s settings recursively; individual node overrides apply only to that caller. For example, `overrides["api-1/~app"]` changes one application box’s outgoing calls. Ordinary and internal boxes use the same caller connection machinery, regardless of CPU/Disk/LB/API names.

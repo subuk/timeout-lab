@@ -146,6 +146,7 @@ func TestConnectVersusRequestTimeout(t *testing.T) {
 		c.Network = 5
 		c.Deadline = 500
 		c.Groups[0].ConnectTimeout = 100
+		c.Client.ConnectTimeout = 100
 		e := engine(t, c)
 		e.SetNode("box-1", state, nil, nil)
 		tr := e.AddRequest(1)
@@ -182,7 +183,7 @@ func TestDefaultSteadyState(t *testing.T) {
 		e.Advance(10000)
 	}
 	m := e.metrics()
-	if m.ErrorRate != 0 || m.Goodput < 180 || m.Goodput > 220 {
+	if m.ErrorRate != 0 || m.Goodput < 27 || m.Goodput > 33 {
 		t.Fatalf("unexpected default metrics %+v", m)
 	}
 	for _, n := range e.Snapshot().Nodes {

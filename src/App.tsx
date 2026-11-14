@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useEngine, command, editConfig, run, startEngine } from "./engine";
-import { I18n, name, t, useLocale } from "./locale";
+import { I18n, t, useLocale } from "./locale";
 import { Generator } from "./components/Generator";
-import { Topology, type Selection } from "./components/Topology";
+import { Topology, DiagramNotes, type Selection } from "./components/Topology";
 import { Inspector } from "./components/Inspector";
 import { ModelEditor } from "./components/ModelEditor";
 import { ModelHelp } from "./components/ModelHelp";
 import { Traces } from "./components/Traces";
 import { Metrics, Activity } from "./components/Metrics";
+import { Canvas } from "./components/Canvas";
+import { Dock, SettingsWindow } from "./components/Overlay";
 import type { Trace } from "./model";
 const presets = [
   ["normal", "Normal operation"],
@@ -32,6 +34,23 @@ export function App() {
     resource: "",
     scope: "node",
   });
+  const [settings, setSettings] = useState<"box" | "generator" | null>(null);
+  const [metricsOpen, setMetricsOpen] = useState(true);
+  const [activityOpen, setActivityOpen] = useState(true);
+  const [tracesOpen, setTracesOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  useEffect(() => {
+    const compact = matchMedia("(max-height: 600px)");
+    const fold = () => {
+      if (compact.matches) {
+        setMetricsOpen(false);
+        setActivityOpen(false);
+      }
+    };
+    fold();
+    compact.addEventListener("change", fold);
+    return () => compact.removeEventListener("change", fold);
+  }, []);
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
   const [editor, setEditor] = useState<{ group?: string } | null>(null),
     [info, setInfo] = useState(false),
@@ -128,186 +147,245 @@ export function App() {
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+  useEffect(() => {
+    if (s?.focus) setTracesOpen(true);
+  }, [s?.focus?.id]);
+  function selectBox(next: Selection) {
+    select(next);
+    setSettings("box");
+  }
   const sec = (s?.t || 0) / 1000;
   return (
-    <>
-      <header className="app-header">
-        <a className="brand" href="./">
+    <main
+      className={`lab-workspace ${settings ? "has-settings" : ""} ${metricsOpen ? "has-metrics" : ""} ${activityOpen ? "has-activity" : ""} ${tracesOpen ? "has-traces" : ""}`}
+    >
+      <header className="lab-toolbar floating-block">
+        <a className="brand" href="./" aria-label="boxes · systems lab">
           <span className="brand-mark">◈</span>
           <span>
             boxes<span className="brand-caption">systems lab</span>
           </span>
         </a>
-        <nav>
-          <span className="nav-active">Lab</span>
+        <label className="preset-picker">
+          <span>{t("Scenario")}</span>
+          <select
+            id="preset"
+            aria-label={t("Scenario")}
+            value={preset}
+            disabled={!s}
+            onChange={(e) => choose(e.target.value)}
+          >
+            {presets.map(([id, label]) => (
+              <option key={id} value={id}>
+                {t(label)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="transport">
+          <span
+            id="live-state"
+            className={`live-state ${engine.paused ? "paused" : ""}`}
+          >
+            {t(
+              !s
+                ? "Loading engine…"
+                : engine.paused
+                  ? "Paused"
+                  : "Simulation running",
+            )}
+          </span>
+          <span id="clock" className="mono">
+            {String(Math.floor(sec / 60)).padStart(2, "0")}:
+            {(sec % 60).toFixed(1).padStart(4, "0")}
+          </span>
+          <div className="transport-buttons">
+            <button
+              id="pause"
+              disabled={!s}
+              onClick={() => run(command({ type: "pause" }))}
+            >
+              {t(engine.paused ? "▶ Resume" : "Ⅱ Pause")}
+            </button>
+            <button
+              id="step"
+              disabled={!s}
+              title={t("Advance the simulation by 1 second")}
+              onClick={() => run(command({ type: "step" }))}
+            >
+              +1 s
+            </button>
+            <select
+              id="speed"
+              aria-label={t("Simulation speed")}
+              value={engine.speed}
+              onChange={(e) =>
+                run(command({ type: "speed", value: +e.target.value }))
+              }
+            >
+              {[0.125, 0.25, 0.5, 1, 2, 5].map((v) => (
+                <option key={v} value={v}>
+                  {v}×
+                </option>
+              ))}
+            </select>
+            <button
+              id="reset"
+              aria-label={t("Restart with the current settings")}
+              disabled={!s}
+              onClick={() => run(editConfig(() => {}, true))}
+            >
+              ↺
+            </button>
+          </div>
+        </div>
+        <div className="toolbar-actions">
+          <button
+            id="edit-config"
+            disabled={!s}
+            onClick={() => setEditor({})}
+            title={t("Configuration")}
+            aria-label={t("Configuration")}
+          >
+            {"{ }"}
+          </button>
+          <button
+            id="export"
+            disabled={!s}
+            onClick={download}
+            title={t("Export JSON")}
+            aria-label={t("Export JSON")}
+          >
+            ↓
+          </button>
           <button
             id="model-info"
             aria-haspopup="dialog"
+            title={t("How the model works")}
+            aria-label={t("How the model works")}
             onClick={() => setInfo(true)}
           >
-            {t("How the model works")}
+            ?
           </button>
-        </nav>
-        <a
-          className="github-link"
-          href="https://github.com/subuk/timeout-lab"
-          target="_blank"
-          rel="noreferrer"
-        >
-          GitHub ↗
-        </a>
-        <select
-          id="language"
-          aria-label={t("Language")}
-          value={locale === "ru-RU" ? "ru" : locale === "en-US" ? "en" : locale}
-          onChange={(e) => I18n.setLanguage(e.target.value)}
-        >
-          {I18n.languages().map((v: string) => (
-            <option key={v} value={v}>
-              {v.toUpperCase()}
-            </option>
-          ))}
-        </select>
-        <span className="runtime">Go / WebAssembly</span>
+          <select
+            id="language"
+            aria-label={t("Language")}
+            value={
+              locale === "ru-RU" ? "ru" : locale === "en-US" ? "en" : locale
+            }
+            onChange={(e) => I18n.setLanguage(e.target.value)}
+          >
+            {I18n.languages().map((v: string) => (
+              <option key={v} value={v}>
+                {v.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
-      <main>
-        <section className="intro">
-          <div>
-            <div className="eyebrow">INTERACTIVE EXPERIMENT</div>
-            <h1>{t("How systems behave under load")}</h1>
-            <p>
-              {t("Adjust latency. Watch the queues. Find the system’s limits.")}
-            </p>
-          </div>
-          <div className="transport">
-            <span
-              id="live-state"
-              className={`live-state ${engine.paused ? "paused" : ""}`}
-            >
-              {t(
-                !s
-                  ? "Loading engine…"
-                  : engine.paused
-                    ? "Paused"
-                    : "Simulation running",
-              )}
-            </span>
-            <span id="clock" className="mono">
-              {String(Math.floor(sec / 60)).padStart(2, "0")}:
-              {(sec % 60).toFixed(1).padStart(4, "0")}
-            </span>
-            <div className="transport-buttons">
-              <button
-                id="pause"
-                disabled={!s}
-                onClick={() => run(command({ type: "pause" }))}
-              >
-                {t(engine.paused ? "▶ Resume" : "Ⅱ Pause")}
-              </button>
-              <button
-                id="step"
-                disabled={!s}
-                onClick={() => run(command({ type: "step" }))}
-              >
-                +1 s
-              </button>
-              <select
-                id="speed"
-                aria-label={t("Simulation speed")}
-                value={engine.speed}
-                onChange={(e) =>
-                  run(command({ type: "speed", value: +e.target.value }))
-                }
-              >
-                {[0.125, 0.25, 0.5, 1, 2, 5].map((v) => (
-                  <option key={v} value={v}>
-                    {v}×
-                  </option>
-                ))}
-              </select>
-              <button
-                id="reset"
-                disabled={!s}
-                onClick={() => run(editConfig(() => {}, true))}
-              >
-                ↺
-              </button>
-            </div>
-          </div>
-        </section>
-        {engine.error && (
-          <p className="error-banner" role="alert">
-            {t(engine.error)}
-          </p>
-        )}
-        <section className="scenario-bar">
-          {presets.map(([id, label], i) => (
-            <button
-              data-scenario={id}
-              key={id}
-              disabled={!s}
-              className={preset === id ? "active" : ""}
-              onClick={() => choose(id)}
-            >
-              {String(i + 1).padStart(2, "0")} <span>{t(label)}</span>
-            </button>
-          ))}
-        </section>
-        {s && (
-          <>
-            {I18n.description(s.config) && (
-              <p id="model-description">{I18n.description(s.config)}</p>
-            )}
+      {engine.error && (
+        <p className="error-banner" role="alert">
+          {t(engine.error)}
+        </p>
+      )}
+      {s ? (
+        <>
+          <Canvas key={`canvas-${engine.epoch}`}>
+            <Topology
+              snapshot={s}
+              trace={selectedTrace}
+              selection={selection}
+              select={selectBox}
+              active={settings === "box"}
+              generatorSelected={settings === "generator"}
+              openGenerator={() => setSettings("generator")}
+            />
+          </Canvas>
+          <Dock
+            id="metrics"
+            title="System metrics"
+            className="metrics-dock"
+            open={metricsOpen}
+            toggle={() => setMetricsOpen(!metricsOpen)}
+          >
             <Metrics snapshot={s} />
-            <div className="workspace">
+          </Dock>
+          <Dock
+            id="activity"
+            title="System activity"
+            className="activity-dock"
+            open={activityOpen}
+            toggle={() => setActivityOpen(!activityOpen)}
+          >
+            <Activity snapshot={s} />
+          </Dock>
+          <Dock
+            id="notes"
+            title="About this experiment"
+            className="notes-dock"
+            open={notesOpen}
+            toggle={() => setNotesOpen(!notesOpen)}
+          >
+            <DiagramNotes snapshot={s} />
+            <a
+              className="source-link"
+              href="https://github.com/subuk/timeout-lab"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub ↗
+            </a>
+          </Dock>
+          <Dock
+            id="traces"
+            title="End-to-end traces"
+            className="traces-dock"
+            open={tracesOpen}
+            toggle={() => setTracesOpen(!tracesOpen)}
+          >
+            <Traces
+              key={`traces-${engine.epoch}`}
+              snapshot={s}
+              onTraceChange={setSelectedTrace}
+            />
+          </Dock>
+          <SettingsWindow
+            open={settings !== null}
+            label={t(settings === "generator" ? "Generator" : "Box settings")}
+            close={() => setSettings(null)}
+          >
+            <div hidden={settings !== "generator"}>
               <Generator
                 key={`generator-${preset}`}
                 config={s.config}
                 manual={s.manualMode}
                 running={s.focusRunning}
                 focus={s.focus}
+                onRequestError={() => setSettings("generator")}
               />
-              <div className="center-column">
-                <Topology
-                  key={`topology-${engine.epoch}`}
-                  snapshot={s}
-                  trace={selectedTrace}
-                  selection={selection}
-                  select={select}
-                  edit={() => setEditor({})}
-                />
-                <Activity snapshot={s} />
-                <Traces
-                  key={`traces-${engine.epoch}`}
-                  snapshot={s}
-                  onTraceChange={setSelectedTrace}
-                />
-              </div>
+            </div>
+            <div hidden={settings !== "box"}>
               <Inspector
                 key={`${engine.epoch}/${selection.node}/${selection.resource}/${selection.scope}`}
                 snapshot={s}
                 selection={selection}
-                select={select}
+                select={selectBox}
                 edit={(group) => setEditor({ group })}
               />
             </div>
-            <footer>
-              <button id="export" onClick={download}>
-                {t("Export JSON")}
-              </button>
-              <span>{name(s.config)}</span>
-            </footer>
-            {editor && (
-              <ModelEditor
-                config={s.config}
-                group={editor.group}
-                close={() => setEditor(null)}
-              />
-            )}
-          </>
-        )}
-      </main>
+          </SettingsWindow>
+          {editor && (
+            <ModelEditor
+              config={s.config}
+              group={editor.group}
+              close={() => setEditor(null)}
+            />
+          )}
+        </>
+      ) : (
+        <div className="topology-loading">{t("Loading engine…")}</div>
+      )}
       {info && <ModelHelp close={() => setInfo(false)} />}
-    </>
+    </main>
   );
 }

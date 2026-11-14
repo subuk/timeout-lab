@@ -340,6 +340,23 @@ const english = {
 };
 
 const russian = {
+  "Scenario": "Сценарий",
+  "System canvas": "Холст системы",
+  "Canvas navigation": "Навигация по холсту",
+  "Zoom in": "Приблизить",
+  "Zoom out": "Отдалить",
+  "Zoom": "Масштаб",
+  "Fit diagram": "Показать всю схему",
+  "About this experiment": "Об эксперименте",
+  "Box settings": "Настройки ящика",
+  "Close settings": "Закрыть настройки",
+  "Entry": "Вход",
+  "request": "запрос",
+  "req/s": "запр/с",
+  "requests": "запросов",
+  "Latency · p95": "Задержка · p95",
+  "Drag the background or scroll to pan. Use +/−, pinch, or Ctrl/Command + scroll to zoom. Fit diagram restores the view.": "Перетаскивайте фон или прокручивайте для перемещения. Масштаб меняется кнопками +/−, жестом двумя пальцами или Ctrl/Command + прокруткой. «Показать всю схему» восстанавливает обзор.",
+
   "Box": "Ящик",
   "Configuration": "Конфигурация",
   "Remove": "Удалить",

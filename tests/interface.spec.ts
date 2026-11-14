@@ -14,6 +14,11 @@ async function ready(page: Page, url = "/") {
   await page.goto(url);
   await expect(page.locator("#groups .box").first()).toBeVisible();
   await expect(page.locator("#clock")).not.toHaveText("00:00.0");
+  await page
+    .locator(
+      `[data-node="${url.includes("numa") ? "cpu-1" : "db-1"}"] .node-select`,
+    )
+    .click();
 }
 async function pause(page: Page) {
   if ((await page.locator("#pause").textContent()) === "Ⅱ Pause")
@@ -45,9 +50,7 @@ test("live settings, drafts, selection and localization preserve virtual time", 
   expect(config.overrides["db-1"].workers).toBe(37);
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.locator("#language").selectOption("ru");
-  await expect(page.locator("h1")).toHaveText(
-    "Как система ведёт себя под нагрузкой",
-  );
+  await expect(page.locator("html")).toHaveAttribute("lang", "ru-RU");
   await expect(page.locator("#clock")).toHaveText(time!);
   await expect(page.locator("#workers")).toHaveValue("37");
   expect(JSON.parse(await (await json(page)).inputValue())).toEqual(config);
@@ -68,6 +71,7 @@ test("manual request, trace focus, invalid import and structural restart", async
   page,
 }) => {
   await ready(page);
+  await page.locator("#generator-node").click();
   await page.locator("#request-mode").selectOption("single");
   await page.locator("#reset").click();
   await expect(page.locator("#clock")).toHaveText("00:00.0");
@@ -102,7 +106,7 @@ test("manual request, trace focus, invalid import and structural restart", async
 });
 test("preset deep links, back navigation and all presets", async ({ page }) => {
   await ready(page, "/#template=numa");
-  await expect(page.locator('[data-scenario="numa"]')).toHaveClass("active");
+  await expect(page.locator("#preset")).toHaveValue("numa");
   await expect(page.locator("#rps")).toHaveValue("30");
   for (const id of [
     "normal",
@@ -113,47 +117,62 @@ test("preset deep links, back navigation and all presets", async ({ page }) => {
     "az",
     "composition",
   ]) {
-    await page.locator(`[data-scenario="${id}"]`).click();
-    await expect(page.locator(`[data-scenario="${id}"]`)).toHaveClass("active");
+    await page.locator("#preset").selectOption(id);
+    await expect(page.locator("#preset")).toHaveValue(id);
     await expect(page.locator("#groups .box").first()).toBeVisible();
     await expect(page.locator("#rps")).toHaveValue("30");
   }
   await page.goBack();
-  await expect(page.locator('[data-scenario="az"]')).toHaveClass("active");
+  await expect(page.locator("#preset")).toHaveValue("az");
   await page.reload();
-  await expect(page.locator('[data-scenario="az"]')).toHaveClass("active");
+  await expect(page.locator("#preset")).toHaveValue("az");
 });
-test("manual deadline inherits each preset and keeps edits during updates", async ({ page }) => {
+test("manual deadline inherits each preset and keeps edits during updates", async ({
+  page,
+}) => {
   await ready(page);
+  await page.locator("#generator-node").click();
   await page.locator("#request-mode").selectOption("single");
   await expect(page.locator("#single-deadline")).toHaveValue("20000");
-  await page.locator('[data-scenario="composition"]').click();
+  await page.locator("#preset").selectOption("composition");
   await expect(page.locator("#single-deadline")).toHaveValue("8000");
   await page.locator("#single-deadline").fill("1234");
   await page.locator("#single-deadline").blur();
   await page.locator("#language").selectOption("ru");
   await expect(page.locator("#single-deadline")).toHaveValue("1234");
-  await page.locator('[data-scenario="normal"]').click();
+  await page.locator("#preset").selectOption("normal");
   await expect(page.locator("#single-deadline")).toHaveValue("20000");
 });
-test("preset descriptions share one location and follow imported JSON and language", async ({ page }) => {
+test("preset descriptions share one location and follow imported JSON and language", async ({
+  page,
+}) => {
   await ready(page);
   await pause(page);
+  await page.locator("#close-settings").click();
+  await page.locator("#notes-toggle").click();
   const description = page.locator("#model-description");
-  for (const id of ["normal", "slow", "fanout", "hang", "autoscale", "composition", "az", "numa"]) {
+  for (const id of [
+    "normal",
+    "slow",
+    "fanout",
+    "hang",
+    "autoscale",
+    "composition",
+    "az",
+    "numa",
+  ]) {
     const previous = await description.textContent();
-    await page.locator(`[data-scenario="${id}"]`).click();
+    await page.locator("#preset").selectOption(id);
     if (id !== "normal") await expect(description).not.toHaveText(previous!);
     const config = JSON.parse(await (await json(page)).inputValue());
     await page.getByRole("button", { name: "Close", exact: true }).click();
     expect(config.description).toBeTruthy();
     expect(config.i18n.ru.description).toBeTruthy();
     await expect(description).toHaveText(config.description);
-    await expect(page.locator(".scenario-bar + #model-description")).toHaveCount(1);
-    await expect(page.locator(".scenario-explanation")).toHaveCount(0);
-    const box = await description.boundingBox();
-    const metrics = await page.locator(".metrics").boundingBox();
-    expect(box!.y + box!.height).toBeLessThanOrEqual(metrics!.y);
+    await expect(description).toHaveCount(1);
+    await expect(page.locator("#notes-content")).toContainText(
+      config.description,
+    );
     const time = await page.locator("#clock").textContent();
     await page.locator("#language").selectOption("ru");
     await expect(description).toHaveText(config.i18n.ru.description);
@@ -171,7 +190,9 @@ test("preset descriptions share one location and follow imported JSON and langua
   await page.locator("#language").selectOption("ru");
   await expect(description).toHaveText(config.description);
   await page.locator("#language").selectOption("en");
-  expect(JSON.parse(await (await json(page)).inputValue()).description).toBe(config.description);
+  expect(JSON.parse(await (await json(page)).inputValue()).description).toBe(
+    config.description,
+  );
   delete config.description;
   await area.fill(JSON.stringify(config));
   await page.locator("#apply-config").click();
@@ -187,6 +208,7 @@ test("standalone loads from file without external requests", async ({
   });
   await ready(page, "file://" + resolve("dist/standalone.html"));
   await expect(page.locator("#rps")).toHaveValue("30");
+  await page.locator("#generator-node").click();
   await page.locator("#request-mode").selectOption("single");
   await page.locator("#send-request").click();
   await expect(page.locator("#trace-events tbody tr").first()).toBeVisible();
@@ -378,6 +400,7 @@ test("trace selection, call hierarchy and event units survive snapshots and loca
   page,
 }) => {
   await ready(page);
+  await page.locator("#generator-node").click();
   await page.locator("#request-mode").selectOption("single");
   await page.locator("#reset").click();
   await expect(page.locator("#trace-list button")).toHaveCount(0);
@@ -411,7 +434,9 @@ test("trace selection, call hierarchy and event units survive snapshots and loca
   await expect(page.locator(".trace-legend")).toContainText(
     "Network / connect",
   );
-  await expect(page.locator("#trace-events")).toContainText("Budget: 20,000 ms");
+  await expect(page.locator("#trace-events")).toContainText(
+    "Budget: 20,000 ms",
+  );
   await expect(page.locator("#trace-events")).toContainText("Queue depth: 1");
   await expect(page.locator("#trace-events")).toContainText("Budget: 0 ms");
   await expect(page.locator("#trace-events")).toContainText(
@@ -461,6 +486,7 @@ test("trace timing separates the user deadline from continuing box work", async 
   page,
 }) => {
   await ready(page);
+  await page.locator("#generator-node").click();
   await page.locator("#request-mode").selectOption("single");
   const area = await json(page);
   const config = JSON.parse(await area.inputValue());

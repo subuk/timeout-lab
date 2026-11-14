@@ -18,22 +18,23 @@ for (const standalone of [false, true]) {
       await expect(page.locator("#clock")).not.toHaveText("00:00.0");
       await page.locator("#pause").click();
       await expect(page.locator("#live-state")).toHaveClass(/paused/);
+      await page.locator('[data-node="db-1"] .node-select').click();
       await page.locator("#workers").fill("37");
       await page.locator("#workers").blur();
       const time = await page.locator("#clock").textContent();
       const trigger = page.locator("#model-info");
       const dialog = page.getByRole("dialog", {
-        name: (await trigger.textContent())!,
+        name: (await trigger.getAttribute("aria-label"))!,
         exact: true,
       });
-      const before = await page.locator(".scenario-bar").boundingBox();
+      const before = await page.locator(".lab-toolbar").boundingBox();
       await trigger.click();
       await expect(dialog).toBeVisible();
       expect(await dialog.evaluate((node) => node.matches(":modal"))).toBe(
         true,
       );
       await expect(page.locator("#model-help-title")).toBeFocused();
-      expect(await page.locator(".scenario-bar").boundingBox()).toEqual(before);
+      expect(await page.locator(".lab-toolbar").boundingBox()).toEqual(before);
       if (language === "ru") {
         await expect(dialog.locator("#model-help-intro")).toContainText(
           /[А-Яа-я]/,

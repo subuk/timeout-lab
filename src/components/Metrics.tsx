@@ -17,7 +17,7 @@ export function Metrics({ snapshot: s }: { snapshot: Snapshot }) {
             <strong id={["goodput", "p95", "error-rate", "pending"][i]}>
               {value}
             </strong>
-            <small>{unit}</small>
+            <small>{t(unit)}</small>
           </div>
           <Sparkline
             values={(s.history || []).map(

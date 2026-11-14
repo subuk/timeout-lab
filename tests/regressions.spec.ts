@@ -31,6 +31,13 @@ async function ready(page: Page, preset = "normal") {
   await page.goto(`/#template=${preset}`);
   await expect(page.locator("#clock")).not.toHaveText("00:00.0");
   await expect(page.locator(".box").first()).toBeVisible();
+  const target =
+    preset === "numa"
+      ? "cpu-1"
+      : ["composition", "autoscale"].includes(preset)
+        ? "api-1"
+        : "db-1";
+  await page.locator(`[data-node="${target}"] .node-select`).click();
 }
 async function pause(page: Page) {
   if ((await page.locator("#pause").textContent())?.includes("Pause"))
@@ -174,11 +181,11 @@ test("preset selection follows the new model and back navigation resets only onc
   page,
 }) => {
   await ready(page, "numa");
-  await page.locator('[data-scenario="slow"]').click();
+  await page.locator("#preset").selectOption("slow");
   await expect(page.locator("#selected-id")).toHaveText("db-1/~storage");
-  await page.locator('[data-scenario="numa"]').click();
+  await page.locator("#preset").selectOption("numa");
   await expect(page.locator("#selected-id")).toHaveText("cpu-1");
-  await page.locator('[data-scenario="autoscale"]').click();
+  await page.locator("#preset").selectOption("autoscale");
   await expect(page.locator("#selected-id")).toHaveText("api");
   await page.evaluate(() => {
     window.audit.commands = [];
@@ -197,6 +204,7 @@ test("draining nodes keep accepted work and accept worker and duration edits", a
   page,
 }) => {
   await ready(page);
+  await page.locator("#generator-node").click();
   await page.locator("#cancel").click();
   await expect(page.locator("#cancel")).not.toBeChecked();
   await page.locator('[data-node="api-4"] .node-select').click();
@@ -227,6 +235,7 @@ test("bounds and autoscale integer limits keep invalid drafts without sending co
   await page.evaluate(() => {
     window.audit.commands = [];
   });
+  await page.locator("#generator-node").click();
   await number(page, "#rps", "5000");
   await expect(page.locator("#rps")).toHaveAttribute("aria-invalid", "true");
   await expect(page.locator("#rps")).toHaveValue("5000");
@@ -235,6 +244,7 @@ test("bounds and autoscale integer limits keep invalid drafts without sending co
     "aria-invalid",
     "true",
   );
+  await page.locator('[data-node="api-1"] .node-select').click();
   const min = page
     .locator("#auto-controls")
     .getByRole("spinbutton", { name: "Minimum", exact: true });
@@ -248,6 +258,7 @@ test("bounds and autoscale integer limits keep invalid drafts without sending co
   ).toBe(0);
   await expect(page.locator(".auto-readings")).toContainText("Queue per node");
   await expect(page.locator(".auto-readings")).toContainText("Target");
+  await page.locator("#generator-node").click();
   await number(page, "#rps", "250");
   await expect
     .poll(() => page.evaluate(() => window.audit.snapshot.config.rps))
@@ -267,6 +278,7 @@ test("manual status, connection failures and per-call resource expansion are exp
   page,
 }) => {
   await ready(page);
+  await page.locator("#generator-node").click();
   await page.locator("#request-mode").selectOption("single");
   await page.locator("#reset").click();
   await expect(page.locator("#clock")).toHaveText("00:00.0");
@@ -421,6 +433,7 @@ test("locality edits respect scope, preserve overrides, and do not reset virtual
     )
     .toBe("group");
   await expect(page.locator("#workers")).toHaveValue("37");
+  await page.locator("#generator-node").click();
   await page.locator("#request-locality > summary").click();
   const requestLabels = page.locator("#request-locality textarea");
   await requestLabels.fill("rack=request");
@@ -444,5 +457,6 @@ test("locality edits respect scope, preserve overrides, and do not reset virtual
     .toEqual({ labels: { rack: "request" }, percent: 50, source: "request" });
   await expect(page.locator("#clock")).toHaveText(time!);
   await expect(page.locator(".sparkline")).toHaveCount(4);
+  await page.locator("#notes-toggle").click();
   await expect(page.locator(".diagram-legend")).toBeVisible();
 });

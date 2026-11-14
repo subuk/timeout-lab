@@ -9,11 +9,13 @@ export const Generator = memo(function Generator({
   manual,
   running,
   focus,
+  onRequestError,
 }: {
   config: Config;
   manual: boolean;
   running: boolean;
   focus?: Trace;
+  onRequestError: () => void;
 }) {
   useLocale();
   const [weight, setWeight] = useState(1),
@@ -45,8 +47,14 @@ export const Generator = memo(function Generator({
         {manual && (
           <form
             id="single-request"
+            onInvalidCapture={onRequestError}
             onSubmit={(e) => {
               e.preventDefault();
+              if (e.currentTarget.querySelector('[aria-invalid="true"]')) {
+                setError(t("Correct the highlighted fields before applying."));
+                onRequestError();
+                return;
+              }
               try {
                 const entries = labels
                   .split("\n")
@@ -67,9 +75,13 @@ export const Generator = memo(function Generator({
                     deadline,
                     labels: Object.fromEntries(entries),
                   },
-                }).catch((e) => setError(e.message));
+                }).catch((e) => {
+                  setError(e.message);
+                  onRequestError();
+                });
               } catch (e) {
                 setError(String(e));
+                onRequestError();
               }
             }}
           >

@@ -1,8 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Snapshot, Group, NodeView, Trace } from "../model";
 import { aggregate, outgoing, resources } from "../model-utils";
-import { fmt, name, t } from "../locale";
-import { Panel } from "./Fields";
+import { fmt, name, t, I18n } from "../locale";
 export interface Selection {
   node: string;
   resource: string;
@@ -13,55 +12,69 @@ export function Topology({
   trace,
   selection,
   select,
-  edit,
+  generatorSelected,
+  openGenerator,
+  active,
 }: {
   snapshot: Snapshot;
   trace: Trace | null;
   selection: Selection;
   select: (s: Selection) => void;
-  edit: () => void;
+  generatorSelected: boolean;
+  openGenerator: () => void;
+  active: boolean;
 }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const root = useRef<HTMLDivElement>(null);
   const [paths, setPaths] = useState<string[]>([]);
-  const bottleneck = [...s.nodes, ...(s.resources || [])]
-    .filter((n) => !n.retired)
-    .sort((a, b) => b.queue - a.queue || b.utilization - a.utilization)[0];
   // Measure only topology/layout changes; metrics do not rebuild SVG geometry.
   const layout = JSON.stringify([
     s.config.groups.map((g) => [g.id, g.count, name(g), outgoing(g)]),
     s.nodes.map((n) => [n.id, n.retired, n.draining]),
     collapsed,
+    s.config.entry,
+    s.manualMode,
   ]);
   useLayoutEffect(() => {
     const el = root.current;
     if (!el) return;
     const measure = () => {
       const rect = el.getBoundingClientRect();
+      const scale = rect.width / el.offsetWidth;
       const groups = new Map(
-        Array.from(el.querySelectorAll<HTMLElement>("[data-group]")).map(
-          (e) => [e.dataset.group, e.getBoundingClientRect()],
+        Array.from(el.querySelectorAll<HTMLElement>("[data-endpoint]")).map(
+          (e) => [e.dataset.endpoint, e.getBoundingClientRect()],
         ),
       );
-      setPaths(
-        s.config.groups.flatMap((g) =>
-          outgoing(g).flatMap((call) => {
-            const a = groups.get(g.id),
-              b = groups.get(call.target);
-            if (!a || !b) return [];
-            const x = a.right - rect.left + el.scrollLeft,
-              y = a.top + a.height / 2 - rect.top,
-              xx = b.left - rect.left + el.scrollLeft,
-              yy = b.top + b.height / 2 - rect.top;
-            return [`M${x},${y} C${x + 25},${y} ${xx - 25},${yy} ${xx},${yy}`];
-          }),
+      const connections = [
+        { from: "generator", to: `group:${s.config.entry}` },
+        ...s.config.groups.flatMap((g) =>
+          outgoing(g).map((call) => ({
+            from: `group:${g.id}`,
+            to: `group:${call.target}`,
+          })),
         ),
+      ];
+      setPaths(
+        connections.flatMap(({ from, to }) => {
+          const a = groups.get(from),
+            b = groups.get(to);
+          if (!a || !b) return [];
+          const x = (a.right - rect.left) / scale,
+            y = (a.top + a.height / 2 - rect.top) / scale,
+            xx = (b.left - rect.left) / scale,
+            yy = (b.top + b.height / 2 - rect.top) / scale;
+          const bend = Math.max(32, Math.abs(xx - x) / 2);
+          return [
+            `M${x},${y} C${x + bend},${y} ${xx - bend},${yy} ${xx},${yy}`,
+          ];
+        }),
       );
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
-    el.querySelectorAll("[data-group]").forEach((e) => observer.observe(e));
+    el.querySelectorAll("[data-endpoint]").forEach((e) => observer.observe(e));
     return () => observer.disconnect();
   }, [layout]);
   function bars(g: Group, n: NodeView, all = false) {
@@ -83,6 +96,7 @@ export function Topology({
               title={`${name(r.box)} · ${t("Utilization")}: ${fmt(v.utilization, 1)}% · ${t("Queue")}: ${v.queue} · ${t("Time inside this box")}: ${fmt(v.w, 1)} ms`}
               className={`resource-bar ${v.utilization > 80 ? "hot" : ""}`}
               aria-pressed={
+                active &&
                 selection.resource === r.path &&
                 (selection.scope === "group"
                   ? s.nodes.find((v) => v.id === selection.node)?.group === g.id
@@ -114,104 +128,119 @@ export function Topology({
     );
   }
   return (
-    <Panel
-      title="System of boxes"
-      action={
-        <button id="edit-config" onClick={edit}>
-          {"{ } " + t("Configuration")}
-        </button>
-      }
-    >
-      <div className="panel-head">
-        <p>{name(s.config)}</p>
-      </div>
-      <div
-        id="topology"
-        className="topology"
-        ref={root}
-        style={{ overflowX: "auto" }}
-      >
-        <svg
-          id="wires"
-          style={{ width: Math.max(0, root.current?.scrollWidth || 0) }}
-          aria-hidden="true"
+    <div id="topology" className="topology" ref={root}>
+      <svg id="wires" aria-hidden="true">
+        <defs>
+          <marker
+            id="arrow"
+            viewBox="0 0 10 10"
+            refX="8"
+            refY="5"
+            markerWidth="4"
+            markerHeight="4"
+            orient="auto"
+          >
+            <path d="M0 0 L10 5 L0 10Z" fill="#a9b8d3" />
+          </marker>
+        </defs>
+        {paths.map((d, i) => (
+          <path key={i} d={d} markerEnd="url(#arrow)" />
+        ))}
+      </svg>
+      <div id="groups">
+        <section
+          className={`generator-node ${generatorSelected ? "selected" : ""}`}
+          data-endpoint="generator"
         >
-          <defs>
-            <marker
-              id="arrow"
-              viewBox="0 0 10 10"
-              refX="8"
-              refY="5"
-              markerWidth="4"
-              markerHeight="4"
-              orient="auto"
+          <button
+            id="generator-node"
+            className="generator-select"
+            onClick={openGenerator}
+            aria-pressed={generatorSelected}
+          >
+            <span className="generator-symbol" aria-hidden="true">
+              ↗
+            </span>
+            <span className="generator-title">{t("Generator")}</span>
+            <span className="generator-value">
+              {s.manualMode ? "1" : fmt(s.config.rps)}{" "}
+              <small>{t(s.manualMode ? "request" : "req/s")}</small>
+            </span>
+            <span className="generator-mode">
+              {t(s.manualMode ? "Single request" : "Continuous load")}
+            </span>
+          </button>
+          {s.manualMode && (
+            <button
+              id="canvas-send-request"
+              className="generator-send"
+              disabled={s.focusRunning}
+              type="submit"
+              form="single-request"
             >
-              <path d="M0 0 L10 5 L0 10Z" fill="#a9b8d3" />
-            </marker>
-          </defs>
-          {paths.map((d, i) => (
-            <path key={i} d={d} markerEnd="url(#arrow)" />
-          ))}
-        </svg>
-        <div
-          id="groups"
-          style={{
-            minWidth:
-              s.config.groups.length > 3
-                ? s.config.groups.length * 180
-                : undefined,
-          }}
-        >
-          {s.config.groups.map((g) => {
-            const nodes = s.nodes.filter((n) => n.group === g.id && !n.retired),
-              fold = collapsed[g.id] ?? nodes.length > 6;
-            return (
-              <section
-                className="group"
-                data-group={g.id}
-                key={g.id}
-                style={{ width: `${100 / s.config.groups.length}%` }}
-              >
-                <div className="group-title">
+              {t("Send one request →")}
+            </button>
+          )}
+        </section>
+        {s.config.groups.map((g) => {
+          const nodes = s.nodes.filter((n) => n.group === g.id && !n.retired),
+            fold = collapsed[g.id] ?? nodes.length > 6;
+          return (
+            <section
+              className={`group ${!fold && nodes.length >= 4 ? "group-wide" : ""}`}
+              data-group={g.id}
+              data-endpoint={`group:${g.id}`}
+              key={g.id}
+            >
+              <div className="group-title">
+                <button
+                  className="group-heading"
+                  disabled={!nodes.length}
+                  onClick={() =>
+                    nodes[0] &&
+                    select({ node: nodes[0].id, resource: "", scope: "group" })
+                  }
+                >
                   {name(g)}
-                  <span>
-                    {g.id === s.config.entry ? "ENTRY · " : ""}×{g.count}
-                  </span>
+                </button>
+                <span>
+                  {g.id === s.config.entry ? `${t("Entry")} · ` : ""}×{g.count}
+                </span>
+                <button
+                  className="group-toggle"
+                  aria-label={t(fold ? "Show nodes" : "Collapse group")}
+                  onClick={() => setCollapsed({ ...collapsed, [g.id]: !fold })}
+                >
+                  {fold ? "＋" : "−"}
+                </button>
+              </div>
+              {fold && nodes[0] ? (
+                <div
+                  className={`group-summary ${active && selection.scope === "group" && nodes.some((n) => n.id === selection.node) ? "selected" : ""}`}
+                  onClick={() =>
+                    select({
+                      node: nodes[0].id,
+                      resource: "",
+                      scope: "group",
+                    })
+                  }
+                >
                   <button
-                    className="group-toggle"
-                    aria-label={t(fold ? "Show nodes" : "Collapse group")}
-                    onClick={() =>
-                      setCollapsed({ ...collapsed, [g.id]: !fold })
+                    className="group-select"
+                    aria-pressed={
+                      active &&
+                      selection.scope === "group" &&
+                      nodes.some((n) => n.id === selection.node)
                     }
                   >
-                    {fold ? "＋" : "−"}
+                    {name(g)} ×{g.count}
                   </button>
+                  <p>Q {aggregate(nodes).queue}</p>
+                  {bars(g, nodes[0], true)}
                 </div>
-                {fold && nodes[0] ? (
-                  <div
-                    className={`group-summary ${selection.scope === "group" && nodes.some((n) => n.id === selection.node) ? "selected" : ""}`}
-                    onClick={() =>
-                      select({
-                        node: nodes[0].id,
-                        resource: "",
-                        scope: "group",
-                      })
-                    }
-                  >
-                    <button
-                      className="group-select"
-                      aria-pressed={
-                        selection.scope === "group" &&
-                        nodes.some((n) => n.id === selection.node)
-                      }
-                    >
-                      {name(g)} ×{g.count}
-                    </button>
-                    <p>Q {aggregate(nodes).queue}</p>
-                    {bars(g, nodes[0], true)}
-                  </div>
-                ) : (
-                  nodes.map((n) => (
+              ) : (
+                <div className="group-instances">
+                  {nodes.map((n) => (
                     <div
                       key={n.id}
                       data-node={n.id}
@@ -223,15 +252,16 @@ export function Topology({
                           scope: selection.scope,
                         })
                       }
-                      className={`box ${n.state !== "healthy" ? "unhealthy" : ""} ${n.draining ? "draining" : ""} ${(selection.scope === "group" ? s.nodes.find((v) => v.id === selection.node)?.group === n.group : selection.node === n.id) ? "selected" : ""} ${s.manualMode && trace?.manual && trace.spans.some((span) => span.node === n.id) ? "trace-path" : ""}`}
+                      className={`box ${n.state !== "healthy" ? "unhealthy" : ""} ${n.draining ? "draining" : ""} ${active && (selection.scope === "group" ? s.nodes.find((v) => v.id === selection.node)?.group === n.group : selection.node === n.id) ? "selected" : ""} ${s.manualMode && trace?.manual && trace.spans.some((span) => span.node === n.id) ? "trace-path" : ""}`}
                     >
                       <button
                         className="node-select"
                         aria-pressed={
-                          selection.scope === "group"
+                          active &&
+                          (selection.scope === "group"
                             ? s.nodes.find((v) => v.id === selection.node)
                                 ?.group === n.group
-                            : selection.node === n.id
+                            : selection.node === n.id)
                         }
                       >
                         <div className="box-title">
@@ -290,43 +320,53 @@ export function Topology({
                       </div>
                       {bars(g, n)}
                     </div>
-                  ))
-                )}
-                <div className="group-foot">
-                  <details className="execution-plan">
-                    <summary>{t("Execution plan")}</summary>
-                    {[{ path: "", box: g }, ...resources(g)].map(
-                      ({ path, box }) => (
-                        <div key={path}>
-                          <b>{name(box)}</b>
-                          {box.stages.map((stage, i) => (
-                            <p key={i}>
-                              {i + 1}.{" "}
-                              {stage.calls
-                                .map(
-                                  (c) =>
-                                    `→ ${c.target || c.resource} ×${c.calls} · ${t(c.route)} · ${t(c.transport)}`,
-                                )
-                                .join(" + ")}{" "}
-                              · {t(stage.join)}
-                              {stage.join === "quorum"
-                                ? ` ${stage.quorum}`
-                                : ""}
-                            </p>
-                          ))}
-                          {!box.stages.length && (
-                            <p>{t("return response ↩")}</p>
-                          )}
-                        </div>
-                      ),
-                    )}
-                  </details>
+                  ))}
                 </div>
-              </section>
-            );
-          })}
-        </div>
+              )}
+              <div className="group-foot">
+                <details className="execution-plan">
+                  <summary>{t("Execution plan")}</summary>
+                  {[{ path: "", box: g }, ...resources(g)].map(
+                    ({ path, box }) => (
+                      <div key={path}>
+                        <b>{name(box)}</b>
+                        {box.stages.map((stage, i) => (
+                          <p key={i}>
+                            {i + 1}.{" "}
+                            {stage.calls
+                              .map(
+                                (c) =>
+                                  `→ ${c.target || c.resource} ×${c.calls} · ${t(c.route)} · ${t(c.transport)}`,
+                              )
+                              .join(" + ")}{" "}
+                            · {t(stage.join)}
+                            {stage.join === "quorum" ? ` ${stage.quorum}` : ""}
+                          </p>
+                        ))}
+                        {!box.stages.length && <p>{t("return response ↩")}</p>}
+                      </div>
+                    ),
+                  )}
+                </details>
+              </div>
+            </section>
+          );
+        })}
       </div>
+    </div>
+  );
+}
+
+export function DiagramNotes({ snapshot: s }: { snapshot: Snapshot }) {
+  const bottleneck = [...s.nodes, ...(s.resources || [])]
+    .filter((n) => !n.retired)
+    .sort((a, b) => b.queue - a.queue || b.utilization - a.utilization)[0];
+  return (
+    <>
+      <p className="model-name">{name(s.config)}</p>
+      {I18n.description(s.config) && (
+        <p id="model-description">{I18n.description(s.config)}</p>
+      )}
       <div className="diagram-legend">
         <span>
           <i className="dot trace-local" />
@@ -367,6 +407,11 @@ export function Topology({
           )}
         </p>
       </div>
-    </Panel>
+      <p className="canvas-hint">
+        {t(
+          "Drag the background or scroll to pan. Use +/−, pinch, or Ctrl/Command + scroll to zoom. Fit diagram restores the view.",
+        )}
+      </p>
+    </>
   );
 }

@@ -72,7 +72,7 @@ func TestProgramsMustBeExplicit(t *testing.T) {
 }
 
 func TestEveryPresetExportsOnlyExplicitPrograms(t *testing.T) {
-	for _, id := range []string{"normal", "slow", "fanout", "hang", "autoscale", "az", "numa", "composition"} {
+	for _, id := range []string{"normal", "slow", "fanout", "hang", "autoscale", "az", "numa", "composition", "lamp"} {
 		c, err := PresetConfig(id)
 		if err != nil {
 			t.Fatal(err)

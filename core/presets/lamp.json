@@ -1,0 +1,530 @@
+{
+  "version": 2,
+  "description": "Illustrative Linux server: 2 CPUs x 4 cores, 16 GiB, 1 GbE, NVMe. RAM: 6 GiB InnoDB, 2 OS+Apache, 2 page cache, 2 PHP baseline, 3 transient request budget, 1 spare. Shared CPU quanta: 2 ms. 80% SELECT, 20% UPDATE+COMMIT. cache=cold adds one disk read per SQL. RAM holds 64 MiB per active PHP request. DB client slots are an application admission limit, not a stock PHP shared pool. Redo commits serialized for this experiment. NIC and DRAM are abstract queues; no NUMA, packet, swap or consistency emulation.",
+  "i18n": {
+    "ru": {
+      "name": "Один сервер: Apache + PHP-FPM + MySQL",
+      "description": "Иллюстративный Linux-сервер: 2 процессора × 4 ядра, 16 GiB RAM, 1 GbE, NVMe. RAM: 6 GiB InnoDB, 2 ОС+Apache, 2 страничный кеш, 2 базовая память PHP, 3 бюджет активных запросов, 1 резерв. Общий CPU работает квантами по 2 мс. 80% SELECT, 20% UPDATE+COMMIT. Метка cache=cold добавляет одно чтение диска на SQL-запрос. Каждый активный PHP-запрос удерживает 64 MiB RAM. Слоты SQL-соединений — лимит допуска приложения, а не штатный общий пул PHP. Фиксации redo в этом эксперименте последовательны. Сетевая карта и DRAM — абстрактные очереди; NUMA, пакеты, swap и согласованность не моделируются."
+    }
+  },
+  "requestLabels": {
+    "cache": "warm"
+  },
+  "requestTag": {
+    "key": "op",
+    "a": "read",
+    "b": "write",
+    "percent": 80
+  },
+  "name": "One server: Apache + PHP-FPM + MySQL",
+  "entry": "server",
+  "rps": 120,
+  "weight": 1,
+  "spread": 0,
+  "network": 5,
+  "jitter": 0,
+  "deadline": 2500,
+  "cancel": true,
+  "client": {
+    "keepalive": true,
+    "keepaliveTimeout": 30000,
+    "connectTimeout": 200
+  },
+  "seed": 42,
+  "groups": [
+    {
+      "keepalive": true,
+      "keepaliveTimeout": 30000,
+      "i18n": {
+        "ru": {
+          "name": "Linux-сервер: 256 активных запросов"
+        }
+      },
+      "resources": [
+        {
+          "i18n": {
+            "ru": {
+              "name": "CPU: 2 процессора × 4 ядра"
+            }
+          },
+          "id": "cpu",
+          "name": "CPU: 2 sockets x 4 cores",
+          "scope": "instance",
+          "workers": 8,
+          "service": 2,
+          "queueLimit": 512,
+          "stages": []
+        },
+        {
+          "i18n": {
+            "ru": {
+              "name": "Шина RAM: 2 канала"
+            }
+          },
+          "id": "membus",
+          "name": "DRAM bus: 2 channels",
+          "scope": "instance",
+          "workers": 2,
+          "service": 0.2,
+          "queueLimit": 256,
+          "stages": []
+        },
+        {
+          "i18n": {
+            "ru": {
+              "name": "Сетевая карта: 1 GbE RX / TX"
+            }
+          },
+          "id": "nic",
+          "name": "NIC: 1 GbE RX / TX",
+          "scope": "instance",
+          "workers": 1,
+          "service": 0.25,
+          "queueLimit": 256,
+          "stages": []
+        },
+        {
+          "i18n": {
+            "ru": {
+              "name": "NVMe: 4 параллельных I/O"
+            }
+          },
+          "id": "nvme",
+          "name": "NVMe: 4 I/O slots",
+          "scope": "instance",
+          "workers": 4,
+          "service": 2,
+          "queueLimit": 256,
+          "stages": []
+        },
+        {
+          "i18n": {
+            "ru": {
+              "name": "Apache event: 4 процесса × 16 потоков"
+            }
+          },
+          "id": "apache",
+          "name": "Apache event: 4 processes x 16 threads",
+          "scope": "instance",
+          "workers": 64,
+          "service": 0,
+          "queueLimit": 128,
+          "stages": [
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "resource": "../php",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            }
+          ],
+          "timeout": 1500
+        },
+        {
+          "i18n": {
+            "ru": {
+              "name": "PHP-FPM: 32 рабочих процесса"
+            }
+          },
+          "id": "php",
+          "name": "PHP-FPM: 32 worker processes",
+          "scope": "instance",
+          "workers": 32,
+          "service": 0,
+          "queueLimit": 64,
+          "resources": [
+            {
+              "i18n": {
+                "ru": {
+                  "name": "Лимит приложения: 16 SQL-соединений"
+                }
+              },
+              "id": "dbpool",
+              "name": "DB client slots: 16 connections",
+              "scope": "instance",
+              "workers": 16,
+              "service": 0,
+              "queueLimit": 64,
+              "stages": [
+                {
+                  "calls": [
+                    {
+                      "resource": "../../mysql",
+                      "transport": "network",
+                      "calls": 1,
+                      "route": "round_robin",
+                      "network": 0
+                    }
+                  ],
+                  "join": "all"
+                }
+              ],
+              "timeout": 700
+            }
+          ],
+          "stages": [
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../ram",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            }
+          ],
+          "timeout": 1000
+        },
+        {
+          "i18n": {
+            "ru": {
+              "name": "RAM запросов: 48 × 64 MiB = 3 GiB"
+            }
+          },
+          "id": "ram",
+          "name": "Request RAM: 48 x 64 MiB = 3 GiB",
+          "scope": "instance",
+          "workers": 48,
+          "service": 0,
+          "queueLimit": 64,
+          "stages": [
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../membus",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 1000,
+                  "resource": "../php/dbpool",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../membus",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            }
+          ]
+        },
+        {
+          "i18n": {
+            "ru": {
+              "name": "mysqld: 24 активных SQL-запроса"
+            }
+          },
+          "id": "mysql",
+          "name": "mysqld: 24 active query slots",
+          "scope": "instance",
+          "workers": 24,
+          "service": 0,
+          "queueLimit": 64,
+          "resources": [
+            {
+              "i18n": {
+                "ru": {
+                  "name": "Redo flush: 1 слот фиксации"
+                }
+              },
+              "id": "commit",
+              "name": "Redo flush: 1 serialized commit slot",
+              "scope": "instance",
+              "workers": 1,
+              "service": 0,
+              "queueLimit": 128,
+              "stages": [
+                {
+                  "calls": [
+                    {
+                      "timeout": 0,
+                      "resource": "../../cpu",
+                      "transport": "ideal",
+                      "calls": 1,
+                      "route": "round_robin"
+                    }
+                  ],
+                  "join": "all"
+                },
+                {
+                  "calls": [
+                    {
+                      "timeout": 0,
+                      "resource": "../../nvme",
+                      "transport": "ideal",
+                      "calls": 1,
+                      "route": "round_robin"
+                    }
+                  ],
+                  "join": "all"
+                }
+              ]
+            }
+          ],
+          "stages": [
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../membus",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../nvme",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "when": {
+                "cache": "cold"
+              },
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "commit",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "when": {
+                "op": "write"
+              },
+              "join": "all"
+            },
+            {
+              "calls": [
+                {
+                  "timeout": 0,
+                  "resource": "../cpu",
+                  "transport": "ideal",
+                  "calls": 1,
+                  "route": "round_robin"
+                }
+              ],
+              "join": "all"
+            }
+          ],
+          "timeout": 500
+        }
+      ],
+      "stages": [
+        {
+          "calls": [
+            {
+              "timeout": 0,
+              "resource": "nic",
+              "transport": "ideal",
+              "calls": 1,
+              "route": "round_robin"
+            }
+          ],
+          "join": "all"
+        },
+        {
+          "calls": [
+            {
+              "timeout": 0,
+              "resource": "cpu",
+              "transport": "ideal",
+              "calls": 1,
+              "route": "round_robin"
+            }
+          ],
+          "join": "all"
+        },
+        {
+          "calls": [
+            {
+              "timeout": 0,
+              "resource": "apache",
+              "transport": "ideal",
+              "calls": 1,
+              "route": "round_robin"
+            }
+          ],
+          "join": "all"
+        },
+        {
+          "calls": [
+            {
+              "timeout": 0,
+              "resource": "cpu",
+              "transport": "ideal",
+              "calls": 1,
+              "route": "round_robin"
+            }
+          ],
+          "join": "all"
+        },
+        {
+          "calls": [
+            {
+              "timeout": 0,
+              "resource": "nic",
+              "transport": "ideal",
+              "calls": 1,
+              "route": "round_robin"
+            }
+          ],
+          "join": "all"
+        }
+      ],
+      "autoscale": {
+        "signal": "queue",
+        "upUtilization": 75,
+        "window": 5000,
+        "enabled": false,
+        "min": 1,
+        "max": 16,
+        "upQueue": 2,
+        "downUtilization": 30,
+        "upDelay": 2000,
+        "downDelay": 10000,
+        "cooldown": 5000
+      },
+      "retryConnect": false,
+      "id": "server",
+      "name": "Linux server: 256 admitted requests",
+      "count": 1,
+      "workers": 256,
+      "service": 0,
+      "timeout": 2200,
+      "connectTimeout": 100,
+      "queueLimit": 256
+    }
+  ]
+}

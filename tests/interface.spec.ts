@@ -116,16 +116,19 @@ test("preset deep links, back navigation and all presets", async ({ page }) => {
     "autoscale",
     "az",
     "composition",
+    "lamp",
   ]) {
     await page.locator("#preset").selectOption(id);
     await expect(page.locator("#preset")).toHaveValue(id);
     await expect(page.locator("#groups .box").first()).toBeVisible();
-    await expect(page.locator("#rps")).toHaveValue("30");
+    await expect(page.locator("#rps")).toHaveValue(
+      id === "lamp" ? "120" : "30",
+    );
   }
   await page.goBack();
-  await expect(page.locator("#preset")).toHaveValue("az");
+  await expect(page.locator("#preset")).toHaveValue("composition");
   await page.reload();
-  await expect(page.locator("#preset")).toHaveValue("az");
+  await expect(page.locator("#preset")).toHaveValue("composition");
 });
 test("manual deadline inherits each preset and keeps edits during updates", async ({
   page,
@@ -143,6 +146,47 @@ test("manual deadline inherits each preset and keeps edits during updates", asyn
   await page.locator("#preset").selectOption("normal");
   await expect(page.locator("#single-deadline")).toHaveValue("20000");
 });
+for (const url of [
+  "/#template=lamp",
+  "file://" + resolve("dist/standalone.html") + "#template=lamp",
+]) {
+  test(`LAMP preset loads, localizes and completes a request: ${url}`, async ({
+    page,
+  }) => {
+    await page.goto(url);
+    await expect(
+      page.locator('[data-node="server-1"] .node-select'),
+    ).toBeVisible();
+    await expect(page.locator("#preset")).toHaveValue("lamp");
+    await expect(page.locator("#rps")).toHaveValue("120");
+    await page.locator('[data-node="server-1"] .node-select').click();
+    await pause(page);
+    const config = JSON.parse(await (await json(page)).inputValue());
+    expect(config.deadline).toBe(2500);
+    expect(config.groups[0].resources).toHaveLength(8);
+    await page.getByRole("button", { name: "Close", exact: true }).click();
+    await page.locator("#language").selectOption("ru");
+    await expect(page.locator("#model-description")).toHaveText(
+      config.i18n.ru.description,
+    );
+    await page.locator("#language").selectOption("en");
+    expect(JSON.parse(await (await json(page)).inputValue())).toEqual(config);
+    await page.getByRole("button", { name: "Close", exact: true }).click();
+    await page.locator("#generator-node").click();
+    await page.locator("#request-mode").selectOption("single");
+    await page.locator("#reset").click();
+    await expect(page.locator("#single-deadline")).toHaveValue("2500");
+    await page.locator("#send-request").click();
+    await expect(page.locator("#send-request")).toBeEnabled();
+    await expect(page.locator(".trace-summary .result")).toHaveText("success");
+    await page.screenshot({
+      path: url.startsWith("file:")
+        ? "/tmp/tmlab-lamp-offline.png"
+        : "/tmp/tmlab-lamp.png",
+      fullPage: true,
+    });
+  });
+}
 test("preset descriptions share one location and follow imported JSON and language", async ({
   page,
 }) => {
@@ -160,6 +204,7 @@ test("preset descriptions share one location and follow imported JSON and langua
     "composition",
     "az",
     "numa",
+    "lamp",
   ]) {
     const previous = await description.textContent();
     await page.locator("#preset").selectOption(id);

@@ -24,6 +24,7 @@ const presets = [
   ["az", "Two zones"],
   ["numa", "NUMA"],
   ["composition", "Nested boxes"],
+  ["lamp", "LAMP server"],
 ];
 function fromURL() {
   if (new URLSearchParams(location.hash.slice(1)).has("model")) return "custom";
@@ -78,11 +79,13 @@ export function App() {
       node:
         id === "numa"
           ? "cpu-1"
-          : id === "az"
-            ? "lb-1"
-            : ["hang", "autoscale", "composition"].includes(id)
-              ? "api-1"
-              : "db-1",
+          : id === "lamp"
+            ? "server-1"
+            : id === "az"
+              ? "lb-1"
+              : ["hang", "autoscale", "composition"].includes(id)
+                ? "api-1"
+                : "db-1",
       resource: id === "slow" ? "storage" : "",
       scope: id === "autoscale" ? "group" : "node",
     };

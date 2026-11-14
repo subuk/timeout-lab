@@ -53,8 +53,8 @@ async function check(source, offline) {
     assert.equal(message.type,'error');assert.equal(message.requestId,99);assert.match(message.message,/unknown field/);
     send({type:'snapshot'});assert.equal(JSON.stringify(message.data),snapshot,'invalid import changed the experiment');
   }
-  for(const preset of ['normal','slow','fanout','hang','autoscale','az','numa','composition']){
-    send({type:'preset',preset});assert.equal(message.data.config.version,2);assert.equal(message.data.config.rps,30);
+  for(const preset of ['normal','slow','fanout','hang','autoscale','az','numa','composition','lamp']){
+    send({type:'preset',preset});assert.equal(message.data.config.version,2);assert.equal(message.data.config.rps,preset==='lamp'?120:30);
     const walk=box=>{assert.ok(Array.isArray(box.stages));assert.equal(box.edges,undefined);assert.equal(box.join,undefined);for(const stage of box.stages){assert.ok(stage.calls.length>0);assert.equal(stage.resource,undefined);assert.equal(stage.downstream,undefined);for(const call of stage.calls)assert.ok(['network','ideal'].includes(call.transport));}for(const child of box.resources||[])walk(child);};
     message.data.config.groups.forEach(walk);
   }

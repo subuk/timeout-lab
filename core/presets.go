@@ -1,13 +1,24 @@
 package core
 
 import (
+	_ "embed"
+	"encoding/json"
 	"fmt"
 	"math"
 )
 
+//go:embed presets/lamp.json
+var lampPresetJSON []byte
+
 // PresetConfig is the single source for every built-in experiment. Faults are
 // part of the configuration, so exporting a preset preserves its starting state.
 func PresetConfig(id string) (Config, error) {
+	if id == "lamp" {
+		// Preserve the supplied model's literal workload and time budgets.
+		var c Config
+		err := json.Unmarshal(lampPresetJSON, &c)
+		return c, err
+	}
 	c, err := referencePresetConfig(id)
 	if err != nil {
 		return Config{}, err

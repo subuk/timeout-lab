@@ -140,3 +140,42 @@ func TestPresetImportAndLiveLoadKeepLiteralTimes(t *testing.T) {
 		t.Fatal("import or live RPS change retimed/reset the model")
 	}
 }
+
+func TestLAMPPreset(t *testing.T) {
+	c, err := PresetConfig("lamp")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.RPS != 120 || c.Deadline != 2500 || c.Network != 5 || c.Groups[0].Resources[0].Service != 2 {
+		t.Fatal("supplied LAMP workload was retimed")
+	}
+	for _, op := range []string{"read", "write"} {
+		for _, cache := range []string{"warm", "cold"} {
+			t.Run(op+"/"+cache, func(t *testing.T) {
+				next := copyConfig(c)
+				next.RPS, next.RequestTag = 0, nil
+				next.RequestLabels = map[string]string{"op": op, "cache": cache}
+				e := engine(t, next)
+				tr := e.AddRequest(1)
+				e.Advance(2500)
+				if !tr.OK {
+					t.Fatal("LAMP request failed", tr.Reason)
+				}
+				visits := map[string]int{}
+				for _, s := range tr.Spans {
+					visits[s.Resource]++
+				}
+				commit, disk := 0, 0
+				if op == "write" {
+					commit, disk = 1, 1
+				}
+				if cache == "cold" {
+					disk++
+				}
+				if visits["mysql/commit"] != commit || visits["nvme"] != disk || visits["php/dbpool"] != 1 || visits["ram"] != 1 {
+					t.Fatalf("wrong LAMP execution path: %+v", visits)
+				}
+			})
+		}
+	}
+}

@@ -476,6 +476,7 @@ const russian = {
   "Model version 2 is required. Legacy model formats are not supported.": "Требуется модель версии 2. Старые форматы модели не поддерживаются.",
 
   "Nested boxes": "Вложенные ящики",
+  "LAMP server": "LAMP-сервер",
   "Boxes and paths ↗": "Ящики и пути ↗",
   "Boxes and request paths": "Ящики и пути запросов",
   "Every box can contain boxes and call other boxes. Names do not change behavior.": "Любой ящик может содержать другие ящики и вызывать их. Названия не меняют поведение.",

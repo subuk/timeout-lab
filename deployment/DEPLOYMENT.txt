@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T220623Z
-Backup: /var/backups/tmlab/20261114T220623Z
+Current release: /var/www/tmlab-releases/20261114T222354Z
+Backup: /var/backups/tmlab/20261114T222354Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -542,3 +542,18 @@ Playwright was not rerun. nginx validation and origin checks passed; all nine
 public static files match the local SHA-256 digests.
 Release: /var/www/tmlab-releases/20261114T220623Z
 Backup: /var/backups/tmlab/20261114T220623Z
+
+2026-11-14 LAMP server preset:
+Added #template=lamp from the supplied lamp.json as an embedded built-in model.
+Preserved its literal 120 RPS workload, timings, resource graph and names; added
+an explicit Russian description and localized menu label. Selection opens the
+server inspector. Existing presets retain their 30 RPS behavior.
+Checks: go test ./..., schema/Ajv validation, TypeScript, i18n, full build,
+HTTP/embedded Worker checks, git diff --check, and six relevant Playwright cases
+(preset links/history, deadlines, descriptions, LAMP HTTP/file:// manual requests,
+and offline loading). All passed. Public Chromium verified 120 RPS, a successful
+manual request and the Russian description without page errors. All nine public
+static files match local SHA-256. nginx validation, graceful reload and origin
+checks passed. Previous release/config retained in the backup directory below.
+Current release: /var/www/tmlab-releases/20261114T222354Z.
+Backup: /var/backups/tmlab/20261114T222354Z.

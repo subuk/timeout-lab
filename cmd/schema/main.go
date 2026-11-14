@@ -106,7 +106,7 @@ func main() {
 	flag.Parse()
 	if *fixtures {
 		models := map[string]core.Config{}
-		for _, id := range []string{"normal", "slow", "fanout", "hang", "autoscale", "az", "numa", "composition"} {
+		for _, id := range []string{"normal", "slow", "fanout", "hang", "autoscale", "az", "numa", "composition", "lamp"} {
 			c, err := core.PresetConfig(id)
 			if err != nil {
 				panic(err)

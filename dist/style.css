@@ -20,3 +20,5 @@
 .locality-hint{margin:0 0 20px;padding:12px 16px;border-left:3px solid #4464e8;background:#eef2fb;color:var(--muted);font-size:12px;line-height:1.6}.locality-hint[hidden]{display:none}
 
 .trace-connection{font:9px/1.6 var(--mono);color:#687a9d;margin:-2px 0 9px 16px}.trace-connection b{font-weight:500;color:#526787}
+
+.github-link{font-size:11px;white-space:nowrap;color:var(--muted)}.github-link:hover{color:var(--blue);text-decoration:underline}.github-link:focus-visible{outline:3px solid #4464e855;outline-offset:3px;border-radius:3px}

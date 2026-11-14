@@ -3,7 +3,7 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T121535Z
+Current release: /var/www/tmlab-releases/20261114T130148Z
 Backup: /var/backups/tmlab/20261114T001551Z
 
 Published all seven files from dist, including standalone.html. No source files
@@ -179,3 +179,14 @@ Backup: /var/backups/tmlab/20261114T121045Z.
 load. Regenerated standalone and asset versions. JS/i18n checks pass; origin
 verified by installer; public index, i18n and standalone match local SHA-256.
 Backup: /var/backups/tmlab/20261114T121535Z.
+
+
+2026-11-14 GitHub link and English sources: added a GitHub repository link to
+the header, outside the navigation hidden on small screens. It opens a new tab
+with noopener/noreferrer and is included in standalone HTML. This release also
+publishes the previously verified English source text and preserved Russian
+localization. JS syntax, localization/DOM switching checks and standalone build
+passed; link attributes verified in both HTML variants. All eight public files
+match local SHA-256; nginx validation and origin HTML/WASM checks passed.
+Browser verification was unavailable in this session.
+Backup: /var/backups/tmlab/20261114T130148Z.

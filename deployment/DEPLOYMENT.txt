@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T142452Z
-Backup: /var/backups/tmlab/20261114T142452Z
+Current release: /var/www/tmlab-releases/20261114T164400Z
+Backup: /var/backups/tmlab/20261114T164400Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -220,3 +220,28 @@ graceful reload and origin HTML/WASM checks passed. Public browser verified a
 with no console errors or warnings.
 Release: /var/www/tmlab-releases/20261114T142452Z.
 Backup: /var/backups/tmlab/20261114T142452Z.
+
+
+2026-11-14 unified programs: every service and nested box uses explicit version 2
+stages/calls, request-tag conditions, all/any/quorum, and network or ideal links.
+Removed legacy graph fields, resource-stage shorthand and implicit execution.
+All eight presets share one engine definition; editor/import/export use the same
+format. Go tests, JS syntax/i18n checks, full WASM build and HTTP/embedded Worker
+checks passed. Ten-second deterministic results for all eight presets match the
+recorded pre-migration outcomes and occupancy. Browser checks cover nested paths,
+live settings, structural restart, old-format rejection, round trips and history.
+
+Initial release 20261114T164135Z exposed an archive timestamp problem: TarInfo
+used epoch mtime, so conditional browser requests could retain stale HTML.
+The packager now assigns the current packaging time. Republished identical static
+bytes with corrected timestamps. Verified all eight public files by SHA-256,
+root HTML against the local build, and HTTP 200 with new HTML for an epoch
+If-Modified-Since request. Normal browser reload updates the page. Public browser
+verified version 2, all eight preset buttons, successful read/write paths through
+CPU/memory and cache/database/audit, and a fresh load without console warnings
+or errors. Both installations passed nginx validation and origin HTML/WASM checks.
+Model commit: 69cc6dd. Trace-selection fix committed separately as f61f78c.
+Release: /var/www/tmlab-releases/20261114T164400Z.
+Backup: /var/backups/tmlab/20261114T164400Z.
+Pre-model release: /var/www/tmlab-releases/20261114T142452Z.
+Pre-model backup: /var/backups/tmlab/20261114T164135Z.

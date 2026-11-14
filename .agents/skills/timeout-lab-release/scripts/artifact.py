@@ -7,6 +7,7 @@ import io
 from pathlib import Path
 import subprocess
 import tarfile
+import time
 from urllib.parse import urlsplit
 
 
@@ -44,12 +45,15 @@ def package(output):
     entries["deployment/tmlab.conf"] = config.read_bytes()
     entries["SHA256SUMS"] = manifest.encode()
     # Refuse to silently replace an archive from another attempt.
+    # A fresh Last-Modified value prevents stale browser 304 responses across releases.
+    packaged_at = int(time.time())
     with output.open("xb") as stream:
         with tarfile.open(fileobj=stream, mode="w:gz") as archive:
             for name, value in entries.items():
                 info = tarfile.TarInfo(name)
                 info.size = len(value)
                 info.mode = 0o644
+                info.mtime = packaged_at
                 archive.addfile(info, io.BytesIO(value))
     print(f"Packaged {len(data)} static files: {output}")
 

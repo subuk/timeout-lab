@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T212757Z
-Backup: /var/backups/tmlab/20261114T212757Z
+Current release: /var/www/tmlab-releases/20261114T214056Z
+Backup: /var/backups/tmlab/20261114T214056Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -498,3 +498,22 @@ verified the visible header link, repository destination and new-tab target at
 Previous release: /var/www/tmlab-releases/20261114T210701Z.
 Current release: /var/www/tmlab-releases/20261114T212757Z.
 Backup before update: /var/backups/tmlab/20261114T212757Z.
+
+2026-11-14 invalid custom links: The initial diagram and experiment controls now
+wait for URL validation. Malformed, oversized or engine-invalid model links show
+a localized error screen with the cause and an explicit Open normal scenario
+action. A template parameter cannot override an invalid custom model. Invalid
+links during an existing experiment retain its model, time and history.
+Source commit: b256c9c (main, pushed to GitHub).
+Validation: TypeScript, localization, full WASM/Vite/standalone build, HTTP and
+embedded Worker checks, and 20 interface/sharing browser scenarios passed.
+Coverage includes no transient default diagram, reload, recovery, history,
+Unicode, model validation and offline operation. Reviewed mobile error layout.
+Deployment: archive checksums, nginx validation, graceful reload and origin
+checks passed; all eight public files match local SHA-256. Public Chromium
+verified decoding/schema errors, reload, explicit recovery and preserved
+experiments in English desktop and Russian mobile with no page or console
+errors. Both public screenshots were inspected.
+Previous release: /var/www/tmlab-releases/20261114T212757Z.
+Current release: /var/www/tmlab-releases/20261114T214056Z.
+Backup before update: /var/backups/tmlab/20261114T214056Z.

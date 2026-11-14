@@ -14,7 +14,7 @@ func single(workers int, service float64) Config {
 	c.Spread = 0
 	c.Entry = "box"
 	c.Deadline = 60000
-	c.Groups = []Group{{ID: "box", Name: "Box", Count: 1, Workers: workers, Service: service, Timeout: 10000, ConnectTimeout: 100, QueueLimit: 2000, Join: "all", Quorum: 1}}
+	c.Groups = []Group{{ID: "box", Name: "Box", Count: 1, Workers: workers, Service: service, Timeout: 10000, ConnectTimeout: 100, QueueLimit: 2000, Stages: []Stage{}}}
 	return c
 }
 func engine(t *testing.T, c Config) *Engine {
@@ -108,8 +108,8 @@ func TestDeadlineCancellation(t *testing.T) {
 }
 func TestFanoutAndParentTiming(t *testing.T) {
 	c := single(5, 10)
-	c.Groups[0].Edges = []Edge{{Target: "leaf", Calls: 3, Route: "round_robin"}}
-	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 3, Workers: 1, Service: 100, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Join: "all", Quorum: 1})
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Target: "leaf", Calls: 3, Route: "round_robin", Transport: "network"}}, Join: "all"}}
+	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 3, Workers: 1, Service: 100, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Stages: []Stage{}})
 	e := engine(t, c)
 	tr := e.AddRequest(1)
 	e.Advance(500)
@@ -125,10 +125,8 @@ func TestFanoutAndParentTiming(t *testing.T) {
 }
 func TestQuorumCancelsSlowSibling(t *testing.T) {
 	c := single(5, 10)
-	c.Groups[0].Join = "quorum"
-	c.Groups[0].Quorum = 2
-	c.Groups[0].Edges = []Edge{{Target: "leaf", Calls: 1, Route: "broadcast"}}
-	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 3, Workers: 1, Service: 100, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Join: "all", Quorum: 1})
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Target: "leaf", Calls: 1, Route: "broadcast", Transport: "network"}}, Join: "quorum", Quorum: 2}}
+	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 3, Workers: 1, Service: 100, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Stages: []Stage{}})
 	e := engine(t, c)
 	v := 1000.
 	e.SetNode("leaf-3", "", &v, nil)
@@ -163,7 +161,7 @@ func TestConnectVersusRequestTimeout(t *testing.T) {
 }
 func TestValidationCycles(t *testing.T) {
 	c := single(1, 1)
-	c.Groups[0].Edges = []Edge{{Target: "box", Calls: 1, Route: "round_robin"}}
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Target: "box", Calls: 1, Route: "round_robin", Transport: "network"}}, Join: "all"}}
 	if Validate(c) == nil {
 		t.Fatal("cycle accepted")
 	}
@@ -363,14 +361,11 @@ func TestScaleDownKeepsHungDrainAndCanReactivate(t *testing.T) {
 }
 func TestScaleDownRejectsImpossibleQuorumAtomically(t *testing.T) {
 	c := single(2, 1)
-	c.Groups[0].Join = "quorum"
-	c.Groups[0].Quorum = 2
-	c.Groups[0].Edges = []Edge{{Target: "leaf", Calls: 1, Route: "broadcast"}}
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Target: "leaf", Calls: 1, Route: "broadcast", Transport: "network"}}, Join: "quorum", Quorum: 2}}
 	leaf := c.Groups[0]
 	leaf.ID = "leaf"
 	leaf.Count = 3
-	leaf.Join = "all"
-	leaf.Edges = nil
+	leaf.Stages = []Stage{}
 	c.Groups = append(c.Groups, leaf)
 	e := engine(t, c)
 	e.AddRequest(1)

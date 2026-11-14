@@ -6,7 +6,6 @@ const english = {
 "Только генератор → входная группа. Время ожидания пользователя ограничено deadline. 0 для idle timeout — без ограничения простоя.":"Generator → entry group only. User waiting is bounded by the deadline. Idle timeout 0 means no idle limit.",
 "Отсчёт простоя начинается после последнего ответа. Активный запрос не прерывается. 0 — без ограничения простоя.":"Idle time starts after the last response. Active requests are not interrupted. 0 means no idle limit.",
 "Наследовать настройки группы":"Inherit group settings",
-"Количество вызовов, маршрутизация и условие ответа задаются для всей группы.":"Call count, routing and join policy apply to the entire group.",
 
  "3 запроса в базу": "3 database calls",
  "name — название по умолчанию (EN). Переводы: \"i18n\": {\"ru\": {\"name\": \"База\"}}. Поддерживается у модели, групп и ресурсов. Переводы интерфейса доступны для RU/EN; другие языки используют английский интерфейс.": "name is the default label (EN). Translations: \"i18n\": {\"ru\": {\"name\": \"База\"}}. Supported on the model, groups and resources. Interface translations are available for RU/EN; other languages use the English interface.",
@@ -245,7 +244,6 @@ const english = {
   "У каждой группы должен быть короткий id и название": "Each group needs a short ID and a name",
   "ID групп должны быть уникальными": "Group IDs must be unique",
   "join: all, any или quorum": "join: all, any or quorum",
-  "Не больше 8 связей у группы": "At most 8 edges per group",
   "Не больше 64 узлов": "At most 64 nodes",
   "Не найдена входная группа": "Entry group not found",
   "calls: от 1 до 16": "calls: between 1 and 16",
@@ -334,16 +332,60 @@ const english = {
   "Позже": "Move later",
   "Удалить этап": "Remove stage",
   "Ресурс": "Resource",
-  "Проверьте имена, слоты и время. Для исходящих связей нужен ровно один этап Downstream.": "Check names, slots and work time. Outgoing edges require exactly one Downstream stage.",
   "Структура применена. Опыт перезапущен.": "Structure applied. Experiment restarted.",
   "Показать ресурсы": "Show resources",
   "Сеть / connect": "Network / connect",
   "Нажмите ▸ у сервиса, чтобы раскрыть внутренние ресурсы. Времена вложенных строк не суммируются.": "Click ▸ next to a service to reveal its internal resources. Nested row durations must not be added together.",
-  "Каждый сервис и внутренний ресурс — FIFO-ящик с конечным числом слотов. Обработчик сервиса сначала проводит локальную задержку, затем выполняет этапы по порядку. Каждый ресурс освобождается перед следующим этапом. На этапе Downstream исходящие вызовы запускаются параллельно. Обработчик сервиса остаётся занят до завершения запроса.": "Each service and internal resource is a FIFO box with a finite number of slots. A service handler first spends its local delay, then executes stages in order. Each resource is released before the next stage. The Downstream stage launches outgoing calls in parallel. The service handler remains occupied until the request completes.",
   "В шаблоне у бекендов есть ресурс CPU, у базы — CPU и Диск. Это произвольные имена одинаковых FIFO-ящиков, а не эмуляция процессора или дисковых протоколов. Собственный ресурс создаётся с каждым экземпляром, общий остаётся один на группу. Планирование ОС, объёмы хранения и репликация не моделируются. До 64 сервисных узлов, 512 внутренних ящиков и 512 исходных посещений на запрос.": "In this template, backends have a CPU resource; the database has CPU and Disk. These are arbitrary names for identical FIFO boxes, not processor or disk protocol emulators. Per-instance resources scale with their owner; shared resources remain one per group. OS scheduling, storage capacity and replication are not modeled. Up to 64 service nodes, 512 internal boxes and 512 original visits per request."
 };
 
 const russian = {
+  "Return after local processing": "Ответ после локальной обработки",
+  "Call timeout, ms": "Таймаут вызова, мс",
+  "Caller default": "Настройка вызывающего ящика",
+  "Empty inherits the caller budget. 0 adds no timeout; outer calls and the user deadline still apply.": "Пустое поле наследует бюджет вызывающего ящика. 0 не добавляет таймаут; таймауты внешних вызовов и deadline пользователя продолжают действовать.",
+  "Every box requires an explicit stages array; use [] for a leaf box.": "Каждому ящику нужен явный массив stages; для конечного ящика укажите [].",
+  "Every stage requires 1–8 explicit calls": "Каждому этапу требуется от 1 до 8 явных вызовов",
+  "Call timeout override: 0–60000 ms; 0 means no additional budget": "Таймаут отдельного вызова: 0–60000 мс; 0 — без дополнительного ограничения",
+  "Model version 2 is required. Legacy model formats are not supported.": "Требуется модель версии 2. Старые форматы модели не поддерживаются.",
+
+  "Nested boxes": "Вложенные ящики",
+  "Boxes and paths ↗": "Ящики и пути ↗",
+  "Boxes and request paths": "Ящики и пути запросов",
+  "Every box can contain boxes and call other boxes. Names do not change behavior.": "Любой ящик может содержать другие ящики и вызывать их. Названия не меняют поведение.",
+  "Editing box": "Настраиваемый ящик",
+  "Boxes inside": "Ящики внутри",
+  "Edit values live, or apply structural changes with a restart.": "Значения можно применить без сброса; изменение структуры требует перезапуска.",
+  "Open this box": "Открыть этот ящик",
+  "Request tags · key=value": "Теги запроса · key=value",
+  "Empty: every request": "Пусто: все запросы",
+  "Parallel calls": "Параллельные вызовы",
+  "Call target": "Куда вызвать",
+  "Calls": "Вызовы",
+  "Link": "Связь",
+  "Network connection": "Сетевое соединение",
+  "Ideal · zero delay": "Идеальная · без задержки",
+  "One-way delay, ms": "Задержка в одну сторону, мс",
+  "Model default": "Из настроек модели",
+  "Remove call": "Удалить вызов",
+  "+ Call": "+ Вызов",
+  "Changes applied without reset.": "Изменения применены без сброса.",
+  "Edit sequential steps, parallel calls and request conditions in Boxes and paths. Workers stay occupied while waiting.": "Этапы, параллельные вызовы и условия по тегам настраиваются в «Ящики и пути». При ожидании воркеры остаются заняты.",
+  "Stages run in order; calls within a stage run in parallel. Conditions match all listed request tags. Internal paths are relative to this box; ../cpu selects a sibling. Every call selects an ideal link or a network connection, for both internal boxes and groups.": "Этапы идут по порядку, вызовы внутри этапа — параллельно. Условие требует совпадения всех указанных тегов запроса. Внутренние пути относительны к ящику: ../cpu — соседний ящик. Каждый вызов явно выбирает идеальную связь или сетевое соединение — и для внутренних ящиков, и для групп.",
+  "Every box has a FIFO queue, workers and a program. After local processing it executes stages in order. A stage can call one internal box or several boxes in parallel, and can select requests by tags. Nested boxes use the same mechanism and can call siblings or external groups. A worker remains occupied while waiting for children. Ideal links add no delay or connections; network links model connection setup, keep-alive and timeouts. A network delay of zero is exact and still preserves connection behavior.": "У каждого ящика есть FIFO-очередь, воркеры и программа. После локальной обработки этапы выполняются по порядку. Этап вызывает один внутренний ящик или несколько ящиков параллельно и может выбирать запросы по тегам. Вложенные ящики используют тот же механизм и могут вызывать соседей или внешние группы. При ожидании дочерних вызовов воркер занят. Идеальные связи не добавляют задержки и соединений; сетевые учитывают установку соединения, keep-alive и таймауты. Нулевая задержка сети точна и сохраняет поведение соединений.",
+  "Ideal link": "Идеальная связь",
+  "Stage started": "Начало этапа",
+  "Stage skipped": "Этап пропущен",
+  "not enough matching calls for quorum": "недостаточно подходящих вызовов для кворума",
+  "internal box unavailable": "внутренний ящик недоступен",
+  "Resources: at most 8 resources and 16 stages per box": "В ящике допускается до 8 внутренних ящиков и 16 этапов",
+  "Calls: select exactly one target group or relative resource path": "Вызов: укажите одну группу или относительный путь внутреннего ящика",
+  "A shared box cannot call an instance-owned resource without an instance owner": "Общий ящик не может выбрать частный ресурс отдельного экземпляра",
+  "At most 8 calls per stage": "Не больше 8 направлений вызовов на этап",
+  "Transport: network or ideal": "Связь: network или ideal",
+  "Conditions: use up to 16 request tag key=value pairs": "Условие: до 16 тегов запроса в формате key=value",
+  "Calls must form an acyclic graph; sequential revisits are allowed": "В графе вызовов не должно быть циклов; повторные последовательные посещения разрешены",
+
   "All service and resource visits are shown. Nested row durations must not be added together.": "Показаны все посещения сервисов и ресурсов. Времена вложенных строк не суммируются.",
   "Request mode": "Режим запросов",
   "Continuous load": "Постоянная нагрузка",
@@ -385,7 +427,6 @@ const russian = {
   "Processing finished": "Обработка завершена",
   "Box finished": "Работа в узле завершена",
   "Cancellation": "Отмена",
-  "Waiting for resource": "Ожидание ресурса",
   "Resource visit": "Обращение к ресурсу",
   "Connection retry": "Повтор соединения",
   "reused": "повторное использование",
@@ -400,7 +441,6 @@ const russian = {
   "Generator → entry group only. User waiting is bounded by the deadline. Idle timeout 0 means no idle limit.": "Только генератор → входная группа. Время ожидания пользователя ограничено deadline. 0 для idle timeout — без ограничения простоя.",
   "Idle time starts after the last response. Active requests are not interrupted. 0 means no idle limit.": "Отсчёт простоя начинается после последнего ответа. Активный запрос не прерывается. 0 — без ограничения простоя.",
   "Inherit group settings": "Наследовать настройки группы",
-  "Call count, routing and join policy apply to the entire group.": "Количество вызовов, маршрутизация и условие ответа задаются для всей группы.",
   "3 database calls": "3 запроса в базу",
   "name is the default label (EN). Translations: \"i18n\": {\"ru\": {\"name\": \"База\"}}. Supported on the model, groups and resources. Interface translations are available for RU/EN; other languages use the English interface.": "name — название по умолчанию (EN). Переводы: \"i18n\": {\"ru\": {\"name\": \"База\"}}. Поддерживается у модели, групп и ресурсов. Переводы интерфейса доступны для RU/EN; другие языки используют английский интерфейс.",
   "Default name (EN)": "Название по умолчанию (EN)",
@@ -641,7 +681,6 @@ const russian = {
   "Each group needs a short ID and a name": "У каждой группы должен быть короткий id и название",
   "Group IDs must be unique": "ID групп должны быть уникальными",
   "join: all, any or quorum": "join: all, any или quorum",
-  "At most 8 edges per group": "Не больше 8 связей у группы",
   "At most 64 nodes": "Не больше 64 узлов",
   "Entry group not found": "Не найдена входная группа",
   "calls: between 1 and 16": "calls: от 1 до 16",
@@ -730,12 +769,10 @@ const russian = {
   "Move later": "Позже",
   "Remove stage": "Удалить этап",
   "Resource": "Ресурс",
-  "Check names, slots and work time. Outgoing edges require exactly one Downstream stage.": "Проверьте имена, слоты и время. Для исходящих связей нужен ровно один этап Downstream.",
   "Structure applied. Experiment restarted.": "Структура применена. Опыт перезапущен.",
   "Show resources": "Показать ресурсы",
   "Network / connect": "Сеть / connect",
   "Click ▸ next to a service to reveal its internal resources. Nested row durations must not be added together.": "Нажмите ▸ у сервиса, чтобы раскрыть внутренние ресурсы. Времена вложенных строк не суммируются.",
-  "Each service and internal resource is a FIFO box with a finite number of slots. A service handler first spends its local delay, then executes stages in order. Each resource is released before the next stage. The Downstream stage launches outgoing calls in parallel. The service handler remains occupied until the request completes.": "Каждый сервис и внутренний ресурс — FIFO-ящик с конечным числом слотов. Обработчик сервиса сначала проводит локальную задержку, затем выполняет этапы по порядку. Каждый ресурс освобождается перед следующим этапом. На этапе Downstream исходящие вызовы запускаются параллельно. Обработчик сервиса остаётся занят до завершения запроса.",
   "In this template, backends have a CPU resource; the database has CPU and Disk. These are arbitrary names for identical FIFO boxes, not processor or disk protocol emulators. Per-instance resources scale with their owner; shared resources remain one per group. OS scheduling, storage capacity and replication are not modeled. Up to 64 service nodes, 512 internal boxes and 512 original visits per request.": "В шаблоне у бекендов есть ресурс CPU, у базы — CPU и Диск. Это произвольные имена одинаковых FIFO-ящиков, а не эмуляция процессора или дисковых протоколов. Собственный ресурс создаётся с каждым экземпляром, общий остаётся один на группу. Планирование ОС, объёмы хранения и репликация не моделируются. До 64 сервисных узлов, 512 внутренних ящиков и 512 исходных посещений на запрос.",
   "Connections: connect/call timeout 1-60000 ms, idle timeout 0-3600000 ms": "Соединения: connect/timeout вызова 1–60000 мс, idle timeout 0–3600000 мс",
   "I18n: use unique language tags, at most 32 translations and names up to 200 bytes": "I18n: уникальные языковые теги, до 32 переводов и до 200 байт в имени",
@@ -752,7 +789,6 @@ const russian = {
   "Resources: workers 1–512, processing 0–10000 ms, queue 0–2000": "Ресурсы: слоты 1–512, работа 0–10000 мс, очередь 0–2000",
   "Resources: a stage must select one action": "Ресурсы: у этапа должно быть одно действие",
   "Resources: stage references an unknown resource": "Ресурсы: этап ссылается на неизвестный ресурс",
-  "Resources: include exactly one downstream stage when the group has outgoing edges": "Ресурсы: для исходящих связей нужен ровно один этап Downstream",
   "Resources: autoscaler references an unknown resource": "Ресурсы: автоскейлер ссылается на неизвестный ресурс",
   "Resources: at most 512 internal boxes": "Ресурсы: не больше 512 внутренних ящиков",
   "Resources: changing structure requires a restart": "Изменение структуры ресурсов требует перезапуска",
@@ -849,7 +885,8 @@ const I18n = (() => {
   const name=(object,tag=language)=>modelText(object,'name',tag);
   const description=(object,tag=language)=>modelText(object,'description',tag);
   function setModelLanguages(model){
-    const objects=[model,...(model?.groups||[]).flatMap(g=>[g,...(g.resources||[])])];
+    const walk=g=>[g,...(g?.resources||[]).flatMap(walk)];
+    const objects=[model,...(model?.groups||[]).flatMap(walk)];
     const extra=[...new Set(objects.flatMap(o=>Object.keys(o?.i18n||{})).map(canonical).filter(Boolean))].filter(k=>k!=='ru'&&k!=='en').sort();
     const next=['en','ru',...extra];if(next.join('|')===supported.join('|'))return;
     supported=next;
@@ -868,6 +905,7 @@ const I18n = (() => {
     [/^Не найден узел override: (.+)$/, 'Override node not found: $1']
   ];
   const russianPatterns = [
+    [/^Invalid version 2 model: json: unknown field "(.+)"$/, 'Недопустимая модель версии 2: неизвестное поле "$1"'],
     [/^Queue ([\d.]+) > ([\d.]+) per node$/, 'Очередь $1 > $2 на узел'],
     [/^Utilization ([\d.]+)% > ([\d.]+)%$/, 'Занятость $1% > $2%'],
     [/^Utilization ([\d.]+)% ≤ ([\d.]+)%, queues are empty$/, 'Занятость $1% ≤ $2%, очереди пусты'],

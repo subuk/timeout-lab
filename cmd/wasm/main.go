@@ -40,15 +40,15 @@ func main() {
 		case "advance":
 			sim.Advance(cmd.MS)
 		case "preset":
-			c := core.AZConfig()
-			if cmd.Preset == "numa" {
-				c = core.NUMAConfig()
-			}
-			var next *core.Engine
-			next, err = core.New(c)
+			var c core.Config
+			c, err = core.PresetConfig(cmd.Preset)
 			if err == nil {
-				next.SetManualMode(sim.ManualMode)
-				sim = next
+				var next *core.Engine
+				next, err = core.New(c)
+				if err == nil {
+					next.SetManualMode(sim.ManualMode)
+					sim = next
+				}
 			}
 		case "reset":
 			var next *core.Engine

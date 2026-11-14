@@ -96,3 +96,10 @@ assert.equal(textNode.nodeValue,'  Loading engine… ');
 assert.equal(attributes.title,'Pause or resume');
 assert.equal(document.documentElement.lang,'en');
 console.log('English source messages and static DOM language switching: OK');
+
+// Languages declared only on a deeply nested box are still selectable.
+const nestedLanguage=load(['fr-CA','en']).i18n;
+nestedLanguage.setModelLanguages({groups:[{resources:[{resources:[named]}]}]});
+assert.equal(nestedLanguage.locale(),'fr-CA');
+assert.equal(nestedLanguage.name(named),'Stockage Canada');
+console.log('Nested box localization discovery: OK');

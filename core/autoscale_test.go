@@ -142,9 +142,7 @@ func TestAutoScaleDownWaitsForDrain(t *testing.T) {
 }
 func TestAutoScaleBlockedQuorumLeavesGroupIntact(t *testing.T) {
 	c := single(1, 1)
-	c.Groups[0].Join = "quorum"
-	c.Groups[0].Quorum = 2
-	c.Groups[0].Edges = []Edge{{Target: "leaf", Calls: 1, Route: "broadcast"}}
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Target: "leaf", Calls: 1, Route: "broadcast", Transport: "network"}}, Join: "quorum", Quorum: 2}}
 	leaf := autoConfig(2).Groups[0]
 	leaf.ID = "leaf"
 	c.Groups = append(c.Groups, leaf)

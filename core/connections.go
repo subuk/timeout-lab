@@ -18,9 +18,6 @@ type DownstreamSettings struct {
 
 func normalizeConnections(c *Config) {
 	enabled := true
-	if c.Keepalive != nil {
-		enabled = *c.Keepalive
-	}
 	if c.Client == nil {
 		c.Client = &ClientConnections{enabled, 30000, 200}
 	}
@@ -35,14 +32,14 @@ func normalizeConnections(c *Config) {
 			g.KeepaliveTimeout = &v
 		}
 	}
-	c.Keepalive = nil // Legacy global flag is migrated once, never exported again.
 }
 func validateConnections(c Config) error {
 	valid := func(v *float64, min, max float64) bool { return v == nil || (finite(*v) && *v >= min && *v <= max) }
 	if c.Client != nil && (!valid(&c.Client.ConnectTimeout, 1, 60000) || !valid(&c.Client.KeepaliveTimeout, 0, 3600000)) {
 		return errors.New("Connections: connect/call timeout 1-60000 ms, idle timeout 0-3600000 ms")
 	}
-	for _, g := range c.Groups {
+	for _, b := range boxDefinitions(c) {
+		g := b.Def
 		if !valid(g.KeepaliveTimeout, 0, 3600000) || !valid(&g.Timeout, 1, 60000) || !valid(&g.ConnectTimeout, 1, 60000) {
 			return errors.New("Connections: connect/call timeout 1-60000 ms, idle timeout 0-3600000 ms")
 		}
@@ -58,7 +55,7 @@ func (e *Engine) downstreamSettings(n *Node) DownstreamSettings {
 	if n.FrozenDownstream != nil {
 		return *n.FrozenDownstream
 	}
-	g := e.G[n.Group]
+	g := e.boxGroup(n)
 	p := DownstreamSettings{Keepalive: true, KeepaliveTimeout: 30000, ConnectTimeout: g.ConnectTimeout, Timeout: g.Timeout, RetryConnect: true}
 	if g.Keepalive != nil {
 		p.Keepalive = *g.Keepalive
@@ -103,9 +100,7 @@ func ownerKey(n *Node) string {
 func (e *Engine) connectionSettingsSnapshot() map[string]ClientConnections {
 	result := map[string]ClientConnections{"client": *e.C.Client}
 	for _, n := range e.Nodes {
-		if n.Resource == "" {
-			result[n.ID] = e.connectionSettings(n)
-		}
+		result[n.ID] = e.connectionSettings(n)
 	}
 	return result
 }

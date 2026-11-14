@@ -131,7 +131,7 @@ func TestManualResourceRetryAndStepIndependence(t *testing.T) {
 		if !tr.OK || e.FocusRunning() {
 			t.Fatal(tr.Reason)
 		}
-		for _, kind := range []string{"Connection retry", "Resource visit", "Waiting for resource", "Waiting for children"} {
+		for _, kind := range []string{"Connection retry", "Resource visit", "Waiting for children"} {
 			if !hasEvent(tr, kind, "") {
 				t.Errorf("missing %s", kind)
 			}

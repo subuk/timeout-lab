@@ -7,28 +7,15 @@ import (
 
 func idleValue(v float64) *float64 { return &v }
 func keepValue(v bool) *bool       { return &v }
-func TestConnectionsLegacyMigration(t *testing.T) {
+func TestConnectionsRejectLegacyGlobalSetting(t *testing.T) {
 	c := DefaultConfig()
 	raw, _ := json.Marshal(c)
 	var old map[string]any
 	json.Unmarshal(raw, &old)
 	old["keepalive"] = false
 	raw, _ = json.Marshal(old)
-	json.Unmarshal(raw, &c)
-	e := engine(t, c)
-	if e.C.Keepalive != nil || e.C.Client.Keepalive {
-		t.Fatal("legacy generator setting not migrated")
-	}
-	for _, g := range e.C.Groups {
-		if *g.Keepalive || *g.KeepaliveTimeout != 30000 {
-			t.Fatal("legacy downstream setting not migrated")
-		}
-	}
-	raw, _ = json.Marshal(e.C)
-	var exported map[string]any
-	json.Unmarshal(raw, &exported)
-	if _, ok := exported["keepalive"]; ok {
-		t.Fatal("global flag still exported")
+	if err := json.Unmarshal(raw, &c); err == nil {
+		t.Fatal("removed global keepalive accepted")
 	}
 	fresh := engine(t, DefaultConfig())
 	if !fresh.C.Client.Keepalive || !*fresh.C.Groups[0].Keepalive {

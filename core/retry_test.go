@@ -10,8 +10,8 @@ func retryConfig() Config {
 	network := 10.0
 	c.Entry = "front"
 	c.Groups = []Group{
-		{ID: "front", Name: "Front", Count: 1, Workers: 4, Service: 1, Timeout: 200, ConnectTimeout: 30, QueueLimit: 100, Join: "all", Quorum: 1, Edges: []Edge{{Target: "back", Calls: 1, Route: "round_robin", Network: &network}}},
-		{ID: "back", Name: "Back", Count: 2, Workers: 4, Service: 10, Timeout: 200, ConnectTimeout: 30, QueueLimit: 100, Join: "all", Quorum: 1},
+		{ID: "front", Name: "Front", Count: 1, Workers: 4, Service: 1, Timeout: 200, ConnectTimeout: 30, QueueLimit: 100, Stages: []Stage{{Calls: []Call{{Target: "back", Calls: 1, Route: "round_robin", Network: &network, Transport: "network"}}, Join: "all", Quorum: 1}}},
+		{ID: "back", Name: "Back", Count: 2, Workers: 4, Service: 10, Timeout: 200, ConnectTimeout: 30, QueueLimit: 100, Stages: []Stage{}},
 	}
 	return c
 }
@@ -109,7 +109,7 @@ func TestRetryConnectDoesNotRetryResponseFailure(t *testing.T) {
 			case "queue_full":
 				e.AddRequest(1)
 				e.Advance(10)
-				e.rr["front-1/0"] = 0 // Route the next call to the same busy node.
+				e.rr["front-1/stage/1/0"] = 0 // Route the next call to the same busy node.
 			}
 			tr := e.AddRequest(1)
 			e.Advance(300)
@@ -122,7 +122,7 @@ func TestRetryConnectDoesNotRetryResponseFailure(t *testing.T) {
 
 func TestRetryConnectFanoutCountsLogicalCalls(t *testing.T) {
 	c := retryConfig()
-	c.Groups[0].Edges[0].Calls = 2
+	c.Groups[0].Stages[0].Calls[0].Calls = 2
 	e := engine(t, c)
 	setFault(t, e, "back-1", "down")
 	tr := e.AddRequest(1)
@@ -148,7 +148,7 @@ func TestRetryConnectExhaustsEachCandidateOnce(t *testing.T) {
 		t.Run(route, func(t *testing.T) {
 			c := retryConfig()
 			c.Groups[1].Count = 4
-			c.Groups[0].Edges[0].Route = route
+			c.Groups[0].Stages[0].Calls[0].Route = route
 			e := engine(t, c)
 			for _, n := range e.Groups["back"] {
 				setFault(t, e, n.ID, "down")
@@ -171,8 +171,8 @@ func TestRetryConnectExhaustsEachCandidateOnce(t *testing.T) {
 func TestRetryConnectDoesNotRetryPropagatedChildFailure(t *testing.T) {
 	c := retryConfig()
 	net := 10.0
-	c.Groups[1].Edges = []Edge{{Target: "leaf", Calls: 1, Route: "round_robin", Network: &net}}
-	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 1, Workers: 1, Service: 1, Timeout: 100, ConnectTimeout: 30, QueueLimit: 100, Join: "all", Quorum: 1})
+	c.Groups[1].Stages = []Stage{{Calls: []Call{{Target: "leaf", Calls: 1, Route: "round_robin", Network: &net, Transport: "network"}}, Join: "all"}}
+	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 1, Workers: 1, Service: 1, Timeout: 100, ConnectTimeout: 30, QueueLimit: 100, Stages: []Stage{}})
 	e := engine(t, c)
 	setFault(t, e, "leaf-1", "down")
 	tr := e.AddRequest(1)
@@ -183,7 +183,7 @@ func TestRetryConnectDoesNotRetryPropagatedChildFailure(t *testing.T) {
 }
 func TestRetryConnectKeepaliveFailureDoesNotRetry(t *testing.T) {
 	c := retryConfig()
-	c.Groups[0].Edges[0].Route = "least_busy"
+	c.Groups[0].Stages[0].Calls[0].Route = "least_busy"
 	e := engine(t, c)
 	warm := e.AddRequest(1)
 	e.Advance(300)
@@ -199,9 +199,9 @@ func TestRetryConnectKeepaliveFailureDoesNotRetry(t *testing.T) {
 }
 func TestRetryConnectBroadcastKeepsDistinctVotes(t *testing.T) {
 	c := retryConfig()
-	c.Groups[0].Edges[0].Route = "broadcast"
-	c.Groups[0].Join = "quorum"
-	c.Groups[0].Quorum = 2
+	c.Groups[0].Stages[0].Calls[0].Route = "broadcast"
+	c.Groups[0].Stages[0].Join = "quorum"
+	c.Groups[0].Stages[0].Quorum = 2
 	e := engine(t, c)
 	setFault(t, e, "back-1", "down")
 	tr := e.AddRequest(1)

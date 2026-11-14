@@ -82,7 +82,8 @@ func validateLocality(c Config) error {
 			return errors.New("Locality: invalid request tag distribution")
 		}
 	}
-	for _, g := range c.Groups {
+	for _, b := range boxDefinitions(c) {
+		g := b.Def
 		if !labels(g.Labels) || !cost(g.Cost) {
 			return errors.New("Locality: invalid labels or cost (0-100)")
 		}
@@ -91,11 +92,15 @@ func validateLocality(c Config) error {
 				return errors.New("Locality: invalid labels or cost (0-100)")
 			}
 		}
-		for _, edge := range g.Edges {
-			if !rule(edge.Affinity) || !cost(edge.NetworkCost) {
-				return errors.New("Locality: invalid edge rule")
+		calls := []Call{}
+		for _, stage := range g.Stages {
+			calls = append(calls, stage.Calls...)
+		}
+		for _, call := range calls {
+			if !rule(call.Affinity) || !cost(call.NetworkCost) {
+				return errors.New("Locality: invalid call rule")
 			}
-			if edge.Route == "broadcast" && edge.Affinity != nil && edge.Affinity.Enabled {
+			if call.Route == "broadcast" && call.Affinity != nil && call.Affinity.Enabled {
 				return errors.New("Locality: broadcast cannot prefer a subset")
 			}
 		}
@@ -146,12 +151,7 @@ func (e *Engine) nodeLabels(n *Node) map[string]string {
 		if n.OwnerNode != nil {
 			m = e.nodeLabels(n.OwnerNode)
 		}
-		for _, r := range g.Resources {
-			if r.ID == n.Resource {
-				m = mergeLabels(m, r.Labels)
-				break
-			}
-		}
+		m = mergeLabels(m, e.boxGroup(n).Labels)
 	}
 	return mergeLabels(m, e.C.Overrides[n.ID].Labels)
 }
@@ -162,16 +162,7 @@ func (e *Engine) nodeCost(n *Node) *CostRule {
 	if o := e.C.Overrides[n.ID]; o.Cost != nil {
 		return o.Cost
 	}
-	g := e.G[n.Group]
-	if n.Resource == "" {
-		return g.Cost
-	}
-	for _, r := range g.Resources {
-		if r.ID == n.Resource {
-			return r.Cost
-		}
-	}
-	return nil // Resources inherit placement, not their owner's processing cost.
+	return e.boxGroup(n).Cost
 }
 func decide(r *MatchRule, request, caller, target map[string]string) *LocalityDecision {
 	if r == nil || !r.Enabled {
@@ -258,17 +249,17 @@ func (e *Engine) orderRetry(nodes []*Node, r *MatchRule, request, caller map[str
 	}
 	return append(out, remote...)
 }
-func (e *Engine) prepareHop(s, parent *Span, edges []*Edge) {
+func (e *Engine) prepareHop(s, parent *Span, calls []*Call) {
 	s.NetworkBase = s.network
 	s.NetworkDelay = s.network
 	if parent != nil {
 		s.CallerLabels = copyLabels(parent.Labels)
 	}
-	if len(edges) > 0 && edges[0] != nil {
-		edge := edges[0]
+	if len(calls) > 0 && calls[0] != nil {
+		call := calls[0]
 		target := e.nodeLabels(s.node)
-		s.NetworkLocality = decideCost(edge.NetworkCost, s.trace.Labels, s.CallerLabels, target)
-		s.RoutingLocality = decide(edge.Affinity, s.trace.Labels, s.CallerLabels, target)
+		s.NetworkLocality = decideCost(call.NetworkCost, s.trace.Labels, s.CallerLabels, target)
+		s.RoutingLocality = decide(call.Affinity, s.trace.Labels, s.CallerLabels, target)
 		if s.NetworkLocality != nil {
 			s.network *= s.NetworkLocality.Factor
 			s.NetworkDelay = s.network
@@ -316,9 +307,14 @@ func AZConfig() Config {
 	for i := range c.Groups {
 		g := &c.Groups[i]
 		g.Labels = map[string]string{"az": "az1"}
-		for j := range g.Edges {
-			g.Edges[j].Affinity = &MatchRule{true, "caller", "az"}
-			g.Edges[j].NetworkCost = &CostRule{MatchRule{true, "caller", "az"}, 1, 3}
+		for si := range g.Stages {
+			for ci := range g.Stages[si].Calls {
+				call := &g.Stages[si].Calls[ci]
+				if call.Target != "" {
+					call.Affinity = &MatchRule{true, "caller", "az"}
+					call.NetworkCost = &CostRule{MatchRule{true, "caller", "az"}, 1, 3}
+				}
+			}
 		}
 	}
 	c.Overrides["lb-2"] = NodeConfig{Labels: map[string]string{"az": "az2"}}
@@ -338,8 +334,8 @@ func NUMAConfig() Config {
 	c.RequestTag = &TagGenerator{"numa", "0", "1", 50}
 	c.EntryAffinity = &MatchRule{false, "request", "numa"}
 	c.Groups = []Group{
-		{ID: "cpu", Name: "CPU nodes", I18n: Localizations{"ru": {Name: "CPU-ноды"}}, Labels: map[string]string{"numa": "0"}, Count: 2, Workers: 4, Service: 4, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Join: "all", Quorum: 1, Edges: []Edge{{Target: "memory", Calls: 1, Route: "round_robin", Affinity: &MatchRule{true, "request", "numa"}}}},
-		{ID: "memory", Name: "Node memory", I18n: Localizations{"ru": {Name: "Память нод"}}, Labels: map[string]string{"numa": "0"}, Cost: &CostRule{MatchRule{true, "caller", "numa"}, 1, 3}, Count: 2, Workers: 4, Service: 6, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Join: "all", Quorum: 1, Edges: []Edge{}},
+		{ID: "cpu", Name: "CPU nodes", I18n: Localizations{"ru": {Name: "CPU-ноды"}}, Labels: map[string]string{"numa": "0"}, Count: 2, Workers: 4, Service: 4, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Stages: []Stage{{Calls: []Call{{Target: "memory", Calls: 1, Route: "round_robin", Affinity: &MatchRule{true, "request", "numa"}, Transport: "network"}}, Join: "all", Quorum: 1}}},
+		{ID: "memory", Name: "Node memory", I18n: Localizations{"ru": {Name: "Память нод"}}, Labels: map[string]string{"numa": "0"}, Cost: &CostRule{MatchRule{true, "caller", "numa"}, 1, 3}, Count: 2, Workers: 4, Service: 6, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Stages: []Stage{}},
 	}
 	c.Overrides = map[string]NodeConfig{"cpu-2": {Labels: map[string]string{"numa": "1"}}, "memory-2": {Labels: map[string]string{"numa": "1"}}}
 	return c

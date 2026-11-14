@@ -43,7 +43,7 @@ For the browser trace-interaction regression checks, serve the project root with
 - Generator: Poisson arrivals into `entry` only, with a configurable total RPS for the entry group, mean weight, uniform weight spread, and seed.
 - Node: bounded FIFO queue, worker count, local processing time × weight, and failure state. A worker remains occupied for the entire operation, including waiting for children.
 - Group: identically configured instances with optional individual overrides.
-- Edge: target group, call count, round_robin/random/least_busy/broadcast routing, and optional network delay. Calls across all outgoing edges run in parallel within the Downstream stage. Broadcast × calls sends that many calls to every node in the target group. Children inherit request weight.
+- Call: a target group or relative internal-box path, call count, round_robin/random/least_busy/broadcast routing, explicit network/ideal transport, and optional delay and timeout. Every box runs explicit sequential stages; calls within each stage run in parallel. Broadcast × calls sends that many calls to every node in the target group. Children inherit request weight.
 - Join: all successful responses, the first successful response, or N successful responses (quorum). An impossible quorum fails the parent. When cancellation is enabled, unfinished children are canceled.
 - Connect timeout bounds an abstract connection handshake (2 × one-way network delay); keep-alive reuses connections.
 - The calling box's timeout, inherited from its group by default, is the budget for each outgoing child call, including connection setup, network, queueing, processing, and return network time. It is not an nginx read timeout. The user deadline bounds the root call.
@@ -60,6 +60,8 @@ Select **Generator → Request mode → Single request**, enter a weight (greate
 Entering this mode pauses playback and stops background arrivals without resetting virtual time, queues, RNG, history or reusable connections. Accepted work remains; use **↺** explicitly for an empty-system experiment. Sending starts playback; it pauses automatically after this request and all its descendant work finish. **Pause**, speed and **+10 ms** allow closer inspection. With cancellation disabled, a user deadline can expire while downstream work continues; the UI reports this and waits for the work to finish before enabling another send. Recover a hung node or restart if work cannot finish. Switching back to Continuous load preserves configured RPS; press Resume to continue.
 
 The latest manual trace stays available while running and after completion. Its full call tree includes every service, resource visit and connection retry, with span IDs, parent IDs, timing, connection reuse, locality decisions and final outcomes. Visited service boxes are highlighted. The chronological event journal records actual engine transitions, including connection readiness, queueing, worker acquisition, scheduled processing duration, child/resource waits, failures, cancellation and the user response. Times are relative to sending; an early user response does not imply downstream completion. Detailed events are collected only for manual requests.
+
+The Worker echoes an optional `requestId` on command responses and errors; periodic snapshots have no request ID. The interface waits for the matching response before closing an editor and clears trace selection again when a reset is confirmed.
 
 The WASM bridge accepts `{"type":"mode","manual":true}` and `{"type":"request","request":{"weight":1,"deadline":3000,"labels":{"az":"az1"}}}`. Snapshots expose `manualMode`, `focus`, and `focusRunning`; a running trace has `end: -1`. Mode is session state, retained across resets/presets but not exported in model JSON. Only one unfinished manual request is accepted at a time. Event `value` is a duration in ms for call-start budget, processing-start duration and connection-ready one-way network delay, a queue depth for queue insertion, or an attempt number for retries. Ordinary load traces keep their existing lightweight spans. After building, run `node scripts/check-manual.cjs` to verify the real WASM/Worker commands and the embedded offline Worker.
 
@@ -84,7 +86,7 @@ The last equation is an exact finite-horizon balance when starting empty. It pre
 
 The Configuration button opens graph JSON; Export model saves group and node parameters. Importing a new graph restarts the experiment. Node counts change live: new instances immediately join routing, while removed instances stop receiving new assignments and finish accepted work, including requests still in transit. Queues do not migrate. Time, RNG state, counters, charts, and traces are preserved; retired-node history remains in group-level Little's law accounting. A hung node without cancellation can remain draining until it recovers or is explicitly taken down. Scaling back up returns an unfinished draining node to routing; an already retired slot returns healthy with group settings. Other settings also apply live, preserving already scheduled durations and call budgets. Individual edits appear in `overrides` and survive reset.
 
-The graph must be acyclic. Current limits are 12 groups, 64 nodes, and 512 calls per root request. Type semantics live in `core/model.go`: `Config`, `Group`, `Edge`, and `NodeConfig`. Adding a preset does not require changing the event scheduler.
+The call graph, including nested boxes and conditional branches, must be acyclic. Sequential revisits are allowed. Current limits are 12 groups, 64 top-level nodes, 512 internal boxes, and 512 visits per root request (before connection retries). Type semantics live in `core/model.go`: `Config`, `Group`, `Call`, and `NodeConfig`. Adding a preset does not require changing the event scheduler.
 
 Files:
 
@@ -130,7 +132,7 @@ Changing language only redraws the interface: time, queues, settings, selected t
 
 ## Retrying connection failures
 
-Try next node is enabled by default in group outgoing-call settings. In JSON it is `groups[].retryConnect`; a missing field in older models means `true`. Changes apply to new logical calls.
+Try next node is enabled by default in group outgoing-call settings. In JSON it is `groups[].retryConnect`; a missing optional field means `true`. Changes apply to new logical calls.
 
 On `connection_refused` or `connect_timeout` **before connection establishment**, the caller tries the next node in the same downstream group. Normal routing selects the first node; remaining candidates follow in ring order. Each candidate is attempted at most once. The list is captured at call start; nodes removed from the group are skipped. No new attempts start after the parent stops waiting or the user receives a response.
 
@@ -140,38 +142,67 @@ Each attempt has a separate span with `attempt` and a `retryOf` link to the firs
 
 Tests: `core/retry_test.go`.
 
-## Composite boxes and resources
+## Composite boxes and request programs
 
-`groups[].resources` defines up to eight named resources; `groups[].stages` defines up to sixteen sequential stages. A name does not imply a physical type: CPU, Disk, Compression, and GPU use the same Node/FIFO/Span mechanism. `scope: instance` creates a resource per instance; `scope: shared` creates one per group. Resource work (`service`, ms) applies per visit and is multiplied by request weight. Resource slots are released before the next stage starts.
+Models use `"version": 2`. Every box requires an explicit `stages` array, including `stages: []` for a leaf. Imports reject unknown fields and unsupported/missing versions. The old `edges`, group-level `join`/`quorum`, `downstream` stage, resource-stage shorthand, and global `keepalive` are not accepted or converted.
+
+`groups[].resources` defines named boxes inside a group. Every internal box can recursively define its own `resources` and `stages`: all boxes use the same Node/FIFO/worker/Span and program execution mechanism. A name does not imply a physical type. Each box first performs its local `service` (ms × request weight), then runs its stages, holding its worker while children execute. A child releases its worker when its own operation ends. Containment determines ownership; explicit calls determine execution. A containing box remains a real queue/worker limit, so do not add one solely as a decorative server boundary.
+
+Each box can have up to eight immediate children and sixteen stages, with no separate hard-coded nesting-depth limit. The total internal-box and per-request visit limits still apply. `scope: instance` creates a child per owner; descendants of a shared owner are also shared. `scope: shared` creates one copy of that definition path per top-level group, independent of the number of instances. A shared box can call shared relatives and external groups; it cannot select a private relative because it has no owning instance.
 
 Example group fields:
 
 ```json
 {
   "resources": [
-    {"id":"compute","name":"CPU","scope":"instance","workers":2,"service":8,"queueLimit":500},
-    {"id":"pool","name":"Connection pool","scope":"shared","workers":20,"service":5,"queueLimit":500}
+    {"id":"compute","name":"CPU","scope":"instance","workers":2,"service":8,"queueLimit":500,"stages":[]},
+    {"id":"pool","name":"Connection pool","scope":"shared","workers":20,"service":5,"queueLimit":500,"stages":[]}
   ],
   "stages": [
-    {"resource":"compute"},
-    {"resource":"pool"},
-    {"downstream":true},
-    {"resource":"compute"}
+    {"join":"all","calls":[{"resource":"compute","calls":1,"route":"round_robin","transport":"ideal","timeout":0}]},
+    {"join":"all","calls":[{"resource":"pool","calls":1,"route":"round_robin","transport":"ideal"}]},
+    {"join":"all","calls":[{"resource":"compute","calls":1,"route":"round_robin","transport":"ideal","timeout":0}]}
   ]
 }
 ```
 
-Downstream starts the current `edges` in parallel using the current all/any/quorum policy. Exactly one such stage is required when edges exist; leaf groups must not have one. Individual edges within Downstream are not ordered in this version. If `stages` is absent, resources run in list order, followed by Downstream. Older models without resources retain their behavior. Local service delay (`service`) remains additional time before the stages.
+A leaf box returns after local processing. Contained resources are visited only when a call names them; containment never creates implicit stages.
 
-Internal calls create no TCP connections and add no network delay; they are bounded by the caller's wait and cancellation propagation. A shared resource with a fixed visit duration models bounded parallelism, not leasing a slot across other stages. For example, Connection pool above is a standalone operation, not a connection held throughout Downstream.
+Every stage defines a nonempty `calls` batch of up to eight call directions and a required `join` (`all`, `any`, `quorum`); `quorum` is required for the last policy. Multiple stages express sequential work. Each call chooses exactly one `target` (a top-level group) or `resource` (a relative internal-box path), plus `calls` (1–16), `route` (`round_robin`, `random`, `least_busy`, `broadcast`) and `transport` (`network`, `ideal`). Routing selects instances of a target group; an internal resource path identifies one owned/shared box. From `app`, `../compute` selects a sibling; `worker/cpu` selects a descendant. Internal references cannot escape their top-level group.
+
+Stages and individual calls can include `when: {"op":"read"}`. All listed request tags must exist and match exactly; missing tags do not match. Every matching stage/call runs, so conditions are not first-match rules. Request labels remain unchanged throughout the call tree. With no eligible calls, an `all` or `any` stage is skipped successfully; a quorum that cannot be reached fails immediately with `quorum_unreachable`. Conditions are separate from locality affinity, which selects instances within an already selected group.
+
+For example, an application box can use a sibling CPU, select a cache or database by request tag while always calling audit, then revisit the CPU:
+
+```json
+{
+  "id":"app", "name":"Application", "scope":"instance",
+  "workers":16, "service":1, "queueLimit":500,
+  "stages":[
+    {"join":"all","calls":[{"resource":"../compute","calls":1,"route":"round_robin","transport":"ideal","timeout":0}]},
+    {"join":"all", "calls":[
+      {"target":"cache", "calls":1, "route":"round_robin", "when":{"op":"read"}, "transport":"ideal"},
+      {"target":"db", "calls":1, "route":"round_robin", "when":{"op":"write"}, "transport":"network", "network":5},
+      {"target":"audit", "calls":1, "route":"round_robin", "transport":"network"}
+    ]},
+    {"join":"all","calls":[{"resource":"../compute","calls":1,"route":"round_robin","transport":"ideal","timeout":0}]}
+  ]
+}
+```
+
+This fragment assumes a sibling `compute` resource and top-level `cache`, `db`, and `audit` groups. The `#template=composition` preset supplies a complete example: each backend’s application calls a sibling CPU, the CPU calls its own memory, and read/write tags choose cache/database alongside audit.
+
+`transport: "network"` uses the abstract connection model: handshake, keep-alive, idle/connect/call timeouts, and connection-establishment retries for target groups. `network` sets the one-way link delay, including reply and handshake; absent means the model default. An explicit `network: 0` has exactly zero transit/handshake delay, including on a new connection, while retaining connection state and failure behavior. `transport: "ideal"` bypasses connections and adds exactly zero link delay. It does not bypass queueing, processing, failure state, the call budget, or cancellation. Ideal links do not retry connection failures because they have no connection establishment.
+
+Transport is always explicit, and either target kind can use either transport. A call's optional `timeout` overrides the caller's budget: absent inherits the caller setting, a positive value sets milliseconds, and `0` adds no independent call timer. Outer call timeouts, the user deadline and cancellation still apply. This rule is identical for group and internal targets. Built-in CPU/disk visits explicitly use ideal transport and `timeout: 0`, preserving their original wait behavior. A leaf shared box with a fixed duration models bounded parallelism, not a lease across other stages. To hold its slot over child work, give that box its own program.
 
 Utilization is the integral of occupied slots divided by the integral of available slots over the window. Counters integrate at changes; samples are saved every 0.5 seconds, with interpolation at the rolling-window boundary. Cards use a 5-second window. Groups aggregate by available slot-time, not by averaging percentages. New nodes count from creation. Queues are measured separately and do not contribute to utilization. Capacity changes limit admission of new work; ongoing visits finish.
 
-Scaling preserves the experiment. Instance resources scale with the service; shared resources remain. Removed instances retain resources even for not-yet-started stages of accepted requests. Retired-resource history stays in Little's law accounting. The autoscaler changes service instance counts while observing a selected resource; adding services does not increase shared-resource capacity.
+Scaling preserves the experiment. Instance resources scale with the service; shared resources remain. Removed instances retain their entire private bundle for not-yet-started descendant and sibling calls of accepted requests, including work continuing after an early user response when cancellation is disabled. Retired-resource history stays in Little's law accounting. The autoscaler changes service instance counts while observing a selected resource; adding services does not increase shared-resource capacity.
 
-The interface offers resource bars on cards, inspector tabs, separate metrics and Little's law, and expandable internal spans via ▸. Groups can collapse; those with more than six nodes start collapsed. The summary bar shows average/maximum utilization. The resource editor adds/removes resources, changes scope, and reorders stages; applying structural changes explicitly restarts the experiment. Numeric settings, names, and failures can be edited live in tabs. Model JSON includes resources, stages, autoscaling, and individual overrides.
+The interface offers resource bars on cards, inspector tabs, separate metrics and Little's law, and expandable internal spans via ▸. Groups can collapse; those with more than six nodes start collapsed. The summary bar shows average/maximum utilization. The **Boxes and paths** editor selects any nested box, adds/removes children, changes ownership, reorders stages, edits parallel calls, request conditions, and network/ideal links. Resource bars, tabs and autoscaling sensors include all nesting levels. A stage captures its conditions, calls, join policy and budgets when it begins; executing work and attempts retain their scheduled durations/budgets. Numeric settings, conditions, call counts, join policies and transport settings apply without resetting time, RNG, queues, or history. Changes to child identities/ownership, call targets, or stage order/count require an explicit restart. Invalid updates are rejected before engine state changes. Model JSON preserves all nested programs and overrides.
 
-Composite-box tests: `core/resources_test.go`.
+Composite-box tests: `core/resources_test.go` and `core/program_test.go`. Format rejection and all eight preset round-trips are covered by `core/schema_test.go`; `core/presets_test.go` compares 10 seconds of deterministic outcomes and occupancy with results recorded before removing implicit programs. All presets are defined by `core.PresetConfig`; the interface and WASM bridge use that single source. Browser checks: serve the repository root and open `scripts/check-programs.html` (or `scripts/check-programs.html?standalone` for the embedded build).
 
 ## Locality and illustrative cost
 
@@ -179,9 +210,9 @@ Expand Request labels in the generator or Locality in a service/resource inspect
 
 Three independent mechanisms compare the same kind of key:
 
-- `entryAffinity` / `edges[].affinity` selects matching boxes, using `request` or `caller` as the source. Round-robin/random/least-busy operates within the selected subset. With no matches, the entire group is eligible. Overload in the local subset does not trigger cross-zone routing. Broadcast cannot be combined with subset preference.
+- `entryAffinity` / `stages[].calls[].affinity` selects matching boxes, using `request` or `caller` as the source. Round-robin/random/least-busy operates within the selected subset. With no matches, the entire group is eligible. Overload in the local subset does not trigger cross-zone routing. Broadcast cannot be combined with subset preference.
 - A service, resource, or individual override's `cost` multiplies **only local processing**: base time × weight × match/mismatch. Queueing and child waits are not multiplied. A missing label on either side means ×1.
-- `edges[].networkCost` multiplies one-way link delay, including handshake and return traffic. The factor is recalculated per attempt. A zero base delay remains zero.
+- `stages[].calls[].networkCost` multiplies one-way link delay, including handshake and return traffic. The factor is recalculated per attempt. A zero base delay remains zero.
 
 A cost rule has the form `{"enabled":true,"source":"caller","key":"az","match":1,"mismatch":3}`. Affinity rules use the same first three fields. Behavior is unchanged when no rules are set.
 
@@ -201,7 +232,7 @@ Links store the preset, not current settings or experiment state. Use JSON expor
 
 ## Model localization in JSON
 
-Names are model data, not interface dictionary keys. `name` holds the default name in English; older JSON without translations is displayed literally, with no automatic translation. The model, each group, and each resource can include an optional field:
+Names are model data, not interface dictionary keys. `name` holds the default name in English; JSON without translations is displayed literally, with no automatic translation. The model, each group, and each resource can include an optional field:
 
 ```json
 {
@@ -221,7 +252,7 @@ Translations appear in the diagram, inspector, resource/autoscaler lists, stages
 
 ## Connection reuse
 
-Keep-alive stores one abstract reusable connection for each caller → target pair; it is not a complete TCP pool. Trace attempts show `connection: "new" | "reused"`, establishment (`connectionEstablished`), and closure (`connectionClosed`). Internal resources do not use network connections.
+Keep-alive stores one abstract reusable connection for each caller → target pair; it is not a complete TCP pool. Trace attempts show `connection: "new" | "reused"`, establishment (`connectionEstablished`), and closure (`connectionClosed`). Internal calls use ideal links by default; an explicit network transport uses the same connection cache and settings as other box calls.
 
 Local timeout/deadline, cancellation of an unfinished call, or transport failure evicts that call's connection from the reuse cache. Taking a node down removes its incoming/outgoing connections. An ordinary downstream error response, such as a full queue, does not by itself break the upstream connection. Disabling keep-alive clears the corresponding caller's cache; new calls do not populate it while disabled.
 
@@ -247,4 +278,4 @@ Idle timeout starts when the last response returns over the connection, includin
 
 Generator-to-entry connections are configured separately in `client`: `keepalive`, `keepaliveTimeout`, and `connectTimeout` (defaults true / 30000 / 200). The total budget remains `deadline`. The interface exposes these under Connections to entry group. LB settings no longer control the generator's connect timeout.
 
-Legacy root-level `keepalive` is accepted on import and fills missing group and generator settings. After normalization, exports omit the global flag. Internal CPU/disk resources have no network downstream; ordinary groups with those names use the same generic settings as LB/API.
+Internal boxes can have downstream calls and their own optional `keepalive`, `keepaliveTimeout`, `connectTimeout`, `timeout`, and `retryConnect`. Missing fields inherit their containing definition’s settings recursively; individual node overrides apply only to that caller. For example, `overrides["api-1/~app"]` changes one application box’s outgoing calls. Ordinary and internal boxes use the same caller connection machinery, regardless of CPU/Disk/LB/API names.

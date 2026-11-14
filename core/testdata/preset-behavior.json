@@ -1,0 +1,804 @@
+{
+  "autoscale": {
+    "Metrics": {
+      "goodput": 130.3,
+      "outRps": 181.3,
+      "p95": 1508.938815609924,
+      "errorRate": 28.130170987313843,
+      "pending": 122,
+      "busy": 191,
+      "capacity": 376,
+      "queue": 110,
+      "ghosts": 0,
+      "reasons": {},
+      "arrivals": 1935,
+      "ok": 1303,
+      "failed": 510
+    },
+    "Nodes": {
+      "api-1": {
+        "Arrivals": 1117,
+        "Exited": 1047,
+        "Queue": 38,
+        "Active": 32,
+        "SumW": 1410462.9865952616
+      },
+      "api-1/~compute": {
+        "Arrivals": 2021,
+        "Exited": 1991,
+        "Queue": 28,
+        "Active": 2,
+        "SumW": 298175.7875728696
+      },
+      "api-2": {
+        "Arrivals": 663,
+        "Exited": 615,
+        "Queue": 16,
+        "Active": 32,
+        "SumW": 511198.8014331003
+      },
+      "api-2/~compute": {
+        "Arrivals": 1273,
+        "Exited": 1243,
+        "Queue": 28,
+        "Active": 2,
+        "SumW": 219576.983024506
+      },
+      "api-3": {
+        "Arrivals": 155,
+        "Exited": 153,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 6982.600261563079
+      },
+      "api-3/~compute": {
+        "Arrivals": 308,
+        "Exited": 307,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 4515.252198332149
+      },
+      "db-1": {
+        "Arrivals": 1737,
+        "Exited": 1734,
+        "Queue": 0,
+        "Active": 3,
+        "SumW": 10421.794029135304
+      },
+      "db-1/~compute": {
+        "Arrivals": 3466,
+        "Exited": 3466,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 3492.091891284309
+      },
+      "db-1/~storage": {
+        "Arrivals": 1735,
+        "Exited": 1732,
+        "Queue": 0,
+        "Active": 3,
+        "SumW": 6931.127933443202
+      },
+      "lb-1": {
+        "Arrivals": 1935,
+        "Exited": 1813,
+        "Queue": 0,
+        "Active": 122,
+        "SumW": 1973055.0424714545
+      }
+    }
+  },
+  "az": {
+    "Metrics": {
+      "goodput": 190.3,
+      "outRps": 190.3,
+      "p95": 59.769378849762916,
+      "errorRate": 0,
+      "pending": 11,
+      "busy": 20,
+      "capacity": 624,
+      "queue": 0,
+      "ghosts": 0,
+      "reasons": {},
+      "arrivals": 1914,
+      "ok": 1903,
+      "failed": 0
+    },
+    "Nodes": {
+      "api-1": {
+        "Arrivals": 469,
+        "Exited": 468,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 15333.124460520221
+      },
+      "api-1/~compute": {
+        "Arrivals": 938,
+        "Exited": 937,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 7796.373121322425
+      },
+      "api-2": {
+        "Arrivals": 489,
+        "Exited": 485,
+        "Queue": 0,
+        "Active": 4,
+        "SumW": 15878.90571191908
+      },
+      "api-2/~compute": {
+        "Arrivals": 975,
+        "Exited": 973,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 8114.731977772523
+      },
+      "api-3": {
+        "Arrivals": 468,
+        "Exited": 468,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 15329.373548102161
+      },
+      "api-3/~compute": {
+        "Arrivals": 936,
+        "Exited": 936,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 7809.388651745499
+      },
+      "api-4": {
+        "Arrivals": 488,
+        "Exited": 485,
+        "Queue": 0,
+        "Active": 3,
+        "SumW": 15754.896170901848
+      },
+      "api-4/~compute": {
+        "Arrivals": 973,
+        "Exited": 972,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 8003.429330677628
+      },
+      "db-1": {
+        "Arrivals": 937,
+        "Exited": 937,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 5662.018999641326
+      },
+      "db-1/~compute": {
+        "Arrivals": 1874,
+        "Exited": 1874,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 1895.6003764836526
+      },
+      "db-1/~storage": {
+        "Arrivals": 937,
+        "Exited": 937,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 3765.481623157524
+      },
+      "db-2": {
+        "Arrivals": 975,
+        "Exited": 973,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 5842.8981139623365
+      },
+      "db-2/~compute": {
+        "Arrivals": 1949,
+        "Exited": 1948,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 1952.5896631228916
+      },
+      "db-2/~storage": {
+        "Arrivals": 975,
+        "Exited": 974,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 3895.486602013485
+      },
+      "lb-1": {
+        "Arrivals": 937,
+        "Exited": 936,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 41962.069460514416
+      },
+      "lb-2": {
+        "Arrivals": 977,
+        "Exited": 968,
+        "Queue": 0,
+        "Active": 9,
+        "SumW": 43213.286926065266
+      }
+    }
+  },
+  "composition": {
+    "Metrics": {
+      "goodput": 77.2,
+      "outRps": 77.2,
+      "p95": 53.607578400773775,
+      "errorRate": 0,
+      "pending": 3,
+      "busy": 4,
+      "capacity": 344,
+      "queue": 0,
+      "ghosts": 0,
+      "reasons": {},
+      "arrivals": 775,
+      "ok": 772,
+      "failed": 0
+    },
+    "Nodes": {
+      "api-1": {
+        "Arrivals": 387,
+        "Exited": 386,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 10412.790404535253
+      },
+      "api-1/~app": {
+        "Arrivals": 387,
+        "Exited": 386,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 10412.404404535193
+      },
+      "api-1/~compute": {
+        "Arrivals": 773,
+        "Exited": 773,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 4659.490635198046
+      },
+      "api-1/~compute/~memory": {
+        "Arrivals": 773,
+        "Exited": 773,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 1537.8457153704574
+      },
+      "api-2": {
+        "Arrivals": 387,
+        "Exited": 386,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 10377.012843288365
+      },
+      "api-2/~app": {
+        "Arrivals": 387,
+        "Exited": 386,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 10376.626843288304
+      },
+      "api-2/~compute": {
+        "Arrivals": 772,
+        "Exited": 772,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 4613.620929681652
+      },
+      "api-2/~compute/~memory": {
+        "Arrivals": 772,
+        "Exited": 772,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 1528.569844212513
+      },
+      "audit-1": {
+        "Arrivals": 773,
+        "Exited": 773,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 2300.498494856991
+      },
+      "cache-1": {
+        "Arrivals": 546,
+        "Exited": 546,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 1078.2854889462833
+      },
+      "db-1": {
+        "Arrivals": 227,
+        "Exited": 227,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 1356.7990682657148
+      },
+      "db-1/~compute": {
+        "Arrivals": 454,
+        "Exited": 454,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 448.7422631948046
+      },
+      "db-1/~storage": {
+        "Arrivals": 227,
+        "Exited": 227,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 907.8298050708764
+      },
+      "lb-1": {
+        "Arrivals": 774,
+        "Exited": 772,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 30083.2986808197
+      }
+    }
+  },
+  "fanout": {
+    "Metrics": {
+      "goodput": 2.7,
+      "outRps": 149.3,
+      "p95": 1154.1339069812857,
+      "errorRate": 98.19156061620897,
+      "pending": 549,
+      "busy": 344,
+      "capacity": 344,
+      "queue": 651,
+      "ghosts": 0,
+      "reasons": {
+        "request_timeout": 24
+      },
+      "arrivals": 2042,
+      "ok": 27,
+      "failed": 1466
+    },
+    "Nodes": {
+      "api-1": {
+        "Arrivals": 437,
+        "Exited": 374,
+        "Queue": 47,
+        "Active": 16,
+        "SumW": 536100.4779534074
+      },
+      "api-1/~compute": {
+        "Arrivals": 396,
+        "Exited": 395,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 3146.534882623593
+      },
+      "api-2": {
+        "Arrivals": 437,
+        "Exited": 374,
+        "Queue": 47,
+        "Active": 16,
+        "SumW": 536430.3881374602
+      },
+      "api-2/~compute": {
+        "Arrivals": 398,
+        "Exited": 397,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 3181.335870117172
+      },
+      "api-3": {
+        "Arrivals": 437,
+        "Exited": 373,
+        "Queue": 48,
+        "Active": 16,
+        "SumW": 536122.141045518
+      },
+      "api-3/~compute": {
+        "Arrivals": 396,
+        "Exited": 396,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 3146.1761233678135
+      },
+      "api-4": {
+        "Arrivals": 436,
+        "Exited": 373,
+        "Queue": 47,
+        "Active": 16,
+        "SumW": 536213.7917078326
+      },
+      "api-4/~compute": {
+        "Arrivals": 395,
+        "Exited": 394,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 3124.9125172715912
+      },
+      "db-1": {
+        "Arrivals": 4659,
+        "Exited": 4482,
+        "Queue": 153,
+        "Active": 24,
+        "SumW": 1793097.2659349581
+      },
+      "db-1/~compute": {
+        "Arrivals": 4632,
+        "Exited": 4629,
+        "Queue": 1,
+        "Active": 2,
+        "SumW": 7364.547077040153
+      },
+      "db-1/~storage": {
+        "Arrivals": 4503,
+        "Exited": 4482,
+        "Queue": 17,
+        "Active": 4,
+        "SumW": 230844.58975386538
+      },
+      "lb-1": {
+        "Arrivals": 2041,
+        "Exited": 1494,
+        "Queue": 291,
+        "Active": 256,
+        "SumW": 2886584.4950010986
+      }
+    }
+  },
+  "hang": {
+    "Metrics": {
+      "goodput": 143.1,
+      "outRps": 183.6,
+      "p95": 58.780335514189574,
+      "errorRate": 22.058823529411764,
+      "pending": 83,
+      "busy": 97,
+      "capacity": 344,
+      "queue": 463,
+      "ghosts": 16,
+      "reasons": {
+        "request_timeout": 5
+      },
+      "arrivals": 1919,
+      "ok": 1431,
+      "failed": 405
+    },
+    "Nodes": {
+      "api-1": {
+        "Arrivals": 479,
+        "Exited": 0,
+        "Queue": 463,
+        "Active": 16,
+        "SumW": 0
+      },
+      "api-1/~compute": {
+        "Arrivals": 0,
+        "Exited": 0,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 0
+      },
+      "api-2": {
+        "Arrivals": 478,
+        "Exited": 477,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 15407.807935432382
+      },
+      "api-2/~compute": {
+        "Arrivals": 956,
+        "Exited": 955,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 7749.878246558725
+      },
+      "api-3": {
+        "Arrivals": 478,
+        "Exited": 477,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 15193.662743266215
+      },
+      "api-3/~compute": {
+        "Arrivals": 955,
+        "Exited": 955,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 7582.174876042841
+      },
+      "api-4": {
+        "Arrivals": 478,
+        "Exited": 477,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 15428.582916311785
+      },
+      "api-4/~compute": {
+        "Arrivals": 955,
+        "Exited": 955,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 7759.973800944412
+      },
+      "db-1": {
+        "Arrivals": 1434,
+        "Exited": 1434,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 8612.488593545548
+      },
+      "db-1/~compute": {
+        "Arrivals": 2868,
+        "Exited": 2868,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 2890.3981702555116
+      },
+      "db-1/~storage": {
+        "Arrivals": 1434,
+        "Exited": 1434,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 5720.65642328981
+      },
+      "lb-1": {
+        "Arrivals": 1915,
+        "Exited": 1837,
+        "Queue": 0,
+        "Active": 78,
+        "SumW": 673040.9207116998
+      }
+    }
+  },
+  "normal": {
+    "Metrics": {
+      "goodput": 200.9,
+      "outRps": 200.9,
+      "p95": 59.0450130858444,
+      "errorRate": 0,
+      "pending": 15,
+      "busy": 20,
+      "capacity": 344,
+      "queue": 0,
+      "ghosts": 0,
+      "reasons": {},
+      "arrivals": 2024,
+      "ok": 2009,
+      "failed": 0
+    },
+    "Nodes": {
+      "api-1": {
+        "Arrivals": 506,
+        "Exited": 504,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 16312.789167688834
+      },
+      "api-1/~compute": {
+        "Arrivals": 1010,
+        "Exited": 1009,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 8208.10476376336
+      },
+      "api-2": {
+        "Arrivals": 505,
+        "Exited": 504,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 16322.719971455415
+      },
+      "api-2/~compute": {
+        "Arrivals": 1009,
+        "Exited": 1009,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 8198.304336722227
+      },
+      "api-3": {
+        "Arrivals": 505,
+        "Exited": 503,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 16242.802425664602
+      },
+      "api-3/~compute": {
+        "Arrivals": 1009,
+        "Exited": 1008,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 8162.115407280387
+      },
+      "api-4": {
+        "Arrivals": 505,
+        "Exited": 503,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 16077.062253705935
+      },
+      "api-4/~compute": {
+        "Arrivals": 1008,
+        "Exited": 1008,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 8026.545815018454
+      },
+      "db-1": {
+        "Arrivals": 2018,
+        "Exited": 2017,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 12196.99024534559
+      },
+      "db-1/~compute": {
+        "Arrivals": 4035,
+        "Exited": 4035,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 4118.757814418743
+      },
+      "db-1/~storage": {
+        "Arrivals": 2018,
+        "Exited": 2017,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 8077.3838320972145
+      },
+      "lb-1": {
+        "Arrivals": 2023,
+        "Exited": 2011,
+        "Queue": 0,
+        "Active": 12,
+        "SumW": 89034.36956968688
+      }
+    }
+  },
+  "numa": {
+    "Metrics": {
+      "goodput": 191.4,
+      "outRps": 191.4,
+      "p95": 25.63579803245011,
+      "errorRate": 0,
+      "pending": 3,
+      "busy": 4,
+      "capacity": 16,
+      "queue": 0,
+      "ghosts": 0,
+      "reasons": {},
+      "arrivals": 1917,
+      "ok": 1914,
+      "failed": 0
+    },
+    "Nodes": {
+      "cpu-1": {
+        "Arrivals": 959,
+        "Exited": 958,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 15405.975085858847
+      },
+      "cpu-2": {
+        "Arrivals": 958,
+        "Exited": 956,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 15650.599971590778
+      },
+      "memory-1": {
+        "Arrivals": 991,
+        "Exited": 990,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 11999.958511601777
+      },
+      "memory-2": {
+        "Arrivals": 924,
+        "Exited": 924,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 11263.418795852767
+      }
+    }
+  },
+  "slow": {
+    "Metrics": {
+      "goodput": 0.4,
+      "outRps": 148.1,
+      "p95": 743.3499008517972,
+      "errorRate": 99.72991222147198,
+      "pending": 472,
+      "busy": 344,
+      "capacity": 344,
+      "queue": 462,
+      "ghosts": 0,
+      "reasons": {
+        "request_timeout": 24
+      },
+      "arrivals": 1953,
+      "ok": 4,
+      "failed": 1477
+    },
+    "Nodes": {
+      "api-1": {
+        "Arrivals": 435,
+        "Exited": 371,
+        "Queue": 48,
+        "Active": 16,
+        "SumW": 535580.291872441
+      },
+      "api-1/~compute": {
+        "Arrivals": 389,
+        "Exited": 388,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 3099.2157266253066
+      },
+      "api-2": {
+        "Arrivals": 434,
+        "Exited": 371,
+        "Queue": 47,
+        "Active": 16,
+        "SumW": 535866.2012560855
+      },
+      "api-2/~compute": {
+        "Arrivals": 389,
+        "Exited": 388,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 3128.0918839679393
+      },
+      "api-3": {
+        "Arrivals": 434,
+        "Exited": 370,
+        "Queue": 48,
+        "Active": 16,
+        "SumW": 534817.6880339698
+      },
+      "api-3/~compute": {
+        "Arrivals": 386,
+        "Exited": 386,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 3068.0136424858133
+      },
+      "api-4": {
+        "Arrivals": 434,
+        "Exited": 370,
+        "Queue": 48,
+        "Active": 16,
+        "SumW": 534785.5673924462
+      },
+      "api-4/~compute": {
+        "Arrivals": 386,
+        "Exited": 386,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 3068.000626271831
+      },
+      "db-1": {
+        "Arrivals": 1543,
+        "Exited": 1482,
+        "Queue": 37,
+        "Active": 24,
+        "SumW": 598400.2319510208
+      },
+      "db-1/~compute": {
+        "Arrivals": 1510,
+        "Exited": 1510,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 1523.5313492503751
+      },
+      "db-1/~storage": {
+        "Arrivals": 1506,
+        "Exited": 1482,
+        "Queue": 20,
+        "Active": 4,
+        "SumW": 234562.28430390375
+      },
+      "lb-1": {
+        "Arrivals": 1952,
+        "Exited": 1482,
+        "Queue": 214,
+        "Active": 256,
+        "SumW": 2646503.5824588295
+      }
+    }
+  }
+}

@@ -10,13 +10,17 @@ import (
 	"strings"
 )
 
-type Edge struct {
-	Affinity    *MatchRule `json:"affinity,omitempty"`
-	NetworkCost *CostRule  `json:"networkCost,omitempty"`
-	Target      string     `json:"target"`
-	Calls       int        `json:"calls"`
-	Route       string     `json:"route"`
-	Network     *float64   `json:"network,omitempty"`
+type Call struct {
+	Timeout     *float64          `json:"timeout,omitempty"`
+	Resource    string            `json:"resource,omitempty"`
+	When        map[string]string `json:"when,omitempty"`
+	Transport   string            `json:"transport"`
+	Affinity    *MatchRule        `json:"affinity,omitempty"`
+	NetworkCost *CostRule         `json:"networkCost,omitempty"`
+	Target      string            `json:"target,omitempty"`
+	Calls       int               `json:"calls"`
+	Route       string            `json:"route"`
+	Network     *float64          `json:"network,omitempty"`
 }
 type Group struct {
 	Keepalive        *bool             `json:"keepalive,omitempty"`
@@ -25,7 +29,7 @@ type Group struct {
 	Labels           map[string]string `json:"labels,omitempty"`
 	Cost             *CostRule         `json:"cost,omitempty"`
 	Resources        []ResourceConfig  `json:"resources,omitempty"`
-	Stages           []Stage           `json:"stages,omitempty"`
+	Stages           []Stage           `json:"stages"`
 	AutoScale        *AutoScalePolicy  `json:"autoscale,omitempty"`
 	RetryConnect     *bool             `json:"retryConnect,omitempty"`
 	ID               string            `json:"id"`
@@ -36,9 +40,6 @@ type Group struct {
 	Timeout          float64           `json:"timeout"`
 	ConnectTimeout   float64           `json:"connectTimeout"`
 	QueueLimit       int               `json:"queueLimit"`
-	Join             string            `json:"join"`
-	Quorum           int               `json:"quorum"`
-	Edges            []Edge            `json:"edges"`
 }
 type NodeConfig struct {
 	Keepalive        *bool             `json:"keepalive,omitempty"`
@@ -53,6 +54,7 @@ type NodeConfig struct {
 	State            string            `json:"state,omitempty"`
 }
 type Config struct {
+	Version       int                   `json:"version"`
 	Description   string                `json:"description,omitempty"`
 	I18n          Localizations         `json:"i18n,omitempty"`
 	RequestLabels map[string]string     `json:"requestLabels,omitempty"`
@@ -67,7 +69,6 @@ type Config struct {
 	Jitter        float64               `json:"jitter"`
 	Deadline      float64               `json:"deadline"`
 	Cancel        bool                  `json:"cancel"`
-	Keepalive     *bool                 `json:"keepalive,omitempty"`
 	Client        *ClientConnections    `json:"client,omitempty"`
 	Seed          uint64                `json:"seed"`
 	Groups        []Group               `json:"groups"`
@@ -75,13 +76,16 @@ type Config struct {
 }
 
 func DefaultConfig() Config {
-	return Config{Name: "Load balancer → backends → database", I18n: Localizations{"ru": {Name: "Балансер → бекенды → база"}}, Entry: "lb", RPS: 200, Weight: 1, Spread: 20, Network: 5, Jitter: 10, Deadline: 3000, Cancel: true, Seed: 42, Groups: []Group{
-		{ID: "lb", Name: "Load balancer", I18n: Localizations{"ru": {Name: "Балансер"}}, Count: 1, Workers: 256, Service: 2, Timeout: 1500, ConnectTimeout: 200, QueueLimit: 500, Join: "all", Quorum: 1, Edges: []Edge{{Target: "api", Calls: 1, Route: "round_robin"}}},
-		{ID: "api", Name: "Backends", I18n: Localizations{"ru": {Name: "Бекенды"}}, Count: 4, Workers: 16, Service: 0, Resources: []ResourceConfig{{ID: "compute", Name: "CPU", Scope: "instance", Workers: 2, Service: 8, QueueLimit: 500}}, Stages: []Stage{{Resource: "compute"}, {Downstream: true}, {Resource: "compute"}}, Timeout: 700, ConnectTimeout: 200, QueueLimit: 500, Join: "all", Quorum: 1, Edges: []Edge{{Target: "db", Calls: 1, Route: "round_robin"}}},
-		{ID: "db", Name: "Database", I18n: Localizations{"ru": {Name: "База данных"}}, Count: 1, Workers: 24, Service: 0, Resources: []ResourceConfig{{ID: "compute", Name: "CPU", Scope: "instance", Workers: 2, Service: 1, QueueLimit: 500}, {ID: "storage", Name: "Disk", I18n: Localizations{"ru": {Name: "Диск"}}, Scope: "instance", Workers: 4, Service: 4, QueueLimit: 500}}, Stages: []Stage{{Resource: "compute"}, {Resource: "storage"}, {Resource: "compute"}}, Timeout: 500, ConnectTimeout: 200, QueueLimit: 500, Join: "all", Quorum: 1, Edges: []Edge{}},
+	return Config{Version: 2, Name: "Load balancer → backends → database", I18n: Localizations{"ru": {Name: "Балансер → бекенды → база"}}, Entry: "lb", RPS: 200, Weight: 1, Spread: 20, Network: 5, Jitter: 10, Deadline: 3000, Cancel: true, Seed: 42, Groups: []Group{
+		{ID: "lb", Name: "Load balancer", I18n: Localizations{"ru": {Name: "Балансер"}}, Count: 1, Workers: 256, Service: 2, Timeout: 1500, ConnectTimeout: 200, QueueLimit: 500, Stages: []Stage{{Calls: []Call{{Target: "api", Calls: 1, Route: "round_robin", Transport: "network"}}, Join: "all", Quorum: 1}}},
+		{ID: "api", Name: "Backends", I18n: Localizations{"ru": {Name: "Бекенды"}}, Count: 4, Workers: 16, Service: 0, Resources: []ResourceConfig{{ID: "compute", Name: "CPU", Scope: "instance", Workers: 2, Service: 8, QueueLimit: 500, Stages: []Stage{}}}, Stages: []Stage{{Calls: []Call{{Resource: "compute", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}, {Calls: []Call{{Target: "db", Calls: 1, Route: "round_robin", Transport: "network"}}, Join: "all", Quorum: 1}, {Calls: []Call{{Resource: "compute", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}, Timeout: 700, ConnectTimeout: 200, QueueLimit: 500},
+		{ID: "db", Name: "Database", I18n: Localizations{"ru": {Name: "База данных"}}, Count: 1, Workers: 24, Service: 0, Resources: []ResourceConfig{{ID: "compute", Name: "CPU", Scope: "instance", Workers: 2, Service: 1, QueueLimit: 500, Stages: []Stage{}}, {ID: "storage", Name: "Disk", I18n: Localizations{"ru": {Name: "Диск"}}, Scope: "instance", Workers: 4, Service: 4, QueueLimit: 500, Stages: []Stage{}}}, Stages: []Stage{{Calls: []Call{{Resource: "compute", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}, {Calls: []Call{{Resource: "storage", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}, {Calls: []Call{{Resource: "compute", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}, Timeout: 500, ConnectTimeout: 200, QueueLimit: 500},
 	}}
 }
 func Validate(c Config) error {
+	if c.Version != 2 {
+		return errors.New("Model version 2 is required. Legacy model formats are not supported.")
+	}
 	if err := validateConnections(c); err != nil {
 		return err
 	}
@@ -112,12 +116,6 @@ func Validate(c Config) error {
 		if g.Count < 1 || g.Count > 16 || g.Workers < 1 || g.Workers > 512 || g.Service < 0 || g.Service > 10000 || g.Timeout < 1 || g.Timeout > 60000 || g.ConnectTimeout < 1 || g.ConnectTimeout > 60000 || g.QueueLimit < 0 || g.QueueLimit > 2000 {
 			return fmt.Errorf("Invalid parameters for group %s", g.ID)
 		}
-		if g.Join != "all" && g.Join != "any" && g.Join != "quorum" {
-			return errors.New("join: all, any or quorum")
-		}
-		if len(g.Edges) > 8 {
-			return errors.New("At most 8 edges per group")
-		}
 		if g.AutoScale != nil {
 			if err := g.AutoScale.validate(); err != nil {
 				return fmt.Errorf("%s: %w", g.ID, err)
@@ -132,66 +130,8 @@ func Validate(c Config) error {
 	if _, ok := groups[c.Entry]; !ok {
 		return errors.New("Entry group not found")
 	}
-	for _, g := range c.Groups {
-		calls := 0
-		for _, e := range g.Edges {
-			target, ok := groups[e.Target]
-			if !ok {
-				return fmt.Errorf("Group not found: %s", e.Target)
-			}
-			if e.Calls < 1 || e.Calls > 16 {
-				return errors.New("calls: between 1 and 16")
-			}
-			if e.Route != "round_robin" && e.Route != "random" && e.Route != "least_busy" && e.Route != "broadcast" {
-				return errors.New("Unknown routing method")
-			}
-			if e.Network != nil && (*e.Network < 0 || *e.Network > 5000) {
-				return errors.New("Network latency: 0–5000 ms")
-			}
-			if e.Route == "broadcast" {
-				calls += target.Count * e.Calls
-			} else {
-				calls += e.Calls
-			}
-		}
-		if g.Join == "quorum" && len(g.Edges) > 0 && (g.Quorum < 1 || g.Quorum > calls) {
-			return errors.New("Quorum must be between 1 and the number of child calls")
-		}
-	}
-	visiting := map[string]bool{}
-	memo := map[string]int{}
-	var visit func(string) (int, error)
-	visit = func(id string) (int, error) {
-		if visiting[id] {
-			return 0, errors.New("This version requires an acyclic graph")
-		}
-		if n, ok := memo[id]; ok {
-			return n, nil
-		}
-		visiting[id] = true
-		count := 1 + resourceVisits(groups[id])
-		for _, e := range groups[id].Edges {
-			n, err := visit(e.Target)
-			if err != nil {
-				return 0, err
-			}
-			mul := e.Calls
-			if e.Route == "broadcast" {
-				mul *= groups[e.Target].Count
-			}
-			count += mul * n
-			if count > 512 {
-				return 0, errors.New("Fan-out is too large: at most 512 calls per request")
-			}
-		}
-		visiting[id] = false
-		memo[id] = count
-		return count, nil
-	}
-	for id := range groups {
-		if _, err := visit(id); err != nil {
-			return err
-		}
+	if err := validatePrograms(c); err != nil {
+		return err
 	}
 	validNodes := map[string]bool{}
 	for _, g := range c.Groups {
@@ -199,15 +139,12 @@ func Validate(c Config) error {
 			validNodes[fmt.Sprintf("%s-%d", g.ID, i)] = true
 		}
 	}
-	for _, g := range c.Groups {
-		for _, r := range g.Resources {
-			for i := 1; i <= g.Count; i++ {
-				owner := fmt.Sprintf("%s-%d", g.ID, i)
-				if r.Scope == "shared" {
-					owner = g.ID
-				}
-				validNodes[resourceNodeID(owner, r.ID)] = true
-			}
+	for _, b := range boxDefinitions(c) {
+		if b.Path == "" {
+			continue
+		}
+		for i := 1; i <= b.RootCount; i++ {
+			validNodes[definitionNodeID(b, i)] = true
 		}
 	}
 	for id, o := range c.Overrides {
@@ -267,7 +204,6 @@ type Span struct {
 	ResourceName          string            `json:"resourceName,omitempty"`
 	stage                 int
 	plan                  []Stage
-	stageBindings         map[string]*Node
 	downstream            func(bool, string)
 
 	Attempt    int     `json:"attempt,omitempty"`
@@ -424,9 +360,6 @@ func normalize(c *Config) {
 		if p.Window == 0 {
 			p.Window = 5000
 		}
-		if c.Groups[i].Edges == nil {
-			c.Groups[i].Edges = []Edge{}
-		}
 	}
 }
 func New(c Config) (*Engine, error) {
@@ -467,7 +400,7 @@ func (e *Engine) duration(v float64) float64 {
 }
 func (e *Engine) at(dt float64, fn func()) {
 	e.seq++
-	heap.Push(&e.Events, event{e.Now + math.Max(.001, dt), e.seq, fn})
+	heap.Push(&e.Events, event{e.Now + math.Max(0, dt), e.seq, fn})
 }
 func (e *Engine) Advance(ms float64) {
 	end := e.Now + math.Max(0, math.Min(ms, 10000))
@@ -532,7 +465,7 @@ func (e *Engine) addRequest(weight, deadline float64, labels map[string]string, 
 	e.Arrivals++
 	e.Pending++
 	n := e.routeLocal(e.C.Entry, "round_robin", "entry", e.C.EntryAffinity, t.Labels, nil)
-	e.call(t, nil, n, e.C.Network, e.C.Client.ConnectTimeout, deadline, func(ok bool, reason string) { e.finishTrace(t, ok, reason) }, &Edge{Affinity: e.C.EntryAffinity})
+	e.call(t, nil, n, e.C.Network, e.C.Client.ConnectTimeout, deadline, func(ok bool, reason string) { e.finishTrace(t, ok, reason) }, &Call{Affinity: e.C.EntryAffinity, Transport: "network"})
 	return t
 }
 func (e *Engine) finishTrace(t *Trace, ok bool, reason string) {
@@ -561,7 +494,7 @@ func (e *Engine) finishTrace(t *Trace, ok bool, reason string) {
 		delete(e.Traces, t.ID)
 	}
 }
-func (e *Engine) call(t *Trace, parent *Span, n *Node, network, connectTimeout, timeout float64, cb func(bool, string), edges ...*Edge) *Span {
+func (e *Engine) call(t *Trace, parent *Span, n *Node, network, connectTimeout, timeout float64, cb func(bool, string), calls ...*Call) *Span {
 	e.nextSpan++
 	p := 0
 	key := "client>" + n.ID
@@ -569,32 +502,50 @@ func (e *Engine) call(t *Trace, parent *Span, n *Node, network, connectTimeout, 
 		p = parent.ID
 		key = parent.Node + ">" + n.ID
 	}
-	s := &Span{ID: e.nextSpan, Parent: p, Node: n.ID, Start: e.Now, Arrive: -1, WorkStart: -1, LocalEnd: -1, End: -1, Reply: -1, Status: "pending", Phase: "connect", Weight: t.Weight, node: n, trace: t, callback: cb, network: network}
-	e.prepareHop(s, parent, edges)
+	s := &Span{ID: e.nextSpan, Parent: p, Node: n.ID, Resource: n.Resource, ResourceName: n.ResourceName, ResourceI18n: n.ResourceI18n, Start: e.Now, Arrive: -1, WorkStart: -1, LocalEnd: -1, End: -1, Reply: -1, Status: "pending", Phase: "connect", Weight: t.Weight, node: n, trace: t, callback: cb, network: network}
+	e.prepareHop(s, parent, calls)
 	network = s.network
 	n.Outstanding++
 	t.Spans = append(t.Spans, s)
 	t.active++
 	e.traceEvent(s, "Call started", "", timeout)
-	e.at(timeout, func() {
-		if s.settled {
-			return
-		}
-		reason := "request_timeout"
-		if parent == nil {
-			reason = "client_deadline"
-		}
-		e.dropConnection(s)
-		e.settle(s, false, reason)
-		if e.C.Cancel {
-			e.cancel(s, reason)
-		}
-	})
+	if n.Resource != "" {
+		e.traceEvent(s, "Resource visit", "", 0)
+	}
+	if timeout > 0 {
+		e.at(timeout, func() {
+			if s.settled {
+				return
+			}
+			reason := "request_timeout"
+			if parent == nil {
+				reason = "client_deadline"
+			}
+			e.dropConnection(s)
+			e.settle(s, false, reason)
+			if e.C.Cancel {
+				e.cancel(s, reason)
+			}
+		})
+	}
+	ideal := len(calls) > 0 && calls[0] != nil && calls[0].Transport == "ideal"
+	if ideal {
+		s.network, s.NetworkBase, s.NetworkDelay = 0, 0, 0
+		s.connected = true
+		s.Phase = "network"
+		e.traceEvent(s, "Ideal link", "", 0)
+		e.at(0, func() {
+			if !s.done {
+				e.arrive(s)
+			}
+		})
+		return s
+	}
 	e.acquireConnection(s, parent, key)
 	e.traceEvent(s, "Connection", s.Connection, 0)
 	connected := s.connected
 	ct := 0.0
-	if !connected {
+	if !connected && network > 0 {
 		ct = e.duration(2 * network)
 	}
 	if n.State == "down" {
@@ -734,83 +685,8 @@ func (e *Engine) afterLocal(s *Span) {
 	s.LocalEnd = e.Now
 	e.traceEvent(s, "Processing finished", "", 0)
 	s.parked = nil
-	if s.node.Resource != "" {
-		e.respond(s, true, "ok")
-		return
-	}
-	s.plan = append([]Stage(nil), groupStages(e.G[s.node.Group])...)
-	s.stageBindings = e.bindResources(s.node)
+	s.plan = append([]Stage(nil), e.boxGroup(s.node).Stages...)
 	e.nextStage(s)
-}
-func (e *Engine) dispatchDownstream(s *Span, done func(bool, string)) {
-	policy := e.downstreamSettings(s.node)
-	g := e.G[s.node.Group]
-	if len(g.Edges) == 0 {
-		done(true, "ok")
-		return
-	}
-	s.Phase = "children"
-	e.traceEvent(s, "Waiting for children", "", 0)
-	type target struct {
-		n     *Node
-		net   float64
-		retry bool
-		edge  Edge
-	}
-	var targets []target
-	for i, edge := range g.Edges {
-		network := e.C.Network
-		if edge.Network != nil {
-			network = *edge.Network
-		}
-		for j := 0; j < edge.Calls; j++ {
-			if edge.Route == "broadcast" {
-				for _, n := range e.Groups[edge.Target] {
-					targets = append(targets, target{n, network, false, edge})
-				}
-			} else {
-				targets = append(targets, target{e.routeLocal(edge.Target, edge.Route, fmt.Sprintf("%s/%d", s.Node, i), edge.Affinity, s.trace.Labels, s.Labels), network, policy.RetryConnect, edge})
-			}
-		}
-	}
-	s.successes = 0
-	stageDone := false
-	stageStart := len(s.children)
-	s.remaining = len(targets)
-	s.needed = s.remaining
-	if g.Join == "any" {
-		s.needed = 1
-	}
-	if g.Join == "quorum" {
-		s.needed = g.Quorum
-	}
-	for _, target := range targets {
-		e.callDownstream(s, target.n, target.net, policy.ConnectTimeout, policy.Timeout, target.retry, func(ok bool, why string) {
-			if s.done || stageDone {
-				return
-			}
-			s.remaining--
-			if ok {
-				s.successes++
-			}
-			if s.successes >= s.needed || s.successes+s.remaining < s.needed {
-				stageDone = true
-				success := s.successes >= s.needed
-				if e.C.Cancel {
-					for _, child := range s.children[stageStart:] {
-						if !child.done {
-							e.cancel(child, "cancelled")
-						}
-					}
-				}
-				if success {
-					done(true, "ok")
-				} else {
-					done(false, why)
-				}
-			}
-		}, &target.edge)
-	}
 }
 func (e *Engine) respond(s *Span, ok bool, why string) {
 	if s.done {
@@ -878,12 +754,9 @@ func (e *Engine) end(s *Span, ok bool, why string) {
 		delete(e.Traces, s.trace.ID)
 	}
 	e.pump(n)
-	e.retireIfDrained(n)
-	if n.Resource == "" {
-		for _, r := range e.Nodes {
-			if r.OwnerNode == n {
-				e.retireIfDrained(r)
-			}
+	for _, box := range e.Nodes {
+		if box.Group == n.Group {
+			e.retireIfDrained(box)
 		}
 	}
 }
@@ -988,8 +861,17 @@ func (e *Engine) SetNode(id, state string, service *float64, workers *int) error
 // Retired nodes stay in Nodes for historical metrics and Little's identity.
 // Groups contains only routing candidates. Draining nodes finish accepted calls.
 func (e *Engine) retireIfDrained(n *Node) {
-	if !n.Draining || n.Outstanding != 0 || (n.OwnerNode != nil && n.OwnerNode.Outstanding != 0) {
+	if !n.Draining || n.Outstanding != 0 {
 		return
+	}
+	// Keep the whole private bundle available for future stages and sibling calls,
+	// including detached work after a parent stops waiting.
+	if n.Index > 0 {
+		for _, other := range e.Nodes {
+			if other.Group == n.Group && other.Index == n.Index && other.Outstanding > 0 {
+				return
+			}
+		}
 	}
 	e.integrateLoad(n)
 	n.Draining = false
@@ -1269,10 +1151,8 @@ func (e *Engine) Snapshot() Snapshot {
 			util = busy / capacity * 100
 		}
 		v := NodeView{Labels: e.nodeLabels(n), Cost: e.nodeCost(n), CostKnown: n.CostKnown, CostRemote: n.CostRemote, HopKnown: n.HopKnown, HopRemote: n.HopRemote, Resource: n.Resource, ResourceName: n.ResourceName, Owner: n.Owner, Utilization: util, LoadBusy: busy, LoadCapacity: capacity, Draining: n.Draining, Retired: n.Retired, ID: n.ID, Group: n.Group, Index: n.Index, State: n.State, Service: n.Service, Workers: n.Workers, Active: len(n.Active), Queue: len(n.Queue), Arrivals: n.Arrivals, Exited: n.Exited, Phases: []string{}}
-		if n.Resource == "" {
-			settings := e.downstreamSettings(n)
-			v.Downstream = &settings
-		}
+		settings := e.downstreamSettings(n)
+		v.Downstream = &settings
 		if len(n.Queue) > 0 {
 			v.Oldest = e.Now - n.Queue[0].Arrive
 		}

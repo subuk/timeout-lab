@@ -34,7 +34,8 @@ func TestLocalityCallerAndResourceInheritance(t *testing.T) {
 	c.RequestLabels = map[string]string{"az": "b"}
 	c.Groups[0].Labels = map[string]string{"az": "a"}
 	c.Groups[0].Cost = cost("request", "az", 1, 3)
-	c.Groups[0].Resources = []ResourceConfig{{ID: "disk", Name: "Disk", Scope: "instance", Workers: 1, Service: 10, QueueLimit: 10, Cost: cost("caller", "az", 1, 4)}}
+	c.Groups[0].Resources = []ResourceConfig{{ID: "disk", Name: "Disk", Scope: "instance", Workers: 1, Service: 10, QueueLimit: 10, Cost: cost("caller", "az", 1, 4), Stages: []Stage{}}}
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Resource: "disk", Calls: 1, Route: "round_robin", Transport: "ideal"}}, Join: "all"}}
 	e := engine(t, c)
 	tr := e.AddRequest(1)
 	e.Advance(100)
@@ -80,13 +81,16 @@ func TestLocalityLiveCostAndPlacementFreeze(t *testing.T) {
 func TestLocalityRoutingAndRetryOrder(t *testing.T) {
 	c := retryConfig()
 	disabled := false
-	c.Keepalive = &disabled
+	c.Client = &ClientConnections{false, 30000, 200}
+	for i := range c.Groups {
+		c.Groups[i].Keepalive = &disabled
+	}
 	c.Groups[0].Labels = map[string]string{"az": "a"}
 	c.Groups[1].Count = 4
 	c.Groups[1].Labels = map[string]string{"az": "b"}
 	c.Groups[0].Timeout = 500
-	c.Groups[0].Edges[0].Affinity = rule("caller", "az")
-	c.Groups[0].Edges[0].NetworkCost = cost("caller", "az", 1, 3)
+	c.Groups[0].Stages[0].Calls[0].Affinity = rule("caller", "az")
+	c.Groups[0].Stages[0].Calls[0].NetworkCost = cost("caller", "az", 1, 3)
 	c.Overrides = map[string]NodeConfig{"back-1": {Labels: map[string]string{"az": "a"}}, "back-3": {Labels: map[string]string{"az": "a"}}}
 	e := engine(t, c)
 	setFault(t, e, "back-1", "down")
@@ -119,11 +123,11 @@ func TestLocalityFallbackAndStrictPreference(t *testing.T) {
 	c.Groups[1].Count = 3
 	c.Groups[1].Labels = map[string]string{"az": "b"}
 	c.Groups[0].Labels = map[string]string{"az": "a"}
-	c.Groups[0].Edges[0].Affinity = rule("caller", "az")
+	c.Groups[0].Stages[0].Calls[0].Affinity = rule("caller", "az")
 	c.Overrides = map[string]NodeConfig{"back-2": {Labels: map[string]string{"az": "a"}}}
 	e := engine(t, c)
 	for i := 0; i < 6; i++ {
-		n := e.routeLocal("back", "round_robin", "test", c.Groups[0].Edges[0].Affinity, nil, map[string]string{"az": "a"})
+		n := e.routeLocal("back", "round_robin", "test", c.Groups[0].Stages[0].Calls[0].Affinity, nil, map[string]string{"az": "a"})
 		if n.ID != "back-2" {
 			t.Fatal("non-local selected")
 		}
@@ -213,8 +217,8 @@ func TestLocalityPresetsAndDeterminism(t *testing.T) {
 }
 func TestLocalityValidation(t *testing.T) {
 	for _, modify := range []func(*Config){func(c *Config) { c.RequestTag = &TagGenerator{"az", "a", "b", 101} }, func(c *Config) { c.Groups[0].Cost = cost("unknown", "az", 1, 3) }, func(c *Config) { c.Groups[0].Cost = cost("request", "az", 1, -3) }, func(c *Config) { c.Groups[0].Labels = map[string]string{"bad key": "a"} }, func(c *Config) {
-		c.Groups[0].Edges[0].Route = "broadcast"
-		c.Groups[0].Edges[0].Affinity = rule("caller", "az")
+		c.Groups[0].Stages[0].Calls[0].Route = "broadcast"
+		c.Groups[0].Stages[0].Calls[0].Affinity = rule("caller", "az")
 	}} {
 		c := DefaultConfig()
 		modify(&c)

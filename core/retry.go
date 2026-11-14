@@ -2,7 +2,7 @@ package core
 
 // A logical child call may have several connection attempts, but only one result
 // for all/any/quorum. All attempts share the original call deadline.
-func (e *Engine) callDownstream(parent *Span, first *Node, network, connectTimeout, timeout float64, retry bool, cb func(bool, string), edges ...*Edge) {
+func (e *Engine) callDownstream(parent *Span, first *Node, network, connectTimeout, timeout float64, retry bool, cb func(bool, string), calls ...*Call) {
 	deadline := e.Now + timeout
 	stage := parent.stage
 	candidates := []*Node{first}
@@ -19,17 +19,21 @@ func (e *Engine) callDownstream(parent *Span, first *Node, network, connectTimeo
 			}
 		}
 	}
-	if len(edges) > 0 && edges[0] != nil {
-		candidates = e.orderRetry(candidates, edges[0].Affinity, parent.trace.Labels, parent.Labels)
+	if len(calls) > 0 && calls[0] != nil {
+		candidates = e.orderRetry(candidates, calls[0].Affinity, parent.trace.Labels, parent.Labels)
 	}
 	next, attempt, firstSpan := 0, 0, 0
 	var start func(*Node)
 	start = func(n *Node) {
 		attempt++
 		var current *Span
-		current = e.call(parent.trace, parent, n, network, connectTimeout, deadline-e.Now, func(ok bool, why string) {
+		remaining := 0.0
+		if timeout > 0 {
+			remaining = deadline - e.Now
+		}
+		current = e.call(parent.trace, parent, n, network, connectTimeout, remaining, func(ok bool, why string) {
 			connectionFailure := !current.connected && (why == "connection_refused" || why == "connect_timeout")
-			if !ok && connectionFailure && !parent.done && !parent.settled && !parent.trace.done && parent.stage == stage && e.Now < deadline {
+			if !ok && connectionFailure && !parent.done && !parent.settled && !parent.trace.done && parent.stage == stage && (timeout == 0 || e.Now < deadline) {
 				for next < len(candidates) {
 					candidate := candidates[next]
 					next++
@@ -40,7 +44,7 @@ func (e *Engine) callDownstream(parent *Span, first *Node, network, connectTimeo
 				}
 			}
 			cb(ok, why)
-		}, edges...)
+		}, calls...)
 		current.Attempt = attempt
 		if firstSpan == 0 {
 			firstSpan = current.ID

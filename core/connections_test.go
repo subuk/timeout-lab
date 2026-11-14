@@ -48,7 +48,7 @@ func TestKeepaliveBlackholeEvictedBeforeNextCall(t *testing.T) {
 			t.Fatal(warm.Reason)
 		}
 		setFault(t, e, "back-1", "blackhole")
-		e.rr["front-1/0"] = 0
+		e.rr["front-1/stage/1/0"] = 0
 		failed := e.AddRequest(1)
 		e.Advance(300)
 		sp := backSpans(failed)
@@ -61,7 +61,7 @@ func TestKeepaliveBlackholeEvictedBeforeNextCall(t *testing.T) {
 		if e.connections["front-1>back-1"] != nil {
 			t.Fatal("stale connection retained")
 		}
-		e.rr["front-1/0"] = 0
+		e.rr["front-1/stage/1/0"] = 0
 		next := e.AddRequest(1)
 		e.Advance(300)
 		attempts := backSpans(next)

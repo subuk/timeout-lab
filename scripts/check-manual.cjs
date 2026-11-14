@@ -24,7 +24,8 @@ async function check(source, offline) {
   for(let i=0;i<200&&!message;i++)await new Promise(resolve=>setTimeout(resolve,10));
   assert.equal(message?.type,'snapshot',message?.message);
   const send=data=>{context.onmessage({data});assert.notEqual(message.type,'error',message.message);return message;};
-  send({type:'mode',manual:true});assert.equal(message.paused,true);
+  send({type:'mode',manual:true,requestId:17});assert.equal(message.paused,true);assert.equal(message.requestId,17);
+  tick();assert.equal(message.requestId,undefined);
   const config=message.data.config;config.jitter=0;
   send({type:'reset',config});assert.equal(message.data.manualMode,true);
   tick();assert.equal(message.data.t,0);
@@ -44,6 +45,18 @@ async function check(source, offline) {
   context.onmessage({data:{type:'request',request:{weight:0,deadline:100}}});
   assert.equal(message.type,'error');
   send({type:'snapshot'});assert.equal(message.paused,true);
+  const snapshot=JSON.stringify(message.data);
+  for(const field of ['edges','join','quorum']){
+    const invalid=structuredClone(message.data.config);invalid.groups[0][field]=field==='edges'?[]:field==='join'?'all':1;
+    context.onmessage({data:{type:'reset',config:invalid,requestId:99}});
+    assert.equal(message.type,'error');assert.equal(message.requestId,99);assert.match(message.message,/unknown field/);
+    send({type:'snapshot'});assert.equal(JSON.stringify(message.data),snapshot,'invalid import changed the experiment');
+  }
+  for(const preset of ['normal','slow','fanout','hang','autoscale','az','numa','composition']){
+    send({type:'preset',preset});assert.equal(message.data.config.version,2);
+    const walk=box=>{assert.ok(Array.isArray(box.stages));assert.equal(box.edges,undefined);assert.equal(box.join,undefined);for(const stage of box.stages){assert.ok(stage.calls.length>0);assert.equal(stage.resource,undefined);assert.equal(stage.downstream,undefined);for(const call of stage.calls)assert.ok(['network','ideal'].includes(call.transport));}for(const child of box.resources||[])walk(child);};
+    message.data.config.groups.forEach(walk);
+  }
   send({type:'preset',preset:'numa'});assert.equal(message.data.manualMode,true);assert.equal(message.data.focus,undefined);
   send({type:'mode',manual:false});send({type:'pause'});tick();
   assert.ok(message.data.metrics.arrivals>0);

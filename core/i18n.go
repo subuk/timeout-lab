@@ -38,11 +38,8 @@ func validateModelI18n(c Config) error {
 		return true
 	}
 	all := []Localizations{c.I18n}
-	for _, g := range c.Groups {
-		all = append(all, g.I18n)
-		for _, r := range g.Resources {
-			all = append(all, r.I18n)
-		}
+	for _, b := range boxDefinitions(c) {
+		all = append(all, b.Def.I18n)
 	}
 	for _, m := range all {
 		if !valid(m) {

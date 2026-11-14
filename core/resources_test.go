@@ -8,8 +8,8 @@ import (
 func resourceConfig(scope string) Config {
 	c := single(8, 0)
 	c.Groups[0].Count = 2
-	c.Groups[0].Resources = []ResourceConfig{{ID: "work", Name: "Arbitrary resource", Scope: scope, Workers: 1, Service: 100, QueueLimit: 500}}
-	c.Groups[0].Stages = []Stage{{Resource: "work"}}
+	c.Groups[0].Resources = []ResourceConfig{{ID: "work", Name: "Arbitrary resource", Scope: scope, Workers: 1, Service: 100, QueueLimit: 500, Stages: []Stage{}}}
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Resource: "work", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}
 	return c
 }
 func copyConfig(c Config) Config {
@@ -45,9 +45,8 @@ func TestResourcePrivateVersusShared(t *testing.T) {
 func TestResourceSequenceReleasesBeforeDownstream(t *testing.T) {
 	c := resourceConfig("instance")
 	c.Groups[0].Count = 1
-	c.Groups[0].Stages = []Stage{{Resource: "work"}, {Downstream: true}, {Resource: "work"}}
-	c.Groups[0].Edges = []Edge{{Target: "leaf", Calls: 1, Route: "round_robin"}}
-	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 1, Workers: 8, Service: 300, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Join: "all", Quorum: 1})
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Resource: "work", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}, {Calls: []Call{{Target: "leaf", Calls: 1, Route: "round_robin", Transport: "network"}}, Join: "all"}, {Calls: []Call{{Resource: "work", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}
+	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 1, Workers: 8, Service: 300, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Stages: []Stage{}})
 	e := engine(t, c)
 	tr := e.AddRequest(1)
 	e.Advance(200)
@@ -89,8 +88,8 @@ func TestResourceWindowDropsOldWork(t *testing.T) {
 }
 func TestResourceScaleBundlesDrainAndKeepHistory(t *testing.T) {
 	c := resourceConfig("instance")
-	c.Groups[0].Stages = []Stage{{Resource: "work"}, {Resource: "work"}}
-	c.Groups[0].Resources = append(c.Groups[0].Resources, ResourceConfig{ID: "shared", Name: "Common", Scope: "shared", Workers: 1, Service: 1, QueueLimit: 500})
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Resource: "work", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}, {Calls: []Call{{Resource: "work", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}
+	c.Groups[0].Resources = append(c.Groups[0].Resources, ResourceConfig{ID: "shared", Name: "Common", Scope: "shared", Workers: 1, Service: 1, QueueLimit: 500, Stages: []Stage{}})
 	e := engine(t, c)
 	e.AddRequest(1)
 	tr := e.AddRequest(1)
@@ -127,9 +126,8 @@ func TestResourceScaleBundlesDrainAndKeepHistory(t *testing.T) {
 }
 func TestResourceDrainWaitsForFutureStage(t *testing.T) {
 	c := resourceConfig("instance")
-	c.Groups[0].Stages = []Stage{{Downstream: true}, {Resource: "work"}}
-	c.Groups[0].Edges = []Edge{{Target: "leaf", Calls: 1, Route: "round_robin"}}
-	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 1, Workers: 8, Service: 300, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Join: "all", Quorum: 1})
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Target: "leaf", Calls: 1, Route: "round_robin", Transport: "network"}}, Join: "all"}, {Calls: []Call{{Resource: "work", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}
+	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 1, Workers: 8, Service: 300, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Stages: []Stage{}})
 	e := engine(t, c)
 	e.AddRequest(1)
 	tr := e.AddRequest(1)
@@ -216,7 +214,7 @@ func TestResourceConfigValidationAndLiveEdits(t *testing.T) {
 		t.Fatal("ownership change must be explicit reset")
 	}
 	bad := copyConfig(e.C)
-	bad.Groups[0].Stages = []Stage{{Resource: "missing"}}
+	bad.Groups[0].Stages = []Stage{{Calls: []Call{{Resource: "missing", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}
 	if Validate(bad) == nil {
 		t.Fatal("invalid stage accepted")
 	}
@@ -229,10 +227,8 @@ func TestResourceConfigValidationAndLiveEdits(t *testing.T) {
 func TestResourceAfterQuorumCancelsRemainingStage(t *testing.T) {
 	c := resourceConfig("instance")
 	c.Groups[0].Count = 1
-	c.Groups[0].Join = "any"
-	c.Groups[0].Stages = []Stage{{Downstream: true}, {Resource: "work"}}
-	c.Groups[0].Edges = []Edge{{Target: "leaf", Calls: 1, Route: "broadcast"}}
-	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 2, Workers: 4, Service: 10, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Join: "all", Quorum: 1})
+	c.Groups[0].Stages = []Stage{{Calls: []Call{{Target: "leaf", Calls: 1, Route: "broadcast", Transport: "network"}}, Join: "any"}, {Calls: []Call{{Resource: "work", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}
+	c.Groups = append(c.Groups, Group{ID: "leaf", Name: "Leaf", Count: 2, Workers: 4, Service: 10, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 100, Stages: []Stage{}})
 	e := engine(t, c)
 	slow := 500.0
 	e.SetNode("leaf-2", "", &slow, nil)
@@ -268,8 +264,8 @@ func TestResourceFaultAndOverrideRoundTrip(t *testing.T) {
 func TestResourceScalingIsDeterministic(t *testing.T) {
 	run := func() string {
 		c := resourceConfig("instance")
-		c.Groups[0].Resources = append(c.Groups[0].Resources, ResourceConfig{ID: "second", Name: "Second", Scope: "instance", Workers: 2, Service: 10, QueueLimit: 100})
-		c.Groups[0].Stages = []Stage{{Resource: "work"}, {Resource: "second"}}
+		c.Groups[0].Resources = append(c.Groups[0].Resources, ResourceConfig{ID: "second", Name: "Second", Scope: "instance", Workers: 2, Service: 10, QueueLimit: 100, Stages: []Stage{}})
+		c.Groups[0].Stages = []Stage{{Calls: []Call{{Resource: "work", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}, {Calls: []Call{{Resource: "second", Calls: 1, Route: "round_robin", Transport: "ideal", Timeout: new(float64)}}, Join: "all"}}
 		e := engine(t, c)
 		e.AddRequest(1)
 		e.AddRequest(1)

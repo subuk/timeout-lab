@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Box program regression checks</title>
+<style>body{font:16px system-ui;margin:24px}iframe{width:100%;height:60vh;border:1px solid #ccc}li{margin:8px 0}.pass{color:#167447}.fail{color:#b42318}</style>
+<h1>Box program regression checks</h1><p>Real interface and Worker. Add ?standalone to exercise the embedded build.</p><ol id="results"></ol><iframe id="app" title="Timeout Lab under test"></iframe>
+<script type="module">
+const frame=document.getElementById('app'),results=document.getElementById('results'),errors=[];
+const assert=(v,message)=>{if(!v)throw Error(message);},delay=ms=>new Promise(r=>setTimeout(r,ms));
+async function until(fn,message){const limit=performance.now()+15000;while(!fn()){assert(performance.now()<limit,message);await delay(25);}}
+function pass(text){const li=document.createElement('li');li.className='pass';li.textContent=text;results.append(li);}
+try{
+ frame.src='../dist/'+(new URLSearchParams(location.search).has('standalone')?'standalone.html':'index.html')+'#template=composition';
+ await until(()=>frame.contentDocument?.querySelector('[data-tab-resource="compute/memory"]'),'Nested preset did not load');
+ const doc=frame.contentDocument,$=id=>doc.getElementById(id),win=frame.contentWindow;
+ win.addEventListener('error',event=>errors.push(event.message));win.addEventListener('unhandledrejection',event=>errors.push(String(event.reason)));
+ const change=(el,value,type='change')=>{if(typeof el==='string')el=$(el);el.value=value;el.dispatchEvent(new win.Event(type,{bubbles:true}));};
+ change('language','en');change('request-mode','single');change('speed','5');
+ await until(()=>$('single-request').hidden===false,'Manual mode did not open');
+ $('reset').click();await until(()=>$('clock').textContent==='00:00.0','Reset failed');
+ const rows=()=>[...doc.querySelectorAll('.trace-row')].map(el=>el.title.split(' · ')[0]);
+ async function request(op){$('single-labels').value='op='+op;const previous=doc.querySelector('.trace-summary strong')?.textContent;$('send-request').click();await until(()=>!$('send-request').disabled&&doc.querySelector('.trace-summary strong')?.textContent!==previous,'Request did not finish');assert(!doc.querySelector('.trace-summary .result.error'),'Request failed');return rows();}
+ let visits=await request('read');assert(visits.includes('cache-1')&&!visits.includes('db-1')&&visits.some(v=>v.endsWith('/~compute/~memory')),'Read selected the wrong path');
+ visits=await request('write');assert(visits.includes('db-1')&&!visits.includes('cache-1')&&visits.includes('audit-1'),'Write selected the wrong path');
+ pass('Read/write tags select different downstreams; nested CPU → memory and parallel audit appear in the trace.');
+ const clock=$('clock').textContent,trace=doc.querySelector('.trace-summary strong').textContent;
+ doc.querySelector('[data-tab-resource="compute/memory"]').click();change('resource-workers','3','input');
+ await delay(180);assert($('clock').textContent===clock&&doc.querySelector('.trace-summary strong').textContent===trace,'Live resource edit reset time/history');
+ assert($('resource-workers').value==='3','Nested numeric edit was not retained');
+ doc.querySelector('[data-tab-resource="app"]').click();assert(!$('connect').disabled,'Nested caller connection settings are disabled');change('connect','150');await delay(150);
+ $('edit-resources').click();assert($('program-box').value==='app','Editor opened the wrong box');
+ const condition=doc.querySelector('[data-stage="1"] [data-call="0"] [data-condition="call"]');condition.focus();change(condition,'op=read2');await delay(180);assert(doc.activeElement===condition&&condition.value==='op=read2','Snapshot lost draft input/focus');
+ $('apply-program-live').click();await until(()=>!$('resources-dialog').open,'Live program edit failed');assert($('clock').textContent===clock,'Live program reset time');
+ visits=await request('read');assert(!visits.includes('cache-1')&&!visits.includes('db-1')&&visits.includes('audit-1'),'Condition edit did not affect the next request');
+ pass('Nested capacities, caller timeouts and request conditions update live while time, trace and focused draft input are preserved.');
+ $('edit-resources').click();change(doc.querySelector('[data-stage="1"] [data-call="2"] [data-transport]'),'ideal');$('apply-program-live').click();await until(()=>!$('resources-dialog').open,'Link edit failed');
+ $('edit-config').click();let model=JSON.parse($('config-editor').value);doc.querySelector('[data-close="config-dialog"]').click();
+ const app=model.groups.find(g=>g.id==='api').resources.find(r=>r.id==='app');assert(app.stages[1].calls[2].transport==='ideal','Ideal link not exported');assert(model.overrides['api-1/~app'].connectTimeout===150,'Nested caller override not exported');
+ $('edit-resources').click();change('program-box','compute/memory');$('add-resource').click();const before=$('clock').textContent;$('apply-program-live').click();
+ await until(()=>$('resources-error').textContent.includes('changing structure requires a restart'),'Structure change did not report required restart');assert($('clock').textContent===before&&$('resources-dialog').open,'Rejected structural update changed experiment');
+ $('apply-resources').click();await until(()=>!$('resources-dialog').open,'Structural apply failed');assert($('clock').textContent==='00:00.0','Structural apply did not reset');assert(doc.querySelector('[data-tab-resource="compute/memory/r1"]'),'New nested box is not inspectable');
+ visits=await request('read2');assert(visits.some(v=>v.endsWith('/~compute/~memory/~r1'))&&visits.includes('cache-1'),'New nested program did not execute');
+ pass('Ideal links round-trip; structural edits require an explicit restart; newly nested boxes execute and are inspectable.');
+ change('language','ru');assert($('edit-resources').textContent.includes('Ящики'),'Russian editor button missing');const lastTrace=doc.querySelector('.trace-summary strong').textContent;$('edit-resources').click();assert(doc.querySelector('#resources-dialog h2').textContent.includes('Ящики'),'Russian editor heading missing');doc.querySelector('[data-close="resources-dialog"]').click();change('language','en');assert(doc.querySelector('.trace-summary strong').textContent===lastTrace,'Localization reset selected trace');
+ $('edit-config').click();model=JSON.parse($('config-editor').value);$('apply-config').click();await until(()=>!$('config-dialog').open,'Export/import failed');visits=await request('read2');assert(visits.some(v=>v.endsWith('/~memory/~r1')),'Round trip lost nested program');
+ // Reject removed fields without closing the editor or replacing the experiment.
+ $('edit-config').click();const valid=$('config-editor').value,at=$('clock').textContent;
+ const invalid=JSON.parse(valid);invalid.groups[0].edges=[];$('config-editor').value=JSON.stringify(invalid);$('apply-config').click();
+ await until(()=>$('config-error').textContent.includes('unknown field'),'Old format was not rejected');
+ assert($('config-dialog').open&&$('clock').textContent===at,'Rejected import changed the experiment');
+ $('config-editor').value=valid;doc.querySelector('[data-close="config-dialog"]').click();
+ pass('Removed format fields are rejected without replacing the running experiment.');
+ for(const id of ['normal','slow','fanout','hang','autoscale','az','numa','composition']){
+  doc.querySelector('[data-scenario="'+id+'"]').click();await delay(200);
+  assert(win.location.hash==='#template='+id,'Preset URL mismatch');
+  $('edit-config').click();const c=JSON.parse($('config-editor').value);doc.querySelector('[data-close="config-dialog"]').click();
+  assert(c.version===2,'Preset has no model version');
+  const walk=b=>{assert(Array.isArray(b.stages)&&!('edges' in b)&&!('join' in b),'Preset retained an implicit program');for(const stage of b.stages)assert(stage.calls.length>0&&stage.join&&!('resource' in stage)&&!('downstream' in stage),'Preset retained a shorthand stage');(b.resources||[]).forEach(walk);};c.groups.forEach(walk);
+  if(id==='fanout')assert(c.groups.find(g=>g.id==='api').stages[1].calls[0].calls===3,'Fanout preset lost its calls');
+  if(id==='hang')assert(c.overrides['api-1'].state==='hang','Fault missing from preset export');
+ }
+ win.history.back();await until(()=>doc.querySelector('[data-scenario="numa"]').classList.contains('active'),'Back did not restore preset');
+ win.history.forward();await until(()=>doc.querySelector('[data-scenario="composition"]').classList.contains('active'),'Forward did not restore preset');
+ pass('All eight presets use version 2; selection, JSON export and back/forward preserve the selected template.');
+ assert(errors.length===0,errors.join('\n'));
+ pass('English/Russian switching preserves the experiment; model JSON round-trips nested programs; no browser errors.');
+ document.title='PASS — Box program regression checks';
+}catch(error){const li=document.createElement('li');li.className='fail';li.textContent=error.message;results.append(li);document.title='FAIL — Box program regression checks';console.error(error);}
+</script></html>

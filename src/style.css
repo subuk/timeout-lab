@@ -152,3 +152,20 @@ button:disabled{opacity:.5;cursor:default!important}
 .model-help-footer{display:flex;justify-content:flex-end;flex:none;border-top:1px solid var(--line);padding:14px 26px}
 @media(max-width:600px){#model-help{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}#model-help .modal-head{padding:14px 16px;gap:10px}#model-help .modal-head h2{font-size:17px}.model-help-body{padding:18px 16px 22px}.model-help-body .model-help-intro{font-size:14px}.model-help-steps{grid-template-columns:1fr;gap:18px}.model-help-example{padding:14px}.model-help-footer{padding:12px 16px}.model-help-footer button{width:100%}}
 @media(max-width:760px){.app-header{height:auto;flex-wrap:wrap;padding:14px 18px;row-gap:12px}.app-header nav{display:flex;order:1;flex:1 0 100%;height:auto}.app-header .nav-active{display:none}.app-header #model-info{width:100%}}
+
+#share-dialog{width:min(620px,calc(100vw - 40px))}.share-content{padding:0 22px 12px}.share-content textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:12px/1.5 var(--mono);resize:vertical}.share-content .field-note{padding:0;margin:12px 0 0}
+
+#agent-guide{width:min(660px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:hidden}
+#agent-guide[open]{display:flex;flex-direction:column}
+#agent-guide .modal-head{flex:none;gap:14px}
+#agent-guide .modal-head h2{line-height:1.4}
+#agent-guide .modal-head button{flex:none;min-width:36px;min-height:36px}
+.agent-guide-body{min-height:0;overflow:auto;overscroll-behavior:contain;padding:20px 22px;line-height:1.6}
+.agent-guide-intro{margin:0;color:#526078;font-size:14px}
+.agent-guide-steps{padding-left:21px;margin:16px 0 22px}.agent-guide-steps li{padding-left:4px;margin:7px 0}
+.agent-guide-body label{display:block;margin-bottom:8px;font-weight:600}
+#agent-prompt{display:block;width:100%;min-height:170px;resize:vertical;padding:12px;border:1px solid var(--line);border-radius:8px;background:#f6f8fc;color:var(--ink);font:12px/1.6 var(--sans)}
+.agent-instructions-link{display:inline-block;color:var(--blue);text-decoration:underline;text-underline-offset:3px;margin-top:12px;font-size:12px}
+.agent-guide-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;flex:none;padding:16px 22px;border-top:1px solid var(--line)}
+.agent-guide-footer [role=status]{color:var(--muted);font-size:11px;line-height:1.5}.agent-guide-footer button{flex:none}
+@media(max-width:600px){#agent-guide{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}#agent-guide .modal-head{padding:16px}#agent-guide .modal-head h2{font-size:17px}.agent-guide-body{padding:16px}.agent-guide-footer{padding:14px 16px;flex-wrap:wrap}.agent-guide-footer button{width:100%}.agent-guide-footer [role=status]:empty{display:none}}

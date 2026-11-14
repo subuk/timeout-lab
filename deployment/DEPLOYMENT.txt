@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T203631Z
-Backup: /var/backups/tmlab/20261114T203631Z
+Current release: /var/www/tmlab-releases/20261114T210701Z
+Backup: /var/backups/tmlab/20261114T210701Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -449,3 +449,38 @@ time with no page errors. The published inspector screenshot was inspected.
 Previous release: /var/www/tmlab-releases/20261114T202420Z.
 Current release: /var/www/tmlab-releases/20261114T203631Z.
 Backup before update: /var/backups/tmlab/20261114T203631Z.
+
+2026-11-14 agent model links: Published the self-contained public /skill.md
+instructions and #model= links carrying unpadded base64url UTF-8 version 2 JSON.
+No clone, account or model upload is required. Share model captures current
+configuration; URL loading validates through Go and preserves state on errors.
+Preset links, history navigation, Unicode and standalone file URLs are supported.
+The public skill is served as text/plain; contributor skills remain unserved.
+Validation: skill frontmatter validator, TypeScript, i18n, full build, HTTP and
+embedded Worker checks; 18 interface/sharing browser scenarios passed, then all
+6 sharing scenarios passed again after dialog styling. Desktop/mobile screenshots
+reviewed. All 8 deployed static files match local SHA-256. nginx -t and origin
+checks passed. Public Chromium fetched the skill, created/opened its example,
+round-tripped sharing and completed a manual request with no browser errors.
+The integrated web-search fetcher returned an access error for this host, while
+curl and Chromium received HTTP 200 (including a ChatGPT-User User-Agent check).
+Reading via ChatGPT web search therefore remains unverified; no DNS, Cloudflare
+or shared bot/access settings were changed.
+Backup before update: /var/backups/tmlab/20261114T205513Z.
+
+2026-11-14 agent guide: Added a visible Create with an agent button beside the
+scenario selector, with a dedicated row on narrow screens. Its localized dialog
+explains the workflow, provides an editable prompt and copies it to the clipboard.
+The guide is independent of agent vendor; it links the public skill and explains
+how to supply its text when an agent cannot read links. Failed clipboard access
+selects the prompt for manual copying. Opening/closing the guide preserves the
+experiment, supports Escape and restores focus. Updated README accordingly.
+Validation: TypeScript, i18n, full static/standalone build and both Worker checks.
+Interface and sharing browser regressions passed. Agent guide and mobile checks
+passed after fixing toolbar spacing and waiting for pause acknowledgement before
+reading the clock in the mobile test. Reviewed desktop/mobile screenshots; checked
+English/Russian at 320, 390, 844 landscape, 1000, 1200 and 1440 px. Public Chromium
+verified both localized prompts, real clipboard copying, mobile visibility and
+preserved experiment time, without browser errors. All 8 public files match local
+SHA-256; nginx -t and origin checks passed.
+Backup before update: /var/backups/tmlab/20261114T210701Z.

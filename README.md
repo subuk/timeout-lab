@@ -290,9 +290,19 @@ The **NUMA** preset has 2 CPU boxes and 2 memory boxes. A request's `numa` label
 
 ## Preset links
 
-Preset selection appears in the URL, such as `https://tmlab.krglv.com/#template=numa` or `#template=az`. Direct links and reloads start the selected preset after WASM is ready. Back/forward switches presets. Unknown IDs open the normal setup. IDs are `normal`, `slow`, `fanout`, `hang`, `autoscale`, `az`, and `numa`.
+Preset selection appears in the URL, such as `https://tmlab.krglv.com/#template=numa` or `#template=az`. Direct links and reloads start the selected preset after WASM is ready. Back/forward switches presets. Unknown IDs open the normal setup. IDs are `normal`, `slow`, `fanout`, `hang`, `autoscale`, `az`, `numa`, and `composition`.
 
-Links store the preset, not current settings or experiment state. Use JSON export to share a modified model. Language still follows browser preferences or user selection and is not included in the link. Fragments also work in standalone HTML.
+Preset links store only the preset. **Share model** creates a link containing the current configuration, including user names, translations, overrides and seed. It starts a new experiment, without history or traces. Live edits do not rewrite the link; share again to capture them. Language follows browser preferences or user selection. Both kinds of fragments work in standalone HTML; a file URL points to the recipient's local copy, so use the hosted URL to share with others.
+
+## Build models with an agent
+
+Click **Create with an agent** beside the scenario selector for a short guide and an editable prompt to copy into your preferred agent. The guide is available in English and Russian, including the standalone app. It does not change or restart the current experiment. An agent that can read links can use [the model-building skill](https://tmlab.krglv.com/skill.md) with your system description, for example:
+
+> Read https://tmlab.krglv.com/skill.md. Model two API instances calling one database, with 30 incoming requests per second and a database bottleneck. Give me a link to view the model.
+
+The agent needs no repository clone, installed skill or credentials. The self-contained instructions in `public/skill.md` include the version 2 format, a complete model, encoding snippets and verification guidance. Vite publishes this file unchanged. It is a public user-facing skill, separate from the contributor skills in `.agents/skills/`.
+
+Custom links use `#model=<base64url>`: UTF-8 JSON encoded as URL-safe base64 without padding. `model` takes precedence over `template`. The fragment is decoded locally and submitted to the same Go validator as the JSON editor after WASM is ready. Invalid links show an error and preserve the running experiment. The payload is limited to 128 KiB of JSON; keep links small enough for the sharing channel. There is no server-side model storage. Anyone with the link can decode the configuration. Use JSON export as a backup for large models.
 
 ## Model localization in JSON
 

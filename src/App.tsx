@@ -6,6 +6,9 @@ import { Topology, DiagramNotes, type Selection } from "./components/Topology";
 import { Inspector } from "./components/Inspector";
 import { ModelEditor } from "./components/ModelEditor";
 import { ModelHelp } from "./components/ModelHelp";
+import { ShareModel } from "./components/ShareModel";
+import { AgentGuide } from "./components/AgentGuide";
+import { modelFromHash, modelURL } from "./sharing";
 import { Traces } from "./components/Traces";
 import { Metrics, Activity } from "./components/Metrics";
 import { Canvas } from "./components/Canvas";
@@ -22,6 +25,7 @@ const presets = [
   ["composition", "Nested boxes"],
 ];
 function fromURL() {
+  if (new URLSearchParams(location.hash.slice(1)).has("model")) return "custom";
   const id = new URLSearchParams(location.hash.slice(1)).get("template");
   return presets.some(([v]) => v === id) ? id! : "normal";
 }
@@ -39,6 +43,7 @@ export function App() {
   const [activityOpen, setActivityOpen] = useState(true);
   const [tracesOpen, setTracesOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [agentGuideOpen, setAgentGuideOpen] = useState(false);
   useEffect(() => {
     const compact = matchMedia("(max-height: 600px)");
     const fold = () => {
@@ -52,17 +57,20 @@ export function App() {
     return () => compact.removeEventListener("change", fold);
   }, []);
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
+  const [linkError, setLinkError] = useState("");
+  const [shareURL, setShareURL] = useState("");
+  const [customModelVersion, setCustomModelVersion] = useState(0);
   const [editor, setEditor] = useState<{ group?: string } | null>(null),
     [info, setInfo] = useState(false),
     [preset, setPreset] = useState(fromURL);
   const initialized = useRef(false);
-  const selectedPreset = useRef(fromURL());
+  const restoredHash = useRef<string | null>(null);
   const presetRequest = useRef(0);
   const changingPreset = useRef(false);
   async function choose(id: string, push = true) {
     const request = ++presetRequest.current;
     changingPreset.current = true;
-    selectedPreset.current = id;
+    setLinkError("");
     setPreset(id);
     const nextSelection: Selection = {
       node:
@@ -78,14 +86,45 @@ export function App() {
     };
     const url = new URL(location.href);
     const params = new URLSearchParams(url.hash.slice(1));
+    params.delete("model");
     params.set("template", id);
     url.hash = params.toString();
     if (url.href !== location.href)
       history[push ? "pushState" : "replaceState"](null, "", url);
+    restoredHash.current = location.hash;
     try {
       await command({ type: "preset", preset: id });
       if (request === presetRequest.current) select(nextSelection);
     } catch {
+    } finally {
+      if (request === presetRequest.current) changingPreset.current = false;
+    }
+  }
+  async function restoreURL() {
+    if (restoredHash.current === location.hash) return;
+    restoredHash.current = location.hash;
+    const request = ++presetRequest.current;
+    changingPreset.current = true;
+    setLinkError("");
+    try {
+      const config = modelFromHash(location.hash);
+      if (!config) {
+        await choose(fromURL(), false);
+        return;
+      }
+      await command({ type: "reset", config });
+      if (request === presetRequest.current) {
+        setPreset("custom");
+        setCustomModelVersion((version) => version + 1);
+        setShareURL("");
+        setSelectedTrace(null);
+        setEditor(null);
+        setSettings(null);
+        select({ node: `${config.entry}-1`, resource: "", scope: "group" });
+      }
+    } catch (error) {
+      if (request === presetRequest.current)
+        setLinkError(error instanceof Error ? error.message : String(error));
     } finally {
       if (request === presetRequest.current) changingPreset.current = false;
     }
@@ -96,14 +135,12 @@ export function App() {
   useEffect(() => {
     if (s && !initialized.current) {
       initialized.current = true;
-      choose(fromURL(), false);
+      void restoreURL();
     }
   }, [!!s]);
   useEffect(() => {
     const restore = () => {
-      const next = fromURL();
-      if (initialized.current && next !== selectedPreset.current)
-        void choose(next, false);
+      if (initialized.current) void restoreURL();
     };
     addEventListener("popstate", restore);
     addEventListener("hashchange", restore);
@@ -175,6 +212,11 @@ export function App() {
             disabled={!s}
             onChange={(e) => choose(e.target.value)}
           >
+            {preset === "custom" && (
+              <option value="custom" disabled>
+                {t("Custom model")}
+              </option>
+            )}
             {presets.map(([id, label]) => (
               <option key={id} value={id}>
                 {t(label)}
@@ -182,6 +224,14 @@ export function App() {
             ))}
           </select>
         </label>
+        <button
+          id="create-with-agent"
+          className="agent-create-button"
+          aria-haspopup="dialog"
+          onClick={() => setAgentGuideOpen(true)}
+        >
+          <span aria-hidden="true">＋</span> {t("Create with an agent")}
+        </button>
         <div className="transport">
           <span
             id="live-state"
@@ -241,6 +291,25 @@ export function App() {
         </div>
         <div className="toolbar-actions">
           <button
+            id="share-model"
+            disabled={!s}
+            title={t("Share model")}
+            aria-label={t("Share model")}
+            onClick={() => {
+              if (!s) return;
+              try {
+                setShareURL(modelURL(s.config));
+                setLinkError("");
+              } catch (error) {
+                setLinkError(
+                  error instanceof Error ? error.message : String(error),
+                );
+              }
+            }}
+          >
+            ↗
+          </button>
+          <button
             id="edit-config"
             disabled={!s}
             onClick={() => setEditor({})}
@@ -283,9 +352,9 @@ export function App() {
           </select>
         </div>
       </header>
-      {engine.error && (
+      {(linkError || engine.error) && (
         <p className="error-banner" role="alert">
-          {t(engine.error)}
+          {t(linkError || engine.error)}
         </p>
       )}
       {s ? (
@@ -329,6 +398,14 @@ export function App() {
             <DiagramNotes snapshot={s} />
             <a
               className="source-link"
+              href="https://tmlab.krglv.com/skill.md"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t("Build a model with an agent ↗")}
+            </a>
+            <a
+              className="source-link"
               href="https://github.com/subuk/timeout-lab"
               target="_blank"
               rel="noreferrer"
@@ -356,7 +433,7 @@ export function App() {
           >
             <div hidden={settings !== "generator"}>
               <Generator
-                key={`generator-${preset}`}
+                key={`generator-${preset}-${customModelVersion}`}
                 config={s.config}
                 manual={s.manualMode}
                 running={s.focusRunning}
@@ -386,6 +463,8 @@ export function App() {
         <div className="topology-loading">{t("Loading engine…")}</div>
       )}
       {info && <ModelHelp close={() => setInfo(false)} />}
+      {agentGuideOpen && <AgentGuide close={() => setAgentGuideOpen(false)} />}
+      {shareURL && <ShareModel url={shareURL} close={() => setShareURL("")} />}
     </main>
   );
 }

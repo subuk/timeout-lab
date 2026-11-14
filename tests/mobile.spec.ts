@@ -15,6 +15,7 @@ for (const width of [320, 360, 390, 430, 760]) {
     await expect(page.locator("#clock")).not.toHaveText("00:00.0");
     await expect(page.locator("#settings-window")).toBeHidden();
     await page.locator("#pause").click();
+    await expect(page.locator("body")).toHaveClass(/\bpaused\b/);
     const time = await page.locator("#clock").textContent();
     for (const language of ["en", "ru"]) {
       await page.locator("#language").selectOption(language);

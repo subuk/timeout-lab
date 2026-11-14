@@ -46,6 +46,7 @@ func (e *Engine) callDownstream(parent *Span, first *Node, network, connectTimeo
 			firstSpan = current.ID
 		} else {
 			current.RetryOf = firstSpan
+			e.traceEvent(current, "Connection retry", "", float64(attempt))
 		}
 		parent.children = append(parent.children, current)
 	}

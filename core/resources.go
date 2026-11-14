@@ -210,6 +210,7 @@ func (e *Engine) nextStage(s *Span) {
 	}
 	if s.node.State != "healthy" {
 		s.Phase = "hang"
+		e.traceEvent(s, "Work parked", "", 0)
 		s.parked = func() { e.nextStage(s) }
 		return
 	}
@@ -235,6 +236,7 @@ func (e *Engine) nextStage(s *Span) {
 		return
 	}
 	s.Phase = "resource"
+	e.traceEvent(s, "Waiting for resource", stage.Resource, 0)
 	n := s.stageBindings[stage.Resource]
 	if n == nil {
 		e.respond(s, false, "resource_unavailable")
@@ -246,6 +248,7 @@ func (e *Engine) nextStage(s *Span) {
 	n.Outstanding++
 	s.trace.active++
 	s.trace.Spans = append(s.trace.Spans, child)
+	e.traceEvent(child, "Resource visit", "", 0)
 	s.children = append(s.children, child)
 	// Internal resources have no TCP handshake or simulated network hop.
 	e.arrive(child)

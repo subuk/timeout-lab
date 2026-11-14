@@ -22,3 +22,22 @@
 .trace-connection{font:9px/1.6 var(--mono);color:#687a9d;margin:-2px 0 9px 16px}.trace-connection b{font-weight:500;color:#526787}
 
 .github-link{font-size:11px;white-space:nowrap;color:var(--muted)}.github-link:hover{color:var(--blue);text-decoration:underline}.github-link:focus-visible{outline:3px solid #4464e855;outline-offset:3px;border-radius:3px}
+
+/* Single-request controls and the chronological engine event journal. */
+#single-request{margin:14px 0;padding:12px;border:1px solid var(--border,#e1e6ee);border-radius:10px;background:#f6f8ff}
+#single-request[hidden]{display:none}
+#single-request button{margin-top:10px;padding:8px 10px;border:1px solid #ccd5f4;border-radius:6px;background:white;color:#3455ce;cursor:pointer}
+#single-request #send-request{background:#4464e8;color:white}
+button:disabled{opacity:.5;cursor:default!important}
+#single-labels{width:100%;box-sizing:border-box;resize:vertical}
+.event-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;border-top:1px solid #e5e9f0;padding-top:12px}
+.event-heading h3{font-size:13px}.event-heading span{font-size:11px;color:#64748b}
+.trace-events{max-height:420px;overflow:auto;border:1px solid #e5e9f0;border-radius:8px}
+.trace-events table{width:100%;border-collapse:collapse;text-align:left;font-size:11px}
+.trace-events th{position:sticky;top:0;background:#f4f6fa;font-weight:600;z-index:1}
+.trace-events td,.trace-events th{padding:8px 10px;border-bottom:1px solid #edf0f5;vertical-align:top}
+.trace-events td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;color:#64748b}
+.trace-events small{display:block;margin-top:3px;color:#64748b;overflow-wrap:anywhere}
+.trace-row small{font-size:9px;color:#64748b}.trace-chip.pending{border-color:#4464e8}
+
+.box.trace-path{outline:2px solid #4464e8;outline-offset:3px}

@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T130148Z
-Backup: /var/backups/tmlab/20261114T001551Z
+Current release: /var/www/tmlab-releases/20261114T131722Z
+Backup: /var/backups/tmlab/20261114T131722Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -190,3 +190,20 @@ passed; link attributes verified in both HTML variants. All eight public files
 match local SHA-256; nginx validation and origin HTML/WASM checks passed.
 Browser verification was unavailable in this session.
 Backup: /var/backups/tmlab/20261114T130148Z.
+
+
+2026-11-14 single-request mode: exact per-request weight, deadline and labels;
+background arrivals stop without resetting accepted work, time or connections.
+Live complete call/resource tree, visited-box highlighting and chronological
+engine events cover connections, queues, processing, retries, cancellation and
+user responses. Pause, 10 ms stepping and automatic pause after all request work
+finishes are available. Generator defaults and model JSON remain unchanged.
+Go tests, JS syntax/i18n checks and full WASM/standalone build passed. The real
+Worker/WASM integration checks passed for both HTTP and embedded offline code.
+Headless Playwright on local and public builds verified manual inputs, resources,
+trace selection/highlighting, timeout, pause/step/resume, RU/EN with preserved
+labels, return to continuous load, and no browser console/page errors. The local
+standalone file:// scenario also passed. All eight public files match local
+SHA-256; nginx validation, graceful reload and origin HTML/WASM checks passed.
+Release: /var/www/tmlab-releases/20261114T131722Z.
+Backup: /var/backups/tmlab/20261114T131722Z.

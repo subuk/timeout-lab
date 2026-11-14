@@ -51,6 +51,16 @@ sh scripts/build.sh
 
 The engine uses discrete events: an event heap, virtual time in milliseconds, and a deterministic RNG. Rendering does not determine arrival rates. With a demanding model, virtual time may advance more slowly than wall-clock time.
 
+## Single-request mode
+
+Select **Generator → Request mode → Single request**, enter a weight (greater than 0, up to 10), deadline (1–60000 ms) and optional `key=value` labels, then click **Send one request**. Weight and labels are exact: generator weight variation and label distribution do not apply. Network, processing variation, cancellation, routing and caller connection settings still come from the model. These per-request inputs do not modify the model defaults.
+
+Entering this mode pauses playback and stops background arrivals without resetting virtual time, queues, RNG, history or reusable connections. Accepted work remains; use **↺** explicitly for an empty-system experiment. Sending starts playback; it pauses automatically after this request and all its descendant work finish. **Pause**, speed and **+10 ms** allow closer inspection. With cancellation disabled, a user deadline can expire while downstream work continues; the UI reports this and waits for the work to finish before enabling another send. Recover a hung node or restart if work cannot finish. Switching back to Continuous load preserves configured RPS; press Resume to continue.
+
+The latest manual trace stays available while running and after completion. Its full call tree includes every service, resource visit and connection retry, with span IDs, parent IDs, timing, connection reuse, locality decisions and final outcomes. Visited service boxes are highlighted. The chronological event journal records actual engine transitions, including connection readiness, queueing, worker acquisition, scheduled processing duration, child/resource waits, failures, cancellation and the user response. Times are relative to sending; an early user response does not imply downstream completion. Detailed events are collected only for manual requests.
+
+The WASM bridge accepts `{"type":"mode","manual":true}` and `{"type":"request","request":{"weight":1,"deadline":3000,"labels":{"az":"az1"}}}`. Snapshots expose `manualMode`, `focus`, and `focusRunning`; a running trace has `end: -1`. Mode is session state, retained across resets/presets but not exported in model JSON. Only one unfinished manual request is accepted at a time. Event `value` is a duration in ms for call-start budget, processing-start duration and connection-ready one-way network delay, a queue depth for queue insertion, or an attempt number for retries. Ordinary load traces keep their existing lightweight spans. After building, run `node scripts/check-manual.cjs` to verify the real WASM/Worker commands and the embedded offline Worker.
+
 ## Traces and measurements
 
 Each root request has one trace ID; each visit has a span ID and parent ID. A span records call start, queue entry, processing start, local work completion, box departure, response arrival at the caller, and completion reason.

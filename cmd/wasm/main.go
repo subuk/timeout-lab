@@ -14,14 +14,16 @@ func main() {
 	sim, _ = core.New(core.DefaultConfig())
 	js.Global().Set("labCommand", js.FuncOf(func(this js.Value, args []js.Value) any {
 		var cmd struct {
-			Preset  string      `json:"preset"`
-			Type    string      `json:"type"`
-			MS      float64     `json:"ms"`
-			Config  core.Config `json:"config"`
-			ID      string      `json:"id"`
-			State   string      `json:"state"`
-			Service *float64    `json:"service"`
-			Workers *int        `json:"workers"`
+			Manual  bool                `json:"manual"`
+			Request core.RequestOptions `json:"request"`
+			Preset  string              `json:"preset"`
+			Type    string              `json:"type"`
+			MS      float64             `json:"ms"`
+			Config  core.Config         `json:"config"`
+			ID      string              `json:"id"`
+			State   string              `json:"state"`
+			Service *float64            `json:"service"`
+			Workers *int                `json:"workers"`
 		}
 		if len(args) == 0 {
 			return `{"error":"Missing command"}`
@@ -31,6 +33,10 @@ func main() {
 		}
 		var err error
 		switch cmd.Type {
+		case "mode":
+			sim.SetManualMode(cmd.Manual)
+		case "request":
+			_, err = sim.SendRequest(cmd.Request)
 		case "advance":
 			sim.Advance(cmd.MS)
 		case "preset":
@@ -41,12 +47,14 @@ func main() {
 			var next *core.Engine
 			next, err = core.New(c)
 			if err == nil {
+				next.SetManualMode(sim.ManualMode)
 				sim = next
 			}
 		case "reset":
 			var next *core.Engine
 			next, err = core.New(cmd.Config)
 			if err == nil {
+				next.SetManualMode(sim.ManualMode)
 				sim = next
 			}
 		case "config":

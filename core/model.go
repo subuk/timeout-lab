@@ -301,16 +301,19 @@ type Span struct {
 	connected  bool
 }
 type Trace struct {
-	Labels map[string]string `json:"labels,omitempty"`
-	ID     int               `json:"id"`
-	Start  float64           `json:"start"`
-	End    float64           `json:"end"`
-	Weight float64           `json:"weight"`
-	OK     bool              `json:"ok"`
-	Reason string            `json:"reason"`
-	Spans  []*Span           `json:"spans"`
-	done   bool
-	active int
+	Manual   bool              `json:"manual,omitempty"`
+	Deadline float64           `json:"deadline,omitempty"`
+	Events   []TraceEvent      `json:"events,omitempty"`
+	Labels   map[string]string `json:"labels,omitempty"`
+	ID       int               `json:"id"`
+	Start    float64           `json:"start"`
+	End      float64           `json:"end"`
+	Weight   float64           `json:"weight"`
+	OK       bool              `json:"ok"`
+	Reason   string            `json:"reason"`
+	Spans    []*Span           `json:"spans"`
+	done     bool
+	active   int
 }
 type completion struct {
 	at, w, queue, local, wait float64
@@ -388,6 +391,9 @@ type Engine struct {
 	nextConnection   uint64
 	resources        map[string]*Node
 	nextSpan         int
+	ManualMode       bool
+	Focus            *Trace
+	arrivalEpoch     uint64
 	nextTrace        int
 	Traces           map[int]*Trace
 	Recent           []*Trace
@@ -479,10 +485,14 @@ func (e *Engine) note(s string) {
 	}
 }
 func (e *Engine) scheduleArrival() {
-	if e.C.RPS == 0 {
+	if e.C.RPS == 0 || e.ManualMode {
 		return
 	}
+	epoch := e.arrivalEpoch
 	e.at(-math.Log(math.Max(1e-12, e.random()))/e.C.RPS*1000, func() {
+		if epoch != e.arrivalEpoch || e.ManualMode {
+			return
+		}
 		if e.C.RPS > 0 {
 			w := e.C.Weight * (1 + (2*e.random()-1)*e.C.Spread/100)
 			e.AddRequest(math.Max(.01, w))
@@ -509,13 +519,20 @@ func (e *Engine) route(group, mode, key string) *Node {
 	return nodes[i%len(nodes)]
 }
 func (e *Engine) AddRequest(weight float64) *Trace {
+	return e.addRequest(weight, e.C.Deadline, e.requestLabels(), false)
+}
+func (e *Engine) addRequest(weight, deadline float64, labels map[string]string, manual bool) *Trace {
 	e.nextTrace++
-	t := &Trace{ID: e.nextTrace, Start: e.Now, Weight: weight, Labels: e.requestLabels()}
+	t := &Trace{ID: e.nextTrace, Start: e.Now, End: -1, Weight: weight, Deadline: deadline, Labels: copyLabels(labels), Manual: manual}
+	if manual {
+		e.Focus = t
+		t.Events = append(t.Events, TraceEvent{At: e.Now, Kind: "Request sent"})
+	}
 	e.Traces[t.ID] = t
 	e.Arrivals++
 	e.Pending++
 	n := e.routeLocal(e.C.Entry, "round_robin", "entry", e.C.EntryAffinity, t.Labels, nil)
-	e.call(t, nil, n, e.C.Network, e.C.Client.ConnectTimeout, e.C.Deadline, func(ok bool, reason string) { e.finishTrace(t, ok, reason) }, &Edge{Affinity: e.C.EntryAffinity})
+	e.call(t, nil, n, e.C.Network, e.C.Client.ConnectTimeout, deadline, func(ok bool, reason string) { e.finishTrace(t, ok, reason) }, &Edge{Affinity: e.C.EntryAffinity})
 	return t
 }
 func (e *Engine) finishTrace(t *Trace, ok bool, reason string) {
@@ -526,6 +543,9 @@ func (e *Engine) finishTrace(t *Trace, ok bool, reason string) {
 	t.End = e.Now
 	t.OK = ok
 	t.Reason = reason
+	if t.Manual {
+		t.Events = append(t.Events, TraceEvent{At: e.Now, Kind: "User response", Reason: reason})
+	}
 	e.Pending--
 	if ok {
 		e.OK++
@@ -555,6 +575,7 @@ func (e *Engine) call(t *Trace, parent *Span, n *Node, network, connectTimeout, 
 	n.Outstanding++
 	t.Spans = append(t.Spans, s)
 	t.active++
+	e.traceEvent(s, "Call started", "", timeout)
 	e.at(timeout, func() {
 		if s.settled {
 			return
@@ -570,6 +591,7 @@ func (e *Engine) call(t *Trace, parent *Span, n *Node, network, connectTimeout, 
 		}
 	})
 	e.acquireConnection(s, parent, key)
+	e.traceEvent(s, "Connection", s.Connection, 0)
 	connected := s.connected
 	ct := 0.0
 	if !connected {
@@ -597,6 +619,7 @@ func (e *Engine) call(t *Trace, parent *Span, n *Node, network, connectTimeout, 
 		}
 		s.connected = true
 		s.ConnectionEstablished = true
+		e.traceEvent(s, "Connection ready", "", network)
 		if s.settled {
 			s.ConnectionClosed = true
 		}
@@ -614,6 +637,7 @@ func (e *Engine) settle(s *Span, ok bool, why string) {
 	}
 	s.settled = true
 	s.Reply = e.Now
+	e.traceEvent(s, "Caller notified", why, 0)
 	e.releaseConnection(s)
 	s.callback(ok, why)
 }
@@ -638,6 +662,7 @@ func (e *Engine) arrive(s *Span) {
 	n := s.node
 	e.integrate(n)
 	s.Arrive = e.Now
+	e.traceEvent(s, "Box entered", "", 0)
 	n.Arrivals++
 	n.Visits[s.ID] = s
 	if n.State == "down" {
@@ -650,6 +675,7 @@ func (e *Engine) arrive(s *Span) {
 	}
 	s.Phase = "queue"
 	n.Queue = append(n.Queue, s)
+	e.traceEvent(s, "Queued", "", float64(len(n.Queue)))
 	e.pump(n)
 }
 func (e *Engine) pump(n *Node) {
@@ -664,6 +690,7 @@ func (e *Engine) pump(n *Node) {
 		s.occupied = true
 		s.started = true
 		s.WorkStart = e.Now
+		e.traceEvent(s, "Worker acquired", "", 0)
 		s.Labels = e.nodeLabels(n)
 		e.local(s)
 	}
@@ -679,18 +706,21 @@ func (e *Engine) local(s *Span) {
 	}
 	if n.State != "healthy" {
 		s.Phase = "hang"
+		e.traceEvent(s, "Work parked", "", 0)
 		s.parked = func() { e.local(s) }
 		return
 	}
 	s.Phase = "local"
 	s.parked = nil
 	d := e.processingCost(s)
+	e.traceEvent(s, "Processing started", "", d)
 	e.at(d, func() {
 		if s.done {
 			return
 		}
 		if n.State != "healthy" {
 			s.Phase = "hang"
+			e.traceEvent(s, "Work parked", "", 0)
 			s.parked = func() { e.afterLocal(s) }
 			return
 		}
@@ -702,6 +732,7 @@ func (e *Engine) afterLocal(s *Span) {
 		return
 	}
 	s.LocalEnd = e.Now
+	e.traceEvent(s, "Processing finished", "", 0)
 	s.parked = nil
 	if s.node.Resource != "" {
 		e.respond(s, true, "ok")
@@ -719,6 +750,7 @@ func (e *Engine) dispatchDownstream(s *Span, done func(bool, string)) {
 		return
 	}
 	s.Phase = "children"
+	e.traceEvent(s, "Waiting for children", "", 0)
 	type target struct {
 		n     *Node
 		net   float64
@@ -801,6 +833,7 @@ func (e *Engine) end(s *Span, ok bool, why string) {
 	}
 	s.done = true
 	s.End = e.Now
+	e.traceEvent(s, "Box finished", why, 0)
 	s.Status = why
 	s.Phase = "done"
 	s.parked = nil
@@ -855,6 +888,9 @@ func (e *Engine) end(s *Span, ok bool, why string) {
 	}
 }
 func (e *Engine) cancel(s *Span, reason string) {
+	if !s.done || !s.settled {
+		e.traceEvent(s, "Cancellation", reason, 0)
+	}
 	if !s.settled {
 		e.dropConnection(s)
 	}
@@ -1066,6 +1102,9 @@ func (e *Engine) Update(c Config) error {
 			e.pump(n)
 		}
 	}
+	if oldRPS > 0 && c.RPS == 0 {
+		e.arrivalEpoch++
+	}
 	if oldRPS == 0 && c.RPS > 0 {
 		e.scheduleArrival()
 	}
@@ -1206,20 +1245,23 @@ type NodeView struct {
 	Exited     int      `json:"exited"`
 }
 type Snapshot struct {
-	Autoscalers []AutoScaleView `json:"autoscalers"`
-	ScaleEvents []ScaleEvent    `json:"scaleEvents"`
-	T           float64         `json:"t"`
-	Config      Config          `json:"config"`
-	Metrics     Metrics         `json:"metrics"`
-	Resources   []NodeView      `json:"resources"`
-	Nodes       []NodeView      `json:"nodes"`
-	History     []Point         `json:"history"`
-	Recent      []*Trace        `json:"recent"`
-	Log         []Log           `json:"log"`
+	ManualMode   bool            `json:"manualMode"`
+	Focus        *Trace          `json:"focus,omitempty"`
+	FocusRunning bool            `json:"focusRunning"`
+	Autoscalers  []AutoScaleView `json:"autoscalers"`
+	ScaleEvents  []ScaleEvent    `json:"scaleEvents"`
+	T            float64         `json:"t"`
+	Config       Config          `json:"config"`
+	Metrics      Metrics         `json:"metrics"`
+	Resources    []NodeView      `json:"resources"`
+	Nodes        []NodeView      `json:"nodes"`
+	History      []Point         `json:"history"`
+	Recent       []*Trace        `json:"recent"`
+	Log          []Log           `json:"log"`
 }
 
 func (e *Engine) Snapshot() Snapshot {
-	s := Snapshot{Autoscalers: e.autoScaleViews(), ScaleEvents: e.ScaleEvents, T: e.Now, Config: e.C, Metrics: e.metrics(), History: e.History, Recent: e.Recent, Log: e.Log}
+	s := Snapshot{ManualMode: e.ManualMode, Focus: e.Focus, FocusRunning: e.FocusRunning(), Autoscalers: e.autoScaleViews(), ScaleEvents: e.ScaleEvents, T: e.Now, Config: e.C, Metrics: e.metrics(), History: e.History, Recent: e.Recent, Log: e.Log}
 	for _, n := range e.Nodes {
 		busy, capacity := e.loadWindow(n, 5000)
 		util := 0.0

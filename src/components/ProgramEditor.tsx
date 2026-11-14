@@ -189,7 +189,8 @@ export function ProgramEditor({
           }
         />
         <NumberField
-          label="Queue limit · 0 = unlimited"
+          label="Queue limit, requests"
+          note="Waiting requests only; active workers are excluded. 0 = no waiting."
           value={box.queueLimit}
           max={2000}
           step={1}

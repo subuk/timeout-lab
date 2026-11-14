@@ -53,6 +53,98 @@ async function number(page: Page, selector: string, value: string) {
   await page.locator(selector).blur();
 }
 
+test("queue limits are visible and edit the selected box definition without resetting", async ({
+  page,
+}) => {
+  await ready(page, "composition");
+  await pause(page);
+  const before = await page.evaluate(() => window.audit.snapshot);
+  const time = await page.locator("#clock").textContent();
+  await page.locator("#resource-tabs button").first().click();
+  await expect(page.locator("#queue-limit")).toBeVisible();
+  await page
+    .locator(".inspector")
+    .screenshot({ path: "/tmp/tmlab-queue-en.png" });
+  await number(page, "#queue-limit", "17");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          window.audit.snapshot.config.groups.find((g) => g.id === "api")!
+            .queueLimit,
+      ),
+    )
+    .toBe(17);
+  await page.locator('[data-scope="group"]').click();
+  await expect(page.locator("#queue-limit")).toHaveValue("17");
+  await page.locator('[data-scope="node"]').click();
+  await page
+    .locator("#resource-tabs button")
+    .filter({ hasText: "Memory" })
+    .click();
+  await number(page, "#queue-limit", "0");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          window.audit.snapshot.config.groups
+            .find((g) => g.id === "api")!
+            .resources!.find((r) => r.id === "compute")!
+            .resources!.find((r) => r.id === "memory")!.queueLimit,
+      ),
+    )
+    .toBe(0);
+  await page.locator("#language").selectOption("ru");
+  await expect(
+    page.getByRole("spinbutton", {
+      name: "Лимит очереди, запросов",
+      exact: true,
+    }),
+  ).toHaveValue("0");
+  await page
+    .locator(".inspector")
+    .screenshot({ path: "/tmp/tmlab-queue-ru.png" });
+  await page.locator("#language").selectOption("en");
+  await number(page, "#queue-limit", "2001");
+  await expect(page.locator("#queue-limit")).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+  await number(page, "#queue-limit", "1.5");
+  await expect(page.locator("#queue-limit")).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+  await number(page, "#queue-limit", "0");
+  await expect(page.locator("#queue-limit")).toHaveValue("0");
+  await expect(page.locator("#clock")).toHaveText(time!);
+  const after = await page.evaluate(() => window.audit.snapshot);
+  expect(after.t).toBe(before.t);
+  expect(after.history).toEqual(before.history);
+  expect(after.nodes.map((n) => [n.id, n.queue, n.active])).toEqual(
+    before.nodes.map((n) => [n.id, n.queue, n.active]),
+  );
+  expect(after.config.overrides).toEqual(before.config.overrides);
+  const expected = structuredClone(before.config);
+  const group = expected.groups.find((g) => g.id === "api")!;
+  group.queueLimit = 17;
+  group
+    .resources!.find((r) => r.id === "compute")!
+    .resources!.find((r) => r.id === "memory")!.queueLimit = 0;
+  expect(after.config).toEqual(expected);
+  await page.locator("#edit-resources").click();
+  const editor = page.locator(".program-editor");
+  await editor
+    .getByLabel("Box", { exact: true })
+    .selectOption("compute/memory");
+  await expect(
+    editor.getByRole("spinbutton", {
+      name: "Queue limit, requests",
+      exact: true,
+    }),
+  ).toHaveValue("0");
+});
+
 test("nested forms retain relative targets, zero overrides and incomplete JSON safely", async ({
   page,
 }) => {

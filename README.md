@@ -105,6 +105,7 @@ Metrics, system activity, experiment notes and traces stay fixed above the canva
 
 - Generator: Poisson arrivals into `entry` only, with a configurable total RPS for the entry group, mean weight, uniform weight spread, and seed.
 - Node: bounded FIFO queue, worker count, local processing time × weight, and failure state. A worker remains occupied for the entire operation, including waiting for children.
+- **Queue limit, requests** in the inspector sets the maximum waiting requests, excluding active workers (0–2000; `0` means no waiting). It applies to every instance of the selected box definition in its group, or to the selected shared resource. Each instance has its own queue. The limit changes live without resetting the experiment or removing accepted work; it is also available in **Boxes and request paths**.
 - Group: identically configured instances with optional individual overrides.
 - Call: a target group or relative internal-box path, call count, round_robin/random/least_busy/broadcast routing, explicit network/ideal transport, and optional delay and timeout. Every box runs explicit sequential stages; calls within each stage run in parallel. Broadcast × calls sends that many calls to every node in the target group. Children inherit request weight.
 - Join: all successful responses, the first successful response, or N successful responses (quorum). An impossible quorum fails the parent. When cancellation is enabled, unfinished children are canceled.

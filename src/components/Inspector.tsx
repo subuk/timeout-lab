@@ -157,6 +157,28 @@ export function Inspector({
             onChange={(v) => set("workers", v)}
           />
           <NumberField
+            id="queue-limit"
+            label="Queue limit, requests"
+            value={box.queueLimit}
+            max={2000}
+            step={1}
+            note={
+              resource?.shared
+                ? "Waiting requests only; active workers are excluded. 0 = no waiting. Applies to this shared resource."
+                : "Waiting requests per instance; active workers are excluded. 0 = no waiting. Applies to every instance of this box in the group."
+            }
+            onChange={(v) =>
+              run(
+                editConfig((c) => {
+                  definition(
+                    c.groups.find((item) => item.id === g.id)!,
+                    path,
+                  ).queueLimit = v;
+                }),
+              )
+            }
+          />
+          <NumberField
             id="node-count"
             label="Instances"
             value={g.count}

@@ -3,10 +3,14 @@
 .sites-checkout-*/
 *.tar.gz
 
-# Generated build artifacts; the other files in dist/ are editable sources.
-/dist/core.wasm
-/dist/wasm_exec.js
-/dist/standalone.html
+# Frontend and engine build output.
+/dist/
+/public/core.wasm
+/public/wasm_exec.js
+/public/worker.js
+/node_modules/
+/test-results/
+/playwright-report/
 
 # Local hosting metadata and verification screenshots.
 /.openai/

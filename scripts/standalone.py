@@ -1,36 +1,38 @@
-#!/usr/bin/env python3
-"""Pack the static app, Go runtime and WASM into one offline HTML file."""
+"""Package Vite output as an offline HTML document, including its classic Worker."""
 from pathlib import Path
 import base64
-import json
 import hashlib
+import json
 import re
-
 root = Path(__file__).resolve().parent.parent
 dist = root / 'dist'
-# Version the whole dependency chain, including worker-loaded WASM/runtime.
-worker_source = (dist / 'worker.js').read_text()
-for name in ('core.wasm', 'wasm_exec.js'):
-    version = hashlib.sha256((dist / name).read_bytes()).hexdigest()[:12]
-    worker_source = re.sub(r'\./' + re.escape(name) + r'(?:\?v=[a-f0-9]+)?', './' + name + '?v=' + version, worker_source)
-(dist / 'worker.js').write_text(worker_source)
-worker_version = hashlib.sha256(worker_source.encode()).hexdigest()[:12]
-app_source = re.sub(r"new Worker\('\./worker\.js(?:\?v=[a-f0-9]+)?'\)", "new Worker('./worker.js?v=" + worker_version + "')", (dist / 'app.js').read_text())
-(dist / 'app.js').write_text(app_source)
-# Version entry assets so browser caches cannot retain a previous deployment.
-index = (dist / 'index.html').read_text()
-for name in ('app.js', 'style.css', 'i18n.js'):
-    version = hashlib.sha256((dist / name).read_bytes()).hexdigest()[:12]
-    index = re.sub(r'(["\'])' + re.escape(name) + r'(?:\?[^"\']*)?\1',
-                   lambda m: m[1] + name + '?v=' + version + m[1], index)
-(dist / 'index.html').write_text(index)
-wasm = base64.b64encode((dist / 'core.wasm').read_bytes()).decode('ascii')
-worker = re.sub(r'\?v=[a-f0-9]+', '', worker_source).replace("importScripts('./wasm_exec.js');", (dist / 'wasm_exec.js').read_text())
-worker = worker.replace("const response=await fetch('./core.wasm');if(!response.ok)throw new Error('Failed to load core.wasm');const {instance}=await WebAssembly.instantiate(await response.arrayBuffer(),go.importObject);", "const binary=Uint8Array.from(atob(" + json.dumps(wasm) + "),c=>c.charCodeAt(0));const {instance}=await WebAssembly.instantiate(binary,go.importObject);")
-bootstrap = 'window.LAB_WORKER_URL=URL.createObjectURL(new Blob([' + json.dumps(worker, ensure_ascii=False).replace('</', '<\\/') + '],{type:"text/javascript"}));'
-app = re.sub(r"new Worker\('\./worker\.js(?:\?v=[a-f0-9]+)?'\)", "new Worker(window.LAB_WORKER_URL || './worker.js')", app_source).replace('</script', '<\\/script')
-html = re.sub(r'<link rel="stylesheet" href="style\.css(?:\?[^"]*)?">', lambda _: '<style>' + (dist / 'style.css').read_text() + '</style>', index)
-html = re.sub(r'<script src="i18n\.js(?:\?[^"]*)?"></script>', lambda _: '<script>' + (dist / 'i18n.js').read_text().replace('</script', '<\\/script') + '</script>', html)
-html = re.sub(r'<script type="module" src="app\.js(?:\?[^"]*)?"></script>', lambda _: '<script>' + bootstrap + '</script><script type="module">' + app + '</script>', html)
-(dist / 'standalone.html').write_text(html)
-print('Created dist/standalone.html (offline, includes WASM)')
+index = (dist/'index.html').read_text()
+worker = (dist/'worker.js').read_text()
+# Version Worker dependencies for ordinary static hosting.
+for name in ('core.wasm','wasm_exec.js'):
+    digest=hashlib.sha256((dist/name).read_bytes()).hexdigest()[:12]
+    worker=re.sub(r'\./'+re.escape(name)+r'(?:\?v=[a-f0-9]+)?', './'+name+'?v='+digest,worker)
+(dist/'worker.js').write_text(worker)
+worker_hash=hashlib.sha256(worker.encode()).hexdigest()[:12]
+# A stable runtime URL is injected explicitly instead of rewriting application code.
+bootstrap='<script>window.LAB_WORKER_URL="./worker.js?v='+worker_hash+'";</script>'
+index=re.sub(r'<script>window.LAB_WORKER_URL=.*?</script>', '',index)
+index=index.replace('</head>',bootstrap+'</head>')
+(dist/'index.html').write_text(index)
+offline=re.sub(r'\?v=[a-f0-9]+','',worker)
+offline=re.sub(r'importScripts\(["\']\./wasm_exec.js["\']\);',lambda _: (dist/'wasm_exec.js').read_text(),offline)
+wasm=base64.b64encode((dist/'core.wasm').read_bytes()).decode()
+offline=re.sub(r'fetch\(["\']\./core.wasm["\']\)',lambda _: 'Promise.resolve({ok:true,arrayBuffer:async()=>Uint8Array.from(atob('+json.dumps(wasm)+'),c=>c.charCodeAt(0)).buffer})',offline)
+if 'importScripts(' in offline or re.search(r'\bfetch\(',offline):
+    raise RuntimeError('Offline worker still has external dependencies')
+embedded='window.LAB_WORKER_URL=URL.createObjectURL(new Blob(['+json.dumps(offline).replace('</','<\\/')+'],{type:"text/javascript"}));'
+html=index.replace(bootstrap,'<script>'+embedded+'</script>')
+def asset(path):
+    resolved=(dist/path.removeprefix('./')).resolve()
+    if not resolved.is_relative_to(dist.resolve()): raise ValueError('Asset outside dist')
+    return resolved.read_text()
+html=re.sub(r'<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>',lambda m:'<style>'+asset(m[1])+'</style>',html)
+html=re.sub(r'<script\b[^>]*src="([^"]+)"[^>]*></script>',lambda m:'<script type="module">'+asset(m[1]).replace('</script','<\\/script')+'</script>',html)
+if re.search(r'<(?:script|link)\b[^>]*(?:src|href)="\./assets/',html): raise RuntimeError('Unpacked frontend asset')
+(dist/'standalone.html').write_text(html)
+print('Created dist/standalone.html (offline, includes React and WASM)')

@@ -1,6 +1,6 @@
 # Timeout Lab — systems lab
 
-A static interactive simulator of queues, bounded resources, timeouts, and scaling. A generic Go engine compiles to WebAssembly and runs in a Web Worker; the interface uses HTML/CSS/JS without external dependencies or a backend.
+A static interactive simulator of queues, bounded resources, timeouts, and scaling. A generic Go engine compiles to WebAssembly and runs in a Web Worker; the interface uses React and TypeScript, bundled locally by Vite. Deployment remains static, with no backend or runtime CDN dependencies.
 
 The first preset is a load balancer → 4 backends → database. The generator sends a total of 200 RPS only to the entry group (`entry`, the load balancer in this preset). Traffic is distributed round-robin among its active nodes. Further requests arise only from outgoing graph edges; their rate depends on call counts, fan-out, processing, and routing. Scaling any group does not change the configured total incoming RPS.
 
@@ -8,13 +8,14 @@ English is the project's primary language: documentation, contributor instructio
 
 ## Getting started
 
-After cloning, build the project first. You need Go 1.24+ with `lib/wasm/wasm_exec.js` and Python 3:
+After cloning, build the project first. You need Node.js 22.12+ (or 24+), Go 1.24+ with `lib/wasm/wasm_exec.js`, and Python 3:
 
 ```sh
-sh scripts/build.sh
+npm ci
+npm run build
 ```
 
-Git contains the sources, including the HTML/CSS/JS files in `dist/`. Generated `dist/core.wasm`, `dist/wasm_exec.js`, and `dist/standalone.html` are excluded from the repository.
+Source files live in `src/` and the root `index.html`. The entire `dist/` directory and generated Worker/WASM files in `public/` are excluded from Git. `npm run dev` builds the Go engine and Worker, then starts Vite with hot reload. `npm run preview` serves the production build.
 
 The simplest way to run the app is to open **`dist/standalone.html`** in a modern browser. It embeds Go WebAssembly, the Worker, CSS, and JS; no HTTP server or internet connection is needed. The regular build generates this file; `python3 scripts/standalone.py` can repack it after the WASM and runtime exist.
 
@@ -24,19 +25,32 @@ For the multi-file version, serve the built `dist/` directory:
 python3 -m http.server 8791 --directory dist
 ```
 
-Open `http://localhost:8791`. This version requires HTTP; the standalone HTML uses an embedded Blob Worker and works over `file://`. Static hosting needs only the contents of `dist/`, with no external APIs, fonts, or libraries.
+Open `http://localhost:8791`. This version requires HTTP; the standalone HTML uses an embedded Blob Worker and works over `file://`. Static hosting needs only the contents of `dist/`, with no external APIs, fonts, CDN scripts, or Node.js server.
 
 To test and rebuild (previously verified with Go 1.27.3):
 
 ```sh
 go test ./...
 node scripts/check-i18n.cjs
-sh scripts/build.sh
+npm run build
+node scripts/check-manual.cjs
+npm run test:browser
 ```
 
 `wasm_exec.js` is copied from the same Go installation that compiles `core.wasm`. The binary is part of the built distribution, not the source repository. WASM provides a shared native/browser engine; no performance advantage over JavaScript is claimed without a comparative benchmark.
 
-For the browser trace-interaction regression checks, serve the project root with `python3 -m http.server 8792 --bind 127.0.0.1`, then open `http://localhost:8792/scripts/check-traces.html`. The checks exercise live snapshots, focus, selection, resource expansion, refresh, manual requests, localization and reset using the real app and Worker.
+Install a test browser once with `npx playwright install chromium`. `npm run test:browser` starts its own local server and exercises the built HTTP app and offline `file://` artifact: live settings, group overrides, focused drafts, language changes, trace selection, manual requests, validation, resets, preset history, and rendering at 64 instances. Tests use the real Go/WASM Worker.
+
+## Frontend architecture
+
+- `src/App.tsx` and `src/components/`: React components for playback, generator, topology, inspector, model forms, charts, and traces.
+- `src/engine.ts`: typed Worker commands, correlated acknowledgements, serialized configuration edits, and an external snapshot store. Unchanged configurations retain object identity; form drafts and selected traces live separately from simulation snapshots.
+- `src/model.ts`: wire types generated from Go JSON structs by `scripts/generate-types.py`; do not edit by hand.
+- `src/worker.ts`: simulation playback and WASM bridge, bundled as a classic Worker. The engine still advances virtual time independently of React rendering.
+- `src/i18n.js`: existing translation dictionary and language selection, exposed as a React subscription; it no longer modifies the DOM.
+- `src/style.css`: local styles. `vite.config.ts` builds the application; `vite.worker.config.ts` builds the Worker. `scripts/standalone.py` embeds the built JS, CSS, Worker, Go runtime and WASM in one HTML file.
+
+Basic settings remain in the side panels. Configuration and Boxes and request paths open a schema form with a JSON tab. Existing fields can be edited in the form; use JSON to add/remove boxes, stages, calls and optional fields. Apply without reset asks the engine to validate a live update; Apply and restart explicitly restarts a structural change. Names and model translations remain literal data. Number fields commit on blur or Enter. The visual graph is a read-only topology, not a visual editor.
 
 ## Model
 
@@ -93,8 +107,8 @@ Files:
 - `core/model.go`: configuration, DAG validation, scheduling, model, tracing, and metrics.
 - `core/model_test.go`: queues, weights, fan-out, quorum, timeouts, cancellation, recovery, determinism, and finite-horizon Little's law tests.
 - `cmd/wasm/main.go`: the `labCommand` JSON bridge for WebAssembly.
-- `dist/worker.js`: WASM loading, virtual ticks, pause, and speed.
-- `dist/app.js`, `dist/index.html`, `dist/style.css`: interactive diagram, controls, charts, and traces.
+- `src/worker.ts`: WASM loading, virtual ticks, pause, and speed.
+- `src/App.tsx`, `src/components/`, `src/style.css`: interactive diagram, controls, charts, and traces.
 
 Visual edge editing, separate request classes, two synchronized comparison runs, and additional presets are left for future work. Arbitrary graphs can currently be defined through JSON.
 
@@ -128,7 +142,7 @@ Implementation: `core/autoscale.go`; tests: `core/autoscale_test.go`.
 
 English and Russian share one URL. On first load, JavaScript selects the first supported language in `navigator.languages`, including regional variants such as `ru-RU` and `en-GB`; English is the fallback. The language selector saves the user's choice in `localStorage`, taking precedence over browser preferences. If storage is unavailable, selection works until reload.
 
-Changing language only redraws the interface: time, queues, settings, selected trace, and pause state are preserved. Model JSON and user-defined names are not rewritten. Label, tooltip, trace, and engine-message translations live in `dist/i18n.js`. Standalone HTML embeds the same dictionary. Run `node scripts/check-i18n.cjs` to check selection and translations.
+Changing language only redraws the interface: time, queues, settings, selected trace, and pause state are preserved. Model JSON and user-defined names are not rewritten. Label, tooltip, trace, and engine-message translations live in `src/i18n.js`. Standalone HTML embeds the same dictionary. Run `node scripts/check-i18n.cjs` to check selection and translations.
 
 ## Retrying connection failures
 
@@ -200,13 +214,13 @@ Utilization is the integral of occupied slots divided by the integral of availab
 
 Scaling preserves the experiment. Instance resources scale with the service; shared resources remain. Removed instances retain their entire private bundle for not-yet-started descendant and sibling calls of accepted requests, including work continuing after an early user response when cancellation is disabled. Retired-resource history stays in Little's law accounting. The autoscaler changes service instance counts while observing a selected resource; adding services does not increase shared-resource capacity.
 
-The interface offers resource bars on cards, inspector tabs, separate metrics and Little's law, and expandable internal spans via ▸. Groups can collapse; those with more than six nodes start collapsed. The summary bar shows average/maximum utilization. The **Boxes and paths** editor selects any nested box, adds/removes children, changes ownership, reorders stages, edits parallel calls, request conditions, and network/ideal links. Resource bars, tabs and autoscaling sensors include all nesting levels. A stage captures its conditions, calls, join policy and budgets when it begins; executing work and attempts retain their scheduled durations/budgets. Numeric settings, conditions, call counts, join policies and transport settings apply without resetting time, RNG, queues, or history. Changes to child identities/ownership, call targets, or stage order/count require an explicit restart. Invalid updates are rejected before engine state changes. Model JSON preserves all nested programs and overrides.
+The interface offers resource bars on cards, inspector tabs, separate metrics and Little's law, and expandable internal spans. Groups can collapse; those with more than six nodes start collapsed. The summary bar shows aggregate utilization. The **Boxes and request paths** dialog edits the group's nested model through a schema form and JSON. Existing values are editable in the form; JSON supports adding/removing children, ownership, stage order, parallel calls, conditions, and transport. Resource bars, tabs and autoscaling sensors include all nesting levels. A stage captures its conditions, calls, join policy and budgets when it begins; executing work and attempts retain their scheduled durations/budgets. Numeric settings, conditions, call counts, join policies and transport settings apply without resetting time, RNG, queues, or history. Changes to child identities/ownership, call targets, or stage order/count require an explicit restart. Invalid updates are rejected before engine state changes. Model JSON preserves all nested programs and overrides.
 
-Composite-box tests: `core/resources_test.go` and `core/program_test.go`. Format rejection and all eight preset round-trips are covered by `core/schema_test.go`; `core/presets_test.go` compares 10 seconds of deterministic outcomes and occupancy with results recorded before removing implicit programs. All presets are defined by `core.PresetConfig`; the interface and WASM bridge use that single source. Browser checks: serve the repository root and open `scripts/check-programs.html` (or `scripts/check-programs.html?standalone` for the embedded build).
+Composite-box tests: `core/resources_test.go` and `core/program_test.go`. Format rejection and all eight preset round-trips are covered by `core/schema_test.go`; `core/presets_test.go` compares 10 seconds of deterministic outcomes and occupancy with results recorded before removing implicit programs. All presets are defined by `core.PresetConfig`; the interface and WASM bridge use that single source. Browser checks: `npm run test:browser` exercises the HTTP and embedded builds.
 
 ## Locality and illustrative cost
 
-Expand Request labels in the generator or Locality in a service/resource inspector. Labels are `key=value` lines with arbitrary keys. An instance value `key=` removes an inherited label. Requests keep their labels in all descendants. The generator can distribute one key between two values at a chosen ratio; constant labels are configured separately.
+Open Request labels in the generator or Locality in an inspector to edit the model form/JSON. Labels are string maps with arbitrary keys; manual request labels use `key=value` lines. An empty instance label value removes an inherited label. Requests keep their labels in all descendants. The generator can distribute one key between two values at a chosen ratio; constant labels are configured separately.
 
 Three independent mechanisms compare the same kind of key:
 
@@ -248,7 +262,7 @@ Text selection is exact language tag → base language → `i18n.en.name`, if su
 
 Languages from every object's `i18n` appear in the shared selector. User preference takes precedence over browser language; English is the fallback. The interface supports English and Russian; for other languages, names come from the model while controls remain English. Switching language does not modify model parameters or reset the experiment.
 
-Translations appear in the diagram, inspector, resource/autoscaler lists, stages, and traces. Export/import preserves them. Built-in presets use English `name` values and explicit Russian `i18n`. Resource-name inputs edit the base `name`; translations are edited through JSON. New resources receive English names. Historical spans retain the resource name and translations from call time.
+Translations appear in the diagram, inspector, resource/autoscaler lists, stages, and traces. Export/import preserves them. Built-in presets use English `name` values and explicit Russian `i18n`. The model form edits the base `name` and existing translations; JSON can add translations and resources. Use English defaults for new resources. Historical spans retain the resource name and translations from call time.
 
 ## Connection reuse
 

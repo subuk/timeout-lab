@@ -9,13 +9,14 @@ Timeout Lab / Systems Lab is a static interactive simulator of queues, bounded r
 English is the primary project language. Write documentation, contributor instructions, source comments, and default UI/model text in English. Keep other languages in explicit localization data and localization tests; preserve user-defined names verbatim.
 
 - `core/`: Go model, virtual time, metrics, and tests.
-- `cmd/wasm/main.go`: `labCommand` JSON bridge; `dist/worker.js`: Web Worker execution.
-- `dist/index.html`, `app.js`, `style.css`, `i18n.js`, `worker.js`: editable interface sources. Despite the directory name, there is currently no separate `src`.
-- `dist/core.wasm`, `wasm_exec.js`, `standalone.html`: generated files; do not edit manually or commit them.
-- `scripts/build.sh`: WASM and standalone build; `scripts/standalone.py`: standalone HTML and versioning of the entire asset chain.
+- `cmd/wasm/main.go`: `labCommand` JSON bridge; `src/worker.ts`: Web Worker execution.
+- `src/`: React/TypeScript interface, styles, translations, typed Worker bridge, and generated Go wire types.
+- Root `index.html`, `vite.config.ts`, `vite.worker.config.ts`: application and Worker build entries.
+- `dist/` and `public/{worker.js,core.wasm,wasm_exec.js}`: generated build output; do not edit manually or commit it.
+- `scripts/build.sh`: type generation/checking, WASM, Vite and standalone build; `scripts/standalone.py`: offline packaging and Worker asset versioning.
 - `README.md`: detailed semantics and JSON; `deployment/DEPLOYMENT.txt`: deployment history, not the current model specification.
 
-The interface uses plain HTML/CSS/JS without external dependencies, fonts, or APIs. Preserve offline `standalone.html` operation over `file://`. Do not introduce a framework or backend for a small change.
+The interface uses React and TypeScript with Vite. Bundle dependencies locally; no runtime CDN, external fonts, APIs, or backend. Preserve offline `standalone.html` operation over `file://`. React owns the DOM; keep imperative drawing inside canvas/layout effects. Separate form drafts and selection from simulation snapshots.
 
 ## Invariants
 
@@ -47,12 +48,14 @@ Run from this directory:
 ```sh
 go test ./...
 node scripts/check-i18n.cjs
-sh scripts/build.sh
+npm run build
+node scripts/check-manual.cjs
+npm run test:browser
 ```
 
 Go must include `lib/wasm/wasm_exec.js`; use the runtime from the same installation that compiles WASM. If the Go cache is unavailable in the sandbox, use `GOCACHE=/tmp/timeout-lab-go-cache`.
 
-Match verification to the change: text needs JS syntax/i18n checks and `python3 scripts/standalone.py`; engine changes need Go tests and a full build; interface behavior needs a browser scenario. Add tests for changed semantics/regressions, not exact heading wording. Do not hard-code the current test count in instructions.
+Match verification to the change: frontend changes need TypeScript/i18n checks and a Vite build before standalone packaging; engine changes need Go tests and a full build; interface behavior needs relevant Playwright scenarios. Run `npm ci` before building a fresh checkout. Install Chromium once using `npx playwright install chromium`. Add tests for changed semantics/regressions, not exact heading wording. Do not hard-code the current test count in instructions.
 
 ## Publication and boundaries
 

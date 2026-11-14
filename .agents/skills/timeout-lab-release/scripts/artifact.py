@@ -12,19 +12,25 @@ from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[4]
-FILES = (
-    "index.html", "app.js", "style.css", "i18n.js", "worker.js",
-    "wasm_exec.js", "core.wasm", "standalone.html",
-)
+REQUIRED = ("index.html", "worker.js", "wasm_exec.js", "core.wasm", "standalone.html")
 
 
 def artifacts():
+    dist = ROOT / "dist"
+    for name in REQUIRED:
+        if not (dist / name).is_file():
+            raise ValueError(f"Missing artifact: {name}")
     result = {}
-    for name in FILES:
-        path = ROOT / "dist" / name
-        if path.is_symlink() or not path.is_file() or not path.stat().st_size:
-            raise ValueError(f"Missing, empty or symlink artifact: {path}")
-        result[name] = path.read_bytes()
+    for path in sorted(dist.rglob("*")):
+        if path.is_symlink():
+            raise ValueError(f"Symlink artifact: {path}")
+        if path.is_dir():
+            continue
+        if not path.stat().st_size:
+            raise ValueError(f"Empty artifact: {path}")
+        result[path.relative_to(dist).as_posix()] = path.read_bytes()
+    if not any(name.startswith("assets/") and name.endswith(".js") for name in result):
+        raise ValueError("Missing Vite JavaScript assets")
     return result
 
 

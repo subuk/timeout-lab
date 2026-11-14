@@ -18,7 +18,7 @@ Work from the project root, three levels above this directory. Read `AGENTS.md` 
 | Retries before connection establishment | `core/retry.go`, `core/retry_test.go` |
 | Connection cache, idle expiry, caller settings | `core/connections.go`, `core/connections_test.go`, `core/idle_test.go` |
 | Localization metadata | `core/i18n.go`, `core/i18n_test.go` |
-| Browser JSON contract | `cmd/wasm/main.go`, `dist/worker.js`, consumers in `dist/app.js` |
+| Browser JSON contract | `cmd/wasm/main.go`, `src/worker.ts`, `src/engine.ts`, generated `src/model.ts` |
 
 ## Making changes
 

@@ -855,10 +855,43 @@ const russian = {
   "Connect timeout: 1 to 60000 ms.": "Connect timeout: от 1 до 60000 мс.",
   "Check the generator connection settings.": "Проверьте настройки соединения генератора.",
   "Language": "Язык",
-  "Failed to load core.wasm": "Не удалось загрузить core.wasm"
+  "Failed to load core.wasm": "Не удалось загрузить core.wasm",
+  "Network, ms": "Сеть, мс",
+  "Weight spread, %": "Разброс веса, %",
+  "Jitter, %": "Разброс времени, %",
+  "Seed": "Начальное значение RNG",
+  "Client connections": "Соединения клиента",
+  "Idle timeout, s": "Таймаут простоя, с",
+  "Connect timeout, ms": "Таймаут подключения, мс",
+  "Call timeout, ms": "Таймаут вызова, мс",
+  "Processing, ms": "Обработка, мс",
+  "Workers": "Обработчики",
+  "Instances": "Экземпляры",
+  "State": "Состояние",
+  "Whole group": "Вся группа",
+  "One node": "Один узел",
+  "Settings": "Настройки",
+  "Enabled": "Включено",
+  "Signal": "Сигнал",
+  "Resource": "Ресурс",
+  "Connections and timeouts": "Соединения и таймауты",
+  "Retry connection failures": "Повторять при ошибках подключения",
+  "Cancel downstream work": "Отменять дочернюю работу",
+  "Scaling does not change total incoming RPS.": "Масштабирование не меняет общий входящий RPS.",
+  "Use JSON to add or remove boxes, stages, calls and optional fields. Times are in milliseconds.": "Добавляйте и удаляйте ящики, этапы, вызовы и дополнительные поля в JSON. Время указано в миллисекундах.",
+  "Every box has a FIFO queue, workers and a program. Stages run in order; calls within a stage run in parallel. Workers remain occupied while waiting for children.": "У каждого ящика есть очередь FIFO, обработчики и программа. Этапы идут по порядку, вызовы внутри этапа — параллельно. Ожидание дочерних вызовов занимает обработчик.",
+  "The generator sets total traffic into the entry group. Scaling does not change incoming RPS. Connection settings belong to the caller. A user deadline bounds the whole request.": "Генератор задаёт общий поток во входную группу. Масштабирование не меняет входящий RPS. Настройки соединений принадлежат вызывающему ящику. Дедлайн пользователя ограничивает весь запрос.",
+  "Little’s law includes unfinished visits. Nested span durations must not be added to calculate end-to-end latency.": "Закон Литтла учитывает незавершённые посещения. Длительности вложенных интервалов нельзя складывать для расчёта полной задержки.",
+  "incoming /s": "входящих /с",
+  "after response": "после ответа",
+  "unfinished": "незавершённых",
+  "healthy": "исправен",
+  "down": "отключён",
+  "hang": "завис",
+  "blackhole": "чёрная дыра"
 };
 
-const I18n = (() => {
+export const I18n = (() => {
   const storageKey = 'tmlab.language';
   function canonical(tag) {try {return Intl.getCanonicalLocales(String(tag).replaceAll('_','-'))[0] || '';}catch{return '';}}
   let supported = ['en','ru'];
@@ -890,13 +923,9 @@ const I18n = (() => {
     const extra=[...new Set(objects.flatMap(o=>Object.keys(o?.i18n||{})).map(canonical).filter(Boolean))].filter(k=>k!=='ru'&&k!=='en').sort();
     const next=['en','ru',...extra];if(next.join('|')===supported.join('|'))return;
     supported=next;
-    if(typeof document!=='undefined'){
-      const selector=document.getElementById('language');
-      selector.replaceChildren(...supported.map(tag=>{const option=document.createElement('option');option.value=tag;option.textContent=tag.toUpperCase();return option;}));
-    }
     setLanguage(detectLanguage(browserLanguages,saved,supported),false);
   }
-  const listeners = [], staticNodes = [], staticAttributes = [];
+  const listeners = [];
   const enginePatterns = [
     [/^Очередь ([\d.]+) > ([\d.]+) на узел$/, 'Queue $1 > $2 per node'],
     [/^Занятость ([\d.]+)% ≤ ([\d.]+)%, очереди пусты$/, 'Utilization $1% ≤ $2%, queues are empty'],
@@ -935,34 +964,12 @@ const I18n = (() => {
     const key = strings.reduce((result, part, i) => result + part + (i < values.length ? '{{' + i + '}}' : ''), '');
     return t(key).replace(/\{\{(\d+)\}\}/g, (_, index) => String(values[Number(index)]));
   }
-  function applyStatic() {
-    if (typeof document === 'undefined') return;
-    document.documentElement.lang = language;
-    for (const [node, source] of staticNodes) if (node.isConnected) node.nodeValue = t(source);
-    for (const [node, name, source] of staticAttributes) if (node.isConnected) node.setAttribute(name, t(source));
-    const selector = document.getElementById('language');
-    if (selector) selector.value = language;
-  }
   function setLanguage(next, persist = true) {
     next=canonical(next);if (!supported.includes(next)) return;
     language = next;
     if (persist) { saved=next;try { localStorage.setItem(storageKey, next); } catch {} }
-    applyStatic();
+
     listeners.forEach(listener => listener());
   }
-  if (typeof document !== 'undefined') {
-    const walker = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_TEXT);
-    for (let node; (node = walker.nextNode());) {
-      if (!node.parentElement?.closest('script,style,textarea') && (Object.hasOwn(russian, node.nodeValue.trim()) || Object.hasOwn(english, node.nodeValue.trim()))) staticNodes.push([node, node.nodeValue]);
-    }
-    for (const node of document.querySelectorAll('[title],[aria-label],meta[name="description"]')) {
-      for (const name of ['title', 'aria-label', 'content']) {
-        const source = node.getAttribute(name);
-        if (source && (Object.hasOwn(russian, source.trim()) || Object.hasOwn(english, source.trim()))) staticAttributes.push([node, name, source]);
-      }
-    }
-    document.getElementById('language').addEventListener('change', event => setLanguage(event.target.value));
-    applyStatic();
-  }
-  return {t, template, detectLanguage, setLanguage, name, description, setModelLanguages, locale: () => language === 'ru' ? 'ru-RU' : language==='en'?'en-US':language, onChange: listener => listeners.push(listener)};
+  return {t, template, detectLanguage, setLanguage, name, description, setModelLanguages, locale: () => language === 'ru' ? 'ru-RU' : language==='en'?'en-US':language, languages: () => supported, onChange: listener => { listeners.push(listener); return () => { const i=listeners.indexOf(listener); if(i>=0)listeners.splice(i,1); }; }};
 })();

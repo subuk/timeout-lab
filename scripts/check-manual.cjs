@@ -31,8 +31,9 @@ async function check(source, offline) {
   tick();assert.equal(message.data.t,0);
   send({type:'request',request:{weight:2,deadline:3000,labels:{custom:'<kept verbatim>'}}});
   assert.equal(message.paused,false);assert.equal(message.data.focus.end,-1);
-  send({type:'step',ms:10});assert.equal(message.paused,true);assert.equal(message.data.t,10);
-  send({type:'pause'});
+  send({type:'step',ms:10,requestId:18});assert.equal(message.requestId,18);assert.equal(message.paused,true);assert.equal(message.data.t,10);
+  send({type:'pause',requestId:19});assert.equal(message.requestId,19);
+  send({type:'speed',value:1,requestId:20});assert.equal(message.requestId,20);
   for(let i=0;i<100&&message.data.focusRunning;i++)tick();
   assert.equal(message.data.focus.ok,true);assert.equal(message.paused,true);
   assert.equal(message.data.metrics.arrivals,1);

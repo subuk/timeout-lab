@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const source = fs.readFileSync(new URL('../dist/i18n.js', `file://${__filename}`), 'utf8');
+const source = fs.readFileSync(new URL('../src/i18n.js', `file://${__filename}`), 'utf8').replace('export const I18n', 'const I18n');
 function load(languages, saved, blocked = false) {
   const writes = [];
   const context = vm.createContext({navigator:{languages},localStorage:{
@@ -67,35 +67,6 @@ assert.equal(sourceLabels.template(['Settings for ',''],'{{1}}'),'Настрой
 assert.equal(sourceLabels.t(' Request labels '),' Метки запросов ');
 sourceLabels.setLanguage('en');
 assert.equal(sourceLabels.template(['Settings for ',''],'api-1'),'Settings for api-1');
-
-// Static DOM discovery must recognize English source text and restore it on switch.
-const textNode={nodeValue:'  Loading engine… ',isConnected:true,parentElement:{closest:()=>null}};
-const userNode={nodeValue:'Custom backend',isConnected:true,parentElement:{closest:()=>null}};
-const excludedNode={nodeValue:'Loading engine…',isConnected:true,parentElement:{closest:()=>({})}};
-const attributes={title:'Pause or resume'};
-const element={isConnected:true,getAttribute:name=>attributes[name],setAttribute:(name,value)=>attributes[name]=value};
-let languageChange;
-const selector={value:'',addEventListener:(name,fn)=>languageChange=fn};
-const document={
-  documentElement:{lang:'en'},
-  createTreeWalker(){const nodes=[textNode,userNode,excludedNode];return {nextNode:()=>nodes.shift()};},
-  querySelectorAll:()=>[element],
-  getElementById:()=>selector
-};
-const dom=vm.createContext({document,NodeFilter:{SHOW_TEXT:4},navigator:{languages:['en']}});
-vm.runInContext(source,dom);
-assert.equal(textNode.nodeValue,'  Loading engine… ');
-assert.equal(document.documentElement.lang,'en');
-languageChange({target:{value:'ru'}});
-assert.equal(textNode.nodeValue,'  Загрузка ядра… ');
-assert.equal(attributes.title,'Пауза или продолжение');
-assert.equal(userNode.nodeValue,'Custom backend');
-assert.equal(excludedNode.nodeValue,'Loading engine…');
-languageChange({target:{value:'en'}});
-assert.equal(textNode.nodeValue,'  Loading engine… ');
-assert.equal(attributes.title,'Pause or resume');
-assert.equal(document.documentElement.lang,'en');
-console.log('English source messages and static DOM language switching: OK');
 
 // Languages declared only on a deeply nested box are still selectable.
 const nestedLanguage=load(['fr-CA','en']).i18n;

@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T183142Z
-Backup: /var/backups/tmlab/20261114T183142Z
+Current release: /var/www/tmlab-releases/20261114T185345Z
+Backup: /var/backups/tmlab/20261114T185345Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -324,3 +324,22 @@ with no page errors. All seven public files match local SHA-256; nginx and origi
 checks passed. Previous release: /var/www/tmlab-releases/20261114T182632Z.
 Current release: /var/www/tmlab-releases/20261114T183142Z.
 Backup before update: /var/backups/tmlab/20261114T183142Z.
+
+2026-11-14 model help: restored How the model works as a modal dialog with
+step-by-step request flow, a slow-database example, a suggested experiment,
+and expandable explanations of scaling, resources, timeouts, metrics and model
+limits. English and Russian copy is complete. The help button remains available
+on mobile; dialog content scrolls while its heading and close actions stay visible.
+Escape, close buttons and backdrop dismiss the dialog and return keyboard focus.
+Opening help preserves settings, virtual time and playback state.
+Validation: TypeScript, localization, full WASM/Vite/standalone build and HTTP/
+offline Worker checks passed. Nine local browser scenarios covered the dialog
+and mobile panels in both languages, including offline operation. Desktop and
+narrow-screen dialog screenshots were inspected. The installer verified hashes,
+nginx configuration and origin HTML/WASM responses; all seven public files
+match the local SHA-256 digests. Two public browser scenarios verified both
+languages, dismissal, keyboard focus, responsive layout and preserved experiment
+state with no page errors. Previous releases and backups are retained.
+Previous release: /var/www/tmlab-releases/20261114T183142Z.
+Current release: /var/www/tmlab-releases/20261114T185345Z.
+Backup before update: /var/backups/tmlab/20261114T185345Z.

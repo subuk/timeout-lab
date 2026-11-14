@@ -5,6 +5,7 @@ import { Generator } from "./components/Generator";
 import { Topology, type Selection } from "./components/Topology";
 import { Inspector } from "./components/Inspector";
 import { ModelEditor } from "./components/ModelEditor";
+import { ModelHelp } from "./components/ModelHelp";
 import { Traces } from "./components/Traces";
 import { Metrics, Activity } from "./components/Metrics";
 import type { Trace } from "./model";
@@ -139,8 +140,12 @@ export function App() {
         </a>
         <nav>
           <span className="nav-active">Lab</span>
-          <button id="model-info" onClick={() => setInfo(!info)}>
-            {t("How the model works ↗")}
+          <button
+            id="model-info"
+            aria-haspopup="dialog"
+            onClick={() => setInfo(true)}
+          >
+            {t("How the model works")}
           </button>
         </nav>
         <a
@@ -248,26 +253,6 @@ export function App() {
             </button>
           ))}
         </section>
-        {info && (
-          <section className="panel control-body">
-            <h2>{t("What is being modeled")}</h2>
-            <p>
-              {t(
-                "Every box has a FIFO queue, workers and a program. Stages run in order; calls within a stage run in parallel. Workers remain occupied while waiting for children.",
-              )}
-            </p>
-            <p>
-              {t(
-                "The generator sets total traffic into the entry group. Scaling does not change incoming RPS. Connection settings belong to the caller. A user deadline bounds the whole request.",
-              )}
-            </p>
-            <p>
-              {t(
-                "Little’s law includes unfinished visits. Nested span durations must not be added to calculate end-to-end latency.",
-              )}
-            </p>
-          </section>
-        )}
         {s && (
           <>
             <p id="model-description">{I18n.description(s.config)}</p>
@@ -321,6 +306,7 @@ export function App() {
           </>
         )}
       </main>
+      {info && <ModelHelp close={() => setInfo(false)} />}
     </>
   );
 }

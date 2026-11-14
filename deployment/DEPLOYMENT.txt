@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T214056Z
-Backup: /var/backups/tmlab/20261114T214056Z
+Current release: /var/www/tmlab-releases/20261114T215555Z
+Backup: /var/backups/tmlab/20261114T215555Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -517,3 +517,15 @@ errors. Both public screenshots were inspected.
 Previous release: /var/www/tmlab-releases/20261114T212757Z.
 Current release: /var/www/tmlab-releases/20261114T214056Z.
 Backup before update: /var/backups/tmlab/20261114T214056Z.
+
+2026-11-14 model-link diagnostics: invalid links now identify empty data,
+invalid base64url characters and lengths, UTF-8 and JSON decoding errors,
+incorrect JSON root types, and size limits. Technical details are visible,
+including character positions, actual sizes and original parser errors.
+Local checks: TypeScript, i18n, full build, HTTP/standalone Worker checks and
+all 10 sharing browser tests passed. Public verification: all eight static
+files match local SHA-256 hashes. Mobile Chromium in Russian confirmed
+invalid-character details, JSON parser details and normal-scenario recovery,
+with no page errors. Installer passed nginx and origin checks.
+Release: /var/www/tmlab-releases/20261114T215555Z.
+Backup before update: /var/backups/tmlab/20261114T215555Z.

@@ -8,6 +8,7 @@ import { ModelEditor } from "./components/ModelEditor";
 import { ModelHelp } from "./components/ModelHelp";
 import { ShareModel } from "./components/ShareModel";
 import { AgentGuide } from "./components/AgentGuide";
+import { ErrorMessage } from "./components/ErrorMessage";
 import { modelFromHash, modelURL } from "./sharing";
 import { Traces } from "./components/Traces";
 import { Metrics, Activity } from "./components/Metrics";
@@ -58,7 +59,7 @@ export function App() {
     return () => compact.removeEventListener("change", fold);
   }, []);
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
-  const [linkError, setLinkError] = useState("");
+  const [linkError, setLinkError] = useState<Error | string>("");
   const [shareURL, setShareURL] = useState("");
   const [customModelVersion, setCustomModelVersion] = useState(0);
   const [editor, setEditor] = useState<{ group?: string } | null>(null),
@@ -129,7 +130,7 @@ export function App() {
       }
     } catch (error) {
       if (request === presetRequest.current)
-        setLinkError(error instanceof Error ? error.message : String(error));
+        setLinkError(error instanceof Error ? error : String(error));
     } finally {
       if (request === presetRequest.current) changingPreset.current = false;
     }
@@ -318,9 +319,7 @@ export function App() {
                 setShareURL(modelURL(s.config));
                 setLinkError("");
               } catch (error) {
-                setLinkError(
-                  error instanceof Error ? error.message : String(error),
-                );
+                setLinkError(error instanceof Error ? error : String(error));
               }
             }}
           >
@@ -370,9 +369,9 @@ export function App() {
         </div>
       </header>
       {s && error && (
-        <p className="error-banner" role="alert">
-          {t(error)}
-        </p>
+        <div className="error-banner" role="alert">
+          <ErrorMessage error={error} />
+        </div>
       )}
       {s ? (
         <>
@@ -472,7 +471,7 @@ export function App() {
         <div className="model-load-state">
           <section className="model-load-error floating-block" role="alert">
             <h1>{t("Unable to open model")}</h1>
-            <p>{t(error)}</p>
+            <ErrorMessage error={error} />
             <button
               disabled={!engine.snapshot}
               onClick={() => void choose("normal")}

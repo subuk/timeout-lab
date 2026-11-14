@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { modelFromHash, modelURL } from "../src/sharing";
+import { DiagnosticError } from "../src/errors";
 import type { Config } from "../src/model";
 
 const skill = readFileSync("public/skill.md", "utf8");
@@ -17,6 +18,21 @@ const model: Config = {
 };
 const hash = (value: unknown) =>
   "#model=" + Buffer.from(JSON.stringify(value)).toString("base64url");
+const invalidLinks = [
+  ["#model=", "no model data", /#model.*empty/],
+  ["#model=broken!", "invalid base64url character", /"!" at position 7/],
+  ["#model=a", "invalid base64url length", /modulo 4/],
+  ["#model=_w", "invalid UTF-8", /TypeError:/],
+  [
+    "#model=" + Buffer.from('{"entry":').toString("base64url"),
+    "invalid JSON",
+    /SyntaxError:/,
+  ],
+  [hash(null), "JSON object", /received null/],
+  [hash([]), "JSON object", /received an array/],
+  [hash("text"), "JSON object", /received string/],
+  ["#model=" + "a".repeat(180000), "too large", /180000.*174763/],
+] as const;
 const failures = new WeakMap<Page, string[]>();
 test.beforeEach(async ({ page }) => {
   const errors: string[] = [];
@@ -48,14 +64,15 @@ test("URL encoding round-trips Unicode and bounds malformed input", () => {
   expect(modelFromHash(new URL(url).hash)).toEqual(model);
   expect(url).not.toContain("template=");
   expect(modelFromHash("#template=normal")).toBeNull();
-  for (const value of [
-    "#model=",
-    "#model=???",
-    hash(null),
-    hash([]),
-    "#model=_w",
-  ])
-    expect(() => modelFromHash(value)).toThrow("Invalid model link");
+  for (const [value, message, details] of invalidLinks) {
+    expect(() => modelFromHash(value)).toThrow(message);
+    try {
+      modelFromHash(value);
+    } catch (error) {
+      expect(error).toBeInstanceOf(DiagnosticError);
+      expect((error as DiagnosticError).details).toMatch(details);
+    }
+  }
   expect(() => modelFromHash("#model=" + "a".repeat(180000))).toThrow(
     "too large",
   );
@@ -68,6 +85,31 @@ test("URL encoding round-trips Unicode and bounds malformed input", () => {
 });
 
 for (const standalone of [false, true]) {
+  test(`link diagnostics identify the failure and remain visible in Russian on mobile (${standalone ? "offline" : "HTTP"})`, async ({
+    page,
+  }) => {
+    const base = standalone
+      ? pathToFileURL(resolve("dist/standalone.html")).href
+      : "/";
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const [value, message, details] of invalidLinks) {
+      await page.goto(base + value);
+      const alert = page.getByRole("alert");
+      await expect(alert).toContainText(message);
+      const diagnostics = alert.locator(".error-details pre");
+      await expect(diagnostics).toBeVisible();
+      await expect(diagnostics).toContainText(details);
+      const original = await diagnostics.textContent();
+      await page.locator("#language").selectOption("ru");
+      await expect(alert).toContainText("Технические подробности");
+      await expect(diagnostics).toHaveText(original!);
+      const bounds = await diagnostics.boundingBox();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+      await page.locator("#language").selectOption("en");
+    }
+  });
+
   test(`invalid initial model shows an error without a default experiment (${standalone ? "offline" : "HTTP"})`, async ({
     page,
   }) => {

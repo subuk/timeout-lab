@@ -1,0 +1,4 @@
+interface:
+  display_name: "Timeout Lab: engine"
+  short_description: "Queue, resource, and connection model"
+  default_prompt: "Use $timeout-lab-core to change the model and verify its invariants."

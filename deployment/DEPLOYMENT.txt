@@ -1,0 +1,181 @@
+Published: 2026-11-14 UTC
+URL: https://tmlab.krglv.com/
+Server: subuk@net.krglv.com
+Nginx config: /etc/nginx/conf.d/tmlab.conf
+Web root symlink: /var/www/tmlab
+Current release: /var/www/tmlab-releases/20261114T121535Z
+Backup: /var/backups/tmlab/20261114T001551Z
+
+Published all seven files from dist, including standalone.html. No source files
+or repository metadata are served. Release directories are retained for rollback.
+
+Cloudflare DNS and TLS settings were already configured and were not changed.
+The origin accepts HTTP and HTTPS on IPv4/IPv6, without a redirect loop when
+Cloudflare connects over HTTP. Origin HTTPS uses the existing *.krglv.com
+certificate at /etc/letsencrypt/live/krglv.com/. Existing sites were unchanged.
+
+Validation: nginx -t, graceful reload, origin HTTP/WASM and verified HTTPS/HTML;
+all seven public HTTPS files match local SHA-256 digests; Cloudflare IPv4 and
+IPv6 return HTTP 200 and application/wasm. Browser loaded the Go/WASM simulation,
+displayed live metrics, and reported no console errors. Screenshot: ../published.jpg.
+
+Update procedure: archive dist/ and deployment/tmlab.conf with SHA256SUMS at the
+archive root (hash paths relative to dist). Upload archive and install.sh; run
+sudo bash install.sh /absolute/path/to/archive.tar.gz on the server. The installer
+validates checksums, saves prior config and release target, switches the symlink,
+tests/reloads nginx, and rolls back on failure. Verify public HTTPS after update.
+
+2026-11-14 update: Autoscaling preset now starts with one API backend (4 workers,
+80 ms service), scales only the API group, and selects that group in the inspector.
+Database retains default settings. Entry JS/CSS URLs are content-versioned by
+scripts/standalone.py to avoid stale browser caches. Previous release and config
+are retained under /var/backups/tmlab/20261114T001944Z.
+
+2026-11-14 localization: RU/EN on the same URL, browser language detection and
+persistent manual selection. Added i18n.js (eight dist files total). Local checks
+cover language preference, regional tags, storage fallback and engine messages.
+Browser verified English auto-detection, RU persistence after reload, switching
+without resetting time/node count/trace, model help, and the standalone HTML.
+Public HTML, JS, CSS and standalone hashes match local files. English autoscaling
+works without console errors. Screenshot: ../english-published.jpg.
+Backup before localization: /var/backups/tmlab/20261114T002821Z.
+
+2026-11-14 connection failover: groups[].retryConnect defaults to true, including
+older JSON models. Only pre-connect refusal/timeout retries the next downstream
+node, once per candidate, sharing the original call budget. Broadcast and
+post-connect failures are not retried. Traces retain attempts with retry markers.
+44 core tests pass, including shared budgets, cancellation, keepalive, fanout,
+quorum, draining candidates and failures during the handshake. Browser showed
+0% errors with retry vs 25% without for one down backend out of four.
+The build versions worker, Go runtime and WASM URLs as well as entry assets.
+Backup before update: /var/backups/tmlab/20261114T003659Z.
+
+2026-11-14 generic resources: named FIFO resources with per-instance or shared
+ownership, sequential execution stages, independent traces and Little metrics.
+CPU and Disk are example names. Autoscaling can use a selected resource queue
+and/or capacity-time-weighted utilization over a configurable rolling window.
+Live resource parameter edits and scaling preserve simulation history; structural
+resource/stage edits explicitly restart the model. Compact resource bars,
+collapsible groups and trace children, RU/EN interface and standalone updated.
+56 core tests pass. Public SHA-256 of all eight dist files matches local build;
+nginx validation and origin checks pass. Public browser and standalone run with
+no console errors. Screenshot: ../resources-published.jpg.
+Backup before update: /var/backups/tmlab/20261114T012346Z.
+
+2026-11-14 Kanban: scenario 06, domain-specific RU/EN board using the same
+resource engine. Board-wide CONWIP tokens, FIFO stage queues, live intake/WIP/
+staffing/duration controls, task cards, backlog and WIP chart, lead/cycle metrics,
+completed task journeys and finite-horizon Little accounting excluding backlog.
+No network delay or task deadline in this preset. Capacity reductions drain
+accepted work. Bound backlog is 2000 tasks, overflow is reported.
+63 core tests pass. Browser checked live edits, language switching, reset,
+return to microservices and standalone HTML. All eight public files match local
+SHA-256 digests; nginx and origin validation passed.
+Backup before update: /var/backups/tmlab/20261114T090501Z.
+Screenshot: ../kanban-published.jpg.
+
+2026-11-14 removal: removed Kanban preset, board UI/styles/translations, domain
+snapshot and tests, WASM command and README section. Restored positive global
+deadline validation. Generic resources and all five microservice presets remain.
+56 core tests pass; JS syntax and i18n checks pass. Rebuilt WASM and standalone.
+All eight public files match local hashes. Browser shows five presets, live
+metrics and no console errors. Screenshot: ../no-kanban-published.jpg.
+Backup: /var/backups/tmlab/20261114T094401Z.
+
+2026-11-14 locality: generic request/box labels, per-hop request/caller affinity,
+independent processing and network match/mismatch multipliers. Missing labels
+are neutral. Instance resources inherit placement; cost rules remain independent.
+Connection retries prefer matching candidates within the original budget. Live
+changes preserve history and already calculated durations; draining nodes retain
+placement/cost while finishing accepted work. Independent round-robin subsets.
+Added two-AZ and illustrative NUMA presets using the same generic rules.
+RU/EN collapsed editors, labels on cards, trace decisions/calculations and per-box
+mismatch counters. Autoscaled nodes inherit group placement; manual AZ assignment.
+67 core tests pass. JS/i18n checks pass. Browser verified cross-zone 5x3=15 ms,
+resource cost overrides, multiline labels, no-reset edits and NUMA remote-memory
+cost/pinning, English switching and standalone. All eight public files match
+local SHA-256; nginx and origin checks pass. Public browser has no console errors.
+Screenshot: ../locality-published.jpg.
+Backup: /var/backups/tmlab/20261114T104615Z.
+
+2026-11-14 NUMA preset correction: request home distribution defaults to 50/50,
+so both memory nodes receive traffic. Previously memory-2 received zero while
+cpu-2 still executed requests remotely. Added regression coverage for all four
+boxes with entry affinity off/on and local/remote memory costs. 68 tests pass;
+JS/i18n checks pass. Rebuilt WASM and standalone; all 8 public SHA-256 match.
+Browser observed CPU throughput 96/96 req/s and memory 94/98 req/s, no errors.
+Screenshot: ../numa-balanced-published.jpg.
+Backup: /var/backups/tmlab/20261114T105735Z.
+
+2026-11-14 template links: URL fragment #template=<id> selects one of seven
+presets after WASM is ready. Clicking a preset updates browser history; reload,
+back/forward and manual fragment changes restore it. Invalid IDs fall back to
+normal. Links share the preset only; custom settings remain in JSON exports.
+No Go engine changes. JS syntax/i18n checks pass; standalone regenerated.
+Browser verified all seven selectors, direct NUMA URL, AZ reload/back/forward,
+autoscaling settings, standalone hang preset and invalid-ID fallback. Public NUMA
+link loads correctly without console errors; all 8 public SHA-256 match local.
+Screenshot: ../template-links-published.jpg.
+Backup: /var/backups/tmlab/20261114T110557Z.
+
+2026-11-14 explicit model localization: optional i18n.<language>.name on the
+model, groups and resources, English default names in built-in presets, explicit
+Russian translations. Model names no longer pass through the UI dictionary;
+legacy/custom names display literally. Fallback exact tag -> base language ->
+explicit English -> default name. Model languages appear in the selector; non-
+RU/EN control labels fall back to English. Browser/manual preference retained.
+Traces retain resource translations; live language changes preserve JSON/time.
+70 core tests pass, including metadata round-trip/live update and validation;
+JS tests cover literal dictionary-collision names, regional fallback, language
+availability and input preservation. Browser verified RU/DE resource tabs,
+execution stages and traces, unchanged JSON, preset switching and standalone.
+All 8 public files match SHA-256; nginx/origin/public browser checks pass.
+Screenshot: ../model-i18n-published.jpg.
+Backup: /var/backups/tmlab/20261114T111942Z.
+
+2026-11-14 keepalive eviction: replace boolean cache entries with connection IDs.
+Local call timeout/deadline, cancellation and transport errors evict the matching
+connection. Late failures cannot evict a replacement; abandoned handshakes cannot
+repopulate the cache with cancel disabled. Disabling keepalive clears the cache.
+Trace transport rows show new/reused, not-established and closed flags in RU/EN;
+internal resource visits have no connection row. Post-connect failures still do
+not retry, and normal downstream error responses retain healthy upstream links.
+76 core tests pass, including warm blackhole with cancel on/off, old-connection
+races, deadlines during handshake, reset, disabled caching and the default
+200 RPS scenario with LB connect timeout 15 ms. Browser verified initial reused
+connection errors, later new-connection retries and return to 0% error rate,
+RU/EN and standalone. Public successful retry trace #3565 took 76.8 ms.
+All eight public files match SHA-256; nginx and origin checks pass, no browser
+console errors. Screenshot: ../connections-published.jpg.
+Backup: /var/backups/tmlab/20261114T113444Z.
+
+2026-11-14 fanout explanation: renamed scenario button to "3 database calls"
+and model title to "Three database calls per request", with explicit Russian
+translations. Description below preset selection explains parallel calls, all-
+response wait, nominal 600 DB calls/s and 50 ms disk work. Existing fanout URL
+and simulation parameters preserved. Optional model description and localized
+i18n.<language>.description are round-tripped and rendered as plain text.
+76 core tests and JS/i18n checks pass; browser verified RU/EN, JSON preservation,
+hiding on other presets, standalone and public URL. All eight public SHA-256
+match; nginx/origin checks pass, browser console clean.
+Screenshot: ../fanout-description-published.jpg.
+Backup: /var/backups/tmlab/20261114T115145Z.
+
+2026-11-14 downstream connection policy: keepalive enabled/disabled, idle timeout,
+connect/call timeout and connect retry are caller settings inherited from a group
+with per-box overrides. Generator has independent entry connection settings.
+Legacy global keepalive migrates on import. Default idle is 30 seconds; zero
+disables idle expiry. Idle starts after the last complete response, protects
+active calls and respects live timeout changes without resetting the simulation.
+Scoped pool invalidation and handshake epochs prevent stale cache resurrection;
+draining boxes preserve their outgoing policy. Settings are localized RU/EN.
+88 core tests, JS syntax and i18n checks pass. Browser verified per-box isolation,
+inheritance, live scale-up, generator isolation, idle expiry traces and standalone.
+All eight public files match local SHA-256; nginx and origin checks pass.
+Screenshot: ../downstream-idle-published.jpg.
+Backup: /var/backups/tmlab/20261114T121045Z.
+
+2026-11-14 heading update: clearer RU/EN heading about system behavior under
+load. Regenerated standalone and asset versions. JS/i18n checks pass; origin
+verified by installer; public index, i18n and standalone match local SHA-256.
+Backup: /var/backups/tmlab/20261114T121535Z.

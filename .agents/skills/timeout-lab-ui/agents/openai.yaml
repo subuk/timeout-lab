@@ -1,0 +1,4 @@
+interface:
+  display_name: "Timeout Lab: interface"
+  short_description: "Simulator interface, presets, and localization"
+  default_prompt: "Use $timeout-lab-ui to improve the interface and verify English/Russian localization."

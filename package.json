@@ -1,0 +1,1 @@
+{"name":"boxes-systems-lab","private":true,"type":"module","scripts":{"test":"go test ./core","build":"./scripts/build.sh","serve":"python3 -m http.server 8765 --directory dist"}}

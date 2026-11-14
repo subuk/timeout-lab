@@ -1,0 +1,20 @@
+.DS_Store
+.sites-runtime/
+.sites-checkout-*/
+*.tar.gz
+
+# Generated build artifacts; the other files in dist/ are editable sources.
+/dist/core.wasm
+/dist/wasm_exec.js
+/dist/standalone.html
+
+# Local hosting metadata and verification screenshots.
+/.openai/
+/*.jpg
+
+# Local caches and credentials.
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example

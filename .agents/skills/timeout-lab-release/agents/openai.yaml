@@ -1,0 +1,4 @@
+interface:
+  display_name: "Timeout Lab: releases"
+  short_description: "Build and deploy to the existing nginx host"
+  default_prompt: "Use $timeout-lab-release to prepare and publish a verified release."

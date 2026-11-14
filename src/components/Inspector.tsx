@@ -71,29 +71,59 @@ export function Inspector({
   }
   return (
     <div className="right-column">
-      <Panel title={name(box)} translateTitle={false}>
+      <Panel title={name(box)} translateTitle={false} className="inspector">
         <div className="control-body">
-          <p id="selected-id">{all ? g.id : one?.id}</p>
-          <div id="scope" className="tabs">
+          <div className="selection-heading">
+            <span className="node-symbol" aria-hidden="true">
+              {all ? "▦" : "□"}
+            </span>
+            <div>
+              <strong id="selected-id">{all ? g.id : one?.id}</strong>
+              <p>
+                {t(all ? "Whole group" : "One node · independent queue")}
+                {all ? ` · ×${g.count}` : ""}
+              </p>
+            </div>
+          </div>
+          <div
+            id="scope"
+            className="segmented"
+            role="group"
+            aria-label={t("Edit scope")}
+          >
             {(["node", "group"] as const).map((scope) => (
               <button
                 key={scope}
                 data-scope={scope}
-                className={selection.scope === scope ? "active" : ""}
+                className={(all ? "group" : "node") === scope ? "active" : ""}
+                aria-pressed={(all ? "group" : "node") === scope}
+                disabled={!!resource?.shared && scope === "node"}
                 onClick={() => select({ ...selection, scope })}
               >
                 {t(scope === "group" ? "Whole group" : "One node")}
               </button>
             ))}
           </div>
+          {resource?.shared && (
+            <p className="field-note">
+              {t(
+                "This resource is shared: adding service instances does not increase its capacity.",
+              )}
+            </p>
+          )}
           <div id="resource-tabs" className="resource-tabs">
-            <button onClick={() => select({ ...selection, resource: "" })}>
+            <button
+              className={!path ? "active" : ""}
+              aria-pressed={!path}
+              onClick={() => select({ ...selection, resource: "" })}
+            >
               {t("Requests")}
             </button>
             {resources(g).map((r) => (
               <button
                 key={r.path}
                 className={path === r.path ? "active" : ""}
+                aria-pressed={path === r.path}
                 onClick={() => select({ ...selection, resource: r.path })}
               >
                 {name(r.box)}

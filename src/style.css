@@ -56,3 +56,61 @@ button:disabled{opacity:.5;cursor:default!important}
 @media(max-width:760px){.resource-edit-row{grid-template-columns:1fr 1fr}.resource-edit-row>button{grid-column:auto;justify-self:stretch}.program-fields label{flex-basis:45%}.program-fields .program-target{min-width:0;flex-basis:100%}.program-stage{padding:10px}.resource-editor-body{padding:14px}}
 /* React forms retain drafts while simulation snapshots update the surrounding UI. */
 .control-body>button{margin-top:14px}.control-body details{margin-top:18px}.control-body details>summary{margin-bottom:12px}.trace-body{padding:16px}.trace-track{position:relative;height:18px;background:#f5f6f8;flex:1}.trace-row{display:grid;grid-template-columns:minmax(90px,150px) minmax(70px,1fr) 65px;gap:8px}.trace-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trace-segment{position:absolute;height:12px;top:3px}.trace-body pre{overflow:auto;font-size:10px}.error-banner{padding:12px;background:#fff0ee;color:#a33128;border-radius:8px}.schema-editor{max-height:60vh;overflow:auto;padding:16px}.schema-section{margin:10px 0 10px 12px;padding-left:12px;border-left:1px solid var(--line)}.schema-section summary{font-size:12px}.schema-field{display:flex;justify-content:space-between;gap:16px;margin:8px 0;font-size:12px}.schema-field input{max-width:65%;width:240px;border:1px solid var(--line);border-radius:4px;padding:6px}.schema-field input[type=checkbox]{width:auto}.editor-tabs{display:flex;gap:8px;padding:12px 18px}dialog>.field-note{padding:0 18px}#config-editor{width:calc(100% - 36px);margin:16px 18px;height:55vh}footer{display:flex;gap:18px;align-items:center;padding:24px 0}.resource-tabs{display:flex;gap:4px;flex-wrap:wrap;margin:14px 0}.resource-tabs button{font-size:10px}.number-row input{width:94px}.control-body>form>button{margin-top:10px}.control-body textarea{width:100%;min-height:65px}.schema-section[open]>summary{margin-bottom:12px}.panel>.legend-inline{padding:12px 18px}
+
+/* Card clicks select the node; resource buttons keep their own action. */
+.box,.group-summary{position:relative}
+.node-select:focus-visible,.group-select:focus-visible{outline:none}
+.box:has(.node-select:focus-visible),.group-summary:has(.group-select:focus-visible){outline:3px solid #4464e880;outline-offset:3px}
+.resource-bar{position:relative;z-index:2;border-radius:4px}
+.resource-bar[aria-pressed=true]{background:#e4ebff;color:#3455ce;box-shadow:0 0 0 3px #e4ebff}
+.group-summary.selected{border-color:var(--blue);background:var(--blue-tint);box-shadow:0 0 0 2px #4464e81a}
+#wires{pointer-events:none}
+.selection-heading strong{display:block;font:12px var(--mono);color:#435477;margin-bottom:5px;overflow-wrap:anywhere}
+.selection-heading p{line-height:1.5}
+#scope{gap:3px;margin-bottom:18px;padding:4px;background:#f0f2f7;border-color:#e2e6ef}
+#scope button{min-height:34px;padding:7px 6px;font-size:11px;border-radius:5px}
+#scope button.active{color:#3455ce;background:#fff;font-weight:600;box-shadow:0 1px 4px #263f7c1a}
+
+/* A shared time axis keeps nested calls and the user response comparable. */
+.trace-list-hint{margin:14px 16px 0;font-size:11px;color:var(--muted)}
+.trace-list{padding:12px 16px;min-width:0}
+.trace-chip{min-height:32px;font-size:10px;flex:none}
+.trace-chip.active{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue);font-weight:600}
+.trace-detail{padding:16px;min-width:0}
+.trace-empty{padding:0 16px 16px;color:var(--muted)}
+.trace-summary{gap:8px 12px;margin-bottom:16px;color:var(--muted);font-size:11px}
+.trace-summary strong{color:var(--ink);font-size:13px}
+.trace-summary .result{margin-left:0;padding:4px 7px;border-radius:4px;background:#eaf7f2;font-size:10px}
+.trace-summary .result.error{background:#fff0ee}
+.trace-summary .result.pending{color:var(--blue);background:var(--blue-tint)}
+.trace-summary .trace-duration{margin-left:auto;color:var(--ink);font:13px var(--mono)}
+.trace-running-note{font-size:11px;line-height:1.6;padding:8px 10px;background:#fff7e9;color:#87652d;border-radius:5px}
+.trace-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 10px;font-size:10px;color:var(--muted)}
+.trace-toolbar .trace-expand{font:10px var(--sans);padding:6px 8px;background:#f4f6fb;border:1px solid var(--line)}
+.trace-waterfall{overflow-x:auto}
+.trace-row{grid-template-columns:minmax(110px,160px) minmax(100px,1fr) 65px;gap:8px;min-width:340px;margin:0;padding:7px 0;border-bottom:1px solid #edf0f5}
+.trace-row.resource-row{margin:0;padding:7px 0;background:#f8faff;border-radius:0}
+.trace-label{min-width:0;font:10px var(--mono);color:#52617a}
+.trace-node-name{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+.trace-label small{display:block;font-size:9px;color:#8a95a6;margin-top:2px;overflow-wrap:anywhere}
+.trace-label .trace-error{color:#b84b49}
+.trace-branch{color:#9cabc5}
+.trace-track{height:24px;border-radius:3px;background:repeating-linear-gradient(to right,#e8ecf4 0,#e8ecf4 1px,transparent 1px,transparent 25%) #f3f5f9;overflow:visible}
+.trace-segment{height:12px;top:6px;min-width:1px}
+.trace-row .trace-box-time{font:10px var(--mono);color:#63718a;text-align:right}
+.trace-axis{border-bottom:1px solid #dde3ee;padding:0 0 9px;margin:0 0 2px}
+.trace-axis>span{font:9px var(--sans);color:var(--muted)}
+.trace-ticks{display:flex;justify-content:space-between;font:8px var(--mono);color:#8b96a7}
+.trace-response-marker{position:absolute;top:0;bottom:0;border-left:1px dashed #62738d;pointer-events:none;transform:translateX(-1px)}
+.trace-response-key{height:10px;border-left:1px dashed #62738d}
+.trace-legend{flex-wrap:wrap;gap:8px 12px;font-size:10px;margin-top:14px;color:#6e7c91}
+.trace-caption{font-size:10px;line-height:1.7;margin:12px 0 0;color:#7b889c}
+.trace-technical{margin-top:18px;font-size:10px;color:#6e7c91}
+.trace-technical>div{padding:12px 0;border-bottom:1px solid var(--line)}
+.trace-technical pre{overflow:auto;font-size:10px}
+.event-heading{margin-top:18px}.event-heading h3{margin:0}
+.trace-events{margin-top:12px}.trace-events td:nth-child(2){overflow-wrap:anywhere}
+@media(max-width:760px){.right-column{flex-direction:column}.trace-detail{padding:12px}.trace-row{grid-template-columns:120px minmax(100px,1fr) 60px;gap:6px}.trace-summary{font-size:10px}.trace-summary .trace-duration{font-size:12px}.trace-list-hint{margin-left:12px}}
+.trace-ticks{display:block;position:relative;height:10px}
+.trace-ticks>span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.trace-ticks>span:first-child{transform:none}.trace-ticks>span:last-child{transform:translateX(-100%)}

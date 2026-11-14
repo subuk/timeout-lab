@@ -340,6 +340,15 @@ const english = {
 };
 
 const russian = {
+  "Edit scope": "Область изменений",
+  "End-to-end traces": "Сквозные трейсы",
+  "Hide resources": "Скрыть ресурсы",
+  "Time since request, ms": "Время от отправки, мс",
+  "Call tree": "Дерево вызовов",
+  "In box": "В ящике",
+  "Time inside the box, excluding network": "Время внутри ящика без сети",
+  "Connections and locality": "Соединения и локальность",
+  "All rows share one time axis. Right: time inside the box, excluding network. Parent wait includes children; row durations must not be added together.": "У всех строк общая шкала времени. Справа — время внутри ящика без сети. Ожидание родителя включает дочерние вызовы; длительности строк не складываются.",
   "Return after local processing": "Ответ после локальной обработки",
   "Call timeout, ms": "Таймаут вызова, мс",
   "Caller default": "Настройка вызывающего ящика",

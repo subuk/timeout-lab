@@ -7,6 +7,7 @@ import { Inspector } from "./components/Inspector";
 import { ModelEditor } from "./components/ModelEditor";
 import { Traces } from "./components/Traces";
 import { Metrics, Activity } from "./components/Metrics";
+import type { Trace } from "./model";
 const presets = [
   ["normal", "Normal operation"],
   ["slow", "Slow database"],
@@ -30,6 +31,7 @@ export function App() {
     resource: "",
     scope: "node",
   });
+  const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
   const [editor, setEditor] = useState<{ group?: string } | null>(null),
     [info, setInfo] = useState(false),
     [preset, setPreset] = useState(fromURL);
@@ -266,12 +268,17 @@ export function App() {
                 <Topology
                   key={`topology-${engine.epoch}`}
                   snapshot={s}
+                  trace={selectedTrace}
                   selection={selection}
                   select={select}
                   edit={() => setEditor({})}
                 />
                 <Activity snapshot={s} />
-                <Traces key={`traces-${engine.epoch}`} snapshot={s} />
+                <Traces
+                  key={`traces-${engine.epoch}`}
+                  snapshot={s}
+                  onTraceChange={setSelectedTrace}
+                />
               </div>
               <Inspector
                 snapshot={s}

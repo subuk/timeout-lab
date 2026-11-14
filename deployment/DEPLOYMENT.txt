@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T173946Z
-Backup: /var/backups/tmlab/20261114T173946Z
+Current release: /var/www/tmlab-releases/20261114T175506Z
+Backup: /var/backups/tmlab/20261114T175506Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -265,3 +265,24 @@ SHA-256 digests. Public Chromium verified running simulation, settings without
 reset, RU/EN switching, the nested-box preset and a completed manual request;
 no console errors. Screenshot: /tmp/tmlab-react-published.png (local only).
 DNS, TLS and other virtual hosts were not changed.
+
+2026-11-14 React interaction and trace fixes:
+Cards select on the first click anywhere on their surface, with independent
+resource actions and keyboard selection. Restored the node/group segmented
+control, visible selected scope, and active resource tabs. Traces show the
+selected request, a nested call tree, a common time axis, phase legend and
+explicit user-response marker. Box durations exclude network time; event values
+include their meaning and units. Selecting an older manual trace highlights its
+own path. English/Russian and mobile layouts retain selection and virtual time.
+Local validation: TypeScript, localization, production WASM/Vite/standalone
+build, HTTP/offline Worker integration checks and browser regressions passed.
+Browser checks cover card surfaces during live snapshots, scopes, resources,
+trace selection/hierarchy, localization and work continuing after user timeout.
+Deployment validation: installer manifest, nginx -t, graceful reload and origin
+HTML/WASM checks passed. All seven public files match local SHA-256 digests.
+Public Chromium verified a held first click, node/group switching, resource
+selection, manual traces, older-trace highlighting, RU/EN, narrow layout and no
+console/page errors. Screenshot: /tmp/tmlab-ui-fixes-published.png (local only).
+Release: /var/www/tmlab-releases/20261114T175506Z.
+Previous release: /var/www/tmlab-releases/20261114T173946Z.
+Backup: /var/backups/tmlab/20261114T175506Z.

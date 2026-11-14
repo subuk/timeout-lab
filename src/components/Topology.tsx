@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import type { Snapshot, Group, NodeView } from "../model";
+import type { Snapshot, Group, NodeView, Trace } from "../model";
 import { aggregate, outgoing, resources } from "../model-utils";
 import { fmt, name, t } from "../locale";
 import { Panel } from "./Fields";
@@ -10,11 +10,13 @@ export interface Selection {
 }
 export function Topology({
   snapshot: s,
+  trace,
   selection,
   select,
   edit,
 }: {
   snapshot: Snapshot;
+  trace: Trace | null;
   selection: Selection;
   select: (s: Selection) => void;
   edit: () => void;
@@ -76,6 +78,12 @@ export function Topology({
             <button
               key={r.path}
               className={`resource-bar ${v.utilization > 80 ? "hot" : ""}`}
+              aria-pressed={
+                selection.resource === r.path &&
+                (selection.scope === "group"
+                  ? s.nodes.find((v) => v.id === selection.node)?.group === g.id
+                  : selection.node === n.id)
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 select({
@@ -176,14 +184,21 @@ export function Topology({
                   </button>
                 </div>
                 {fold && nodes[0] ? (
-                  <div className="group-summary">
+                  <div
+                    className={`group-summary ${selection.scope === "group" && nodes.some((n) => n.id === selection.node) ? "selected" : ""}`}
+                    onClick={() =>
+                      select({
+                        node: nodes[0].id,
+                        resource: "",
+                        scope: "group",
+                      })
+                    }
+                  >
                     <button
-                      onClick={() =>
-                        select({
-                          node: nodes[0].id,
-                          resource: "",
-                          scope: "group",
-                        })
+                      className="group-select"
+                      aria-pressed={
+                        selection.scope === "group" &&
+                        nodes.some((n) => n.id === selection.node)
                       }
                     >
                       {name(g)} ×{g.count}
@@ -196,16 +211,22 @@ export function Topology({
                     <div
                       key={n.id}
                       data-node={n.id}
-                      className={`box ${n.state !== "healthy" ? "unhealthy" : ""} ${n.draining ? "draining" : ""} ${(selection.scope === "group" ? s.nodes.find((v) => v.id === selection.node)?.group === n.group : selection.node === n.id) ? "selected" : ""} ${s.manualMode && s.focus?.spans.some((span) => span.node === n.id) ? "trace-path" : ""}`}
+                      onClick={() =>
+                        select({
+                          node: n.id,
+                          resource: "",
+                          scope: selection.scope,
+                        })
+                      }
+                      className={`box ${n.state !== "healthy" ? "unhealthy" : ""} ${n.draining ? "draining" : ""} ${(selection.scope === "group" ? s.nodes.find((v) => v.id === selection.node)?.group === n.group : selection.node === n.id) ? "selected" : ""} ${s.manualMode && trace?.manual && trace.spans.some((span) => span.node === n.id) ? "trace-path" : ""}`}
                     >
                       <button
                         className="node-select"
-                        onClick={() =>
-                          select({
-                            node: n.id,
-                            resource: "",
-                            scope: selection.scope,
-                          })
+                        aria-pressed={
+                          selection.scope === "group"
+                            ? s.nodes.find((v) => v.id === selection.node)
+                                ?.group === n.group
+                            : selection.node === n.id
                         }
                       >
                         <div className="box-title">

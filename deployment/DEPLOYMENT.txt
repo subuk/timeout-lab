@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T182632Z
-Backup: /var/backups/tmlab/20261114T182632Z
+Current release: /var/www/tmlab-releases/20261114T183142Z
+Backup: /var/backups/tmlab/20261114T183142Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -310,3 +310,17 @@ Source: src/, tests/regressions.spec.ts and README.md; Go semantics unchanged.
 Previous release: /var/www/tmlab-releases/20261114T175506Z.
 Current release: /var/www/tmlab-releases/20261114T182632Z.
 Backup before update: /var/backups/tmlab/20261114T182632Z.
+
+2026-11-14 mobile panel alignment: the generator and selected-box inspector
+inherited start alignment from the desktop layout and shrank to their content
+width. Mobile workspace and inspector columns now stretch their panels to the
+available width. Added browser regressions at 320, 360, 390, 430 and 760 pixels,
+covering English/Russian, load/manual mode, expanded forms and orientation changes.
+Validation: TypeScript/i18n, full build, HTTP and offline Worker checks, five
+mobile scenarios and two existing desktop/offline browser scenarios passed.
+Visually checked generator and inspector on the narrow screen. Live mobile
+browser checks at 320/390/760 pixels passed, including touch request submission,
+with no page errors. All seven public files match local SHA-256; nginx and origin
+checks passed. Previous release: /var/www/tmlab-releases/20261114T182632Z.
+Current release: /var/www/tmlab-releases/20261114T183142Z.
+Backup before update: /var/backups/tmlab/20261114T183142Z.

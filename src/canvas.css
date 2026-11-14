@@ -1024,7 +1024,8 @@ body,
   .preset-picker select { width: 130px; }
 }
 @media (max-width: 900px) and (min-height: 601px) {
-  .agent-create-button { order: 2; flex-basis: 100%; }
+  .agent-create-button { order: 2; flex: 1 0 auto; }
+  .lab-toolbar .github-link { order: 2; }
   .lab-workspace { --toolbar-bottom: 164px; }
   .has-metrics .canvas-fit-area { top: 332px; }
   .has-settings.has-metrics .canvas-fit-area { top: 412px; }

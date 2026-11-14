@@ -232,6 +232,14 @@ export function App() {
         >
           <span aria-hidden="true">＋</span> {t("Create with an agent")}
         </button>
+        <a
+          className="github-link"
+          href="https://github.com/subuk/timeout-lab"
+          target="_blank"
+          rel="noreferrer"
+        >
+          GitHub ↗
+        </a>
         <div className="transport">
           <span
             id="live-state"
@@ -403,14 +411,6 @@ export function App() {
               rel="noreferrer"
             >
               {t("Build a model with an agent ↗")}
-            </a>
-            <a
-              className="source-link"
-              href="https://github.com/subuk/timeout-lab"
-              target="_blank"
-              rel="noreferrer"
-            >
-              GitHub ↗
             </a>
           </Dock>
           <Dock

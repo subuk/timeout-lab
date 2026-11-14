@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T210701Z
-Backup: /var/backups/tmlab/20261114T210701Z
+Current release: /var/www/tmlab-releases/20261114T212757Z
+Backup: /var/backups/tmlab/20261114T212757Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -484,3 +484,17 @@ verified both localized prompts, real clipboard copying, mobile visibility and
 preserved experiment time, without browser errors. All 8 public files match local
 SHA-256; nginx -t and origin checks passed.
 Backup before update: /var/backups/tmlab/20261114T210701Z.
+
+2026-11-14 GitHub header link: Moved the repository link from the collapsed
+experiment notes to the toolbar beside Create with an agent. Narrow screens
+share that row between the agent button and GitHub link.
+Validation: TypeScript, i18n, full WASM/Vite/standalone build and both Worker
+checks passed. Six toolbar layout browser scenarios passed in English/Russian
+from 320 to 1440 px, including landscape. Desktop/mobile screenshots reviewed.
+Deployment: archive checksums, nginx validation, graceful reload and origin
+checks passed; all eight public files match local SHA-256. Public Chromium
+verified the visible header link, repository destination and new-tab target at
+390/1440 px in both languages, with no page errors.
+Previous release: /var/www/tmlab-releases/20261114T210701Z.
+Current release: /var/www/tmlab-releases/20261114T212757Z.
+Backup before update: /var/backups/tmlab/20261114T212757Z.

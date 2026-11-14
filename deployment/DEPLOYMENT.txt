@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T202420Z
-Backup: /var/backups/tmlab/20261114T202420Z
+Current release: /var/www/tmlab-releases/20261114T203631Z
+Backup: /var/backups/tmlab/20261114T203631Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -432,3 +432,20 @@ heading spacing on desktop/mobile in English/Russian with no page errors.
 Previous release: /var/www/tmlab-releases/20261114T202024Z.
 Current release: /var/www/tmlab-releases/20261114T202420Z.
 Backup before update: /var/backups/tmlab/20261114T202420Z.
+
+2026-11-14 visible queue limits:
+Added Queue limit, requests beside worker settings for service and nested boxes.
+The note explains per-instance group scope, shared resources and zero waiting;
+the structured editor no longer incorrectly describes zero as unlimited.
+Source commit: 7fa2332 (main, pushed to GitHub).
+Local validation: TypeScript, localization, full WASM/Vite/standalone build,
+HTTP/offline Worker checks and two relevant browser regressions passed. English
+and Russian inspector screenshots were inspected. Browser checks cover nested
+queue edits, zero, integer/range validation and preserved time, queues/history.
+Deployment: archive hashes, nginx validation, graceful reload and origin checks
+passed. All seven public files match local SHA-256. Public Chromium verified
+live queue edits, group scope, JSON round-trip, Russian labels and preserved
+time with no page errors. The published inspector screenshot was inspected.
+Previous release: /var/www/tmlab-releases/20261114T202420Z.
+Current release: /var/www/tmlab-releases/20261114T203631Z.
+Backup before update: /var/backups/tmlab/20261114T203631Z.

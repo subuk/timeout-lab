@@ -570,3 +570,71 @@ test("trace timing separates the user deadline from continuing box work", async 
   );
   expect(offset).toBeCloseTo((40 / 530) * 100, 2);
 });
+
+for (const url of [
+  "/#template=numa",
+  "file://" + resolve("dist/standalone.html") + "#template=numa",
+]) {
+  test(`NUMA exposes independent stages and preserves placement: ${url}`, async ({
+    page,
+  }) => {
+    await page.goto(url);
+    await expect(
+      page.locator('[data-node="cpu-1"] .node-select'),
+    ).toBeVisible();
+    await expect(page.locator("#groups .group")).toHaveCount(4);
+    await expect(page.locator("#groups .box")).toHaveCount(8);
+    await pause(page);
+    const config = JSON.parse(await (await json(page)).inputValue());
+    expect(config.groups.map((group: { id: string }) => group.id)).toEqual([
+      "cpu",
+      "compute",
+      "interconnect",
+      "memory",
+    ]);
+    await page.getByRole("button", { name: "Close", exact: true }).click();
+    const time = await page.locator("#clock").textContent();
+    await page.locator("#language").selectOption("ru");
+    for (const group of config.groups) {
+      await expect(
+        page.locator(`[data-group="${group.id}"] .group-heading`),
+      ).toHaveText(group.i18n.ru.name);
+    }
+    await expect(page.locator("#clock")).toHaveText(time!);
+    await page.screenshot({
+      path: url.startsWith("file:")
+        ? "/tmp/tmlab-numa-offline.png"
+        : "/tmp/tmlab-numa.png",
+      fullPage: true,
+    });
+    await page.locator("#language").selectOption("en");
+    await page.locator("#generator-node").click();
+    await page.locator("#request-mode").selectOption("single");
+    await page.locator("#reset").click();
+    await page.locator("#single-labels").fill("numa=1");
+    await page.locator("#send-request").click();
+    await expect(page.locator("#send-request")).toBeEnabled();
+    await expect(page.locator(".trace-summary .result")).toHaveText("success");
+    const detail = page.locator("#trace-detail");
+    await expect(detail).toContainText("cpu-1");
+    await expect(detail).toContainText("compute-1");
+    await expect(detail).toContainText("interconnect-2");
+    await expect(detail).toContainText("memory-2");
+    await expect(detail).not.toContainText("compute-2");
+    await page.locator("#request-locality > summary").click();
+    const affinity = page
+      .locator("#request-locality input[type=checkbox]")
+      .last();
+    await affinity.click();
+    await expect(affinity).toBeChecked();
+    await page.locator("#single-labels").fill("numa=0");
+    await page.locator("#send-request").click();
+    await expect(page.locator("#send-request")).toBeEnabled();
+    await expect(page.locator(".trace-summary .result")).toHaveText("success");
+    await expect(detail).toContainText("cpu-1");
+    await expect(detail).toContainText("compute-1");
+    await expect(detail).toContainText("interconnect-1");
+    await expect(detail).toContainText("memory-1");
+    await expect(detail).not.toContainText("compute-2");
+  });
+}

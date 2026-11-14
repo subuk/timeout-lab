@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T222354Z
-Backup: /var/backups/tmlab/20261114T222354Z
+Current release: /var/www/tmlab-releases/20261114T224557Z
+Backup: /var/backups/tmlab/20261114T224557Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -557,3 +557,20 @@ static files match local SHA-256. nginx validation, graceful reload and origin
 checks passed. Previous release/config retained in the backup directory below.
 Current release: /var/www/tmlab-releases/20261114T222354Z.
 Backup: /var/backups/tmlab/20261114T222354Z.
+
+2026-11-14 detailed NUMA preset:
+Separated task execution, CPU cores, memory paths/interconnect and DRAM into
+four visible groups with two NUMA placements each. Requests run CPU -> memory
+path -> DRAM -> CPU, with separate queues and capacity. CPU work stays on the
+task node; memory paths and DRAM follow data placement. Memory access remains
+40 ms local / 120 ms remote at weight 1 before queues. Transfer slots release
+before DRAM; local and remote traffic share destination admission capacity.
+Updated English/Russian descriptions and README with assumptions and experiments.
+Checks: go test ./..., schema/Ajv validation, TypeScript, i18n, full build,
+HTTP/embedded Worker checks, git diff --check, preset links/history and NUMA
+HTTP/file:// browser cases including manual routes, affinity and localization.
+Public browser confirmed four groups, eight instances, running metrics and no
+console warnings/errors. All nine public static files match local SHA-256.
+nginx validation, graceful reload and origin checks passed.
+Release: /var/www/tmlab-releases/20261114T224557Z
+Backup: /var/backups/tmlab/20261114T224557Z

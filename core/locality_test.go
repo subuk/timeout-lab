@@ -297,12 +297,12 @@ func TestNUMAPresetUsesBothNodes(t *testing.T) {
 			}
 		}
 		remote, known := 0, 0
-		for _, n := range e.Groups["memory"] {
+		for _, n := range e.Groups["interconnect"] {
 			remote += n.CostRemote
 			known += n.CostKnown
 		}
 		if known == 0 {
-			t.Fatal("memory not used")
+			t.Fatal("memory paths not used")
 		}
 		if pinned && remote != 0 {
 			t.Fatalf("pinned requests used remote memory: %d", remote)
@@ -310,5 +310,91 @@ func TestNUMAPresetUsesBothNodes(t *testing.T) {
 		if !pinned && (remote < known/3 || remote > known*2/3) {
 			t.Fatalf("expected local and remote accesses: %d/%d", remote, known)
 		}
+	}
+}
+
+func TestNUMADetailedRequestPaths(t *testing.T) {
+	for _, origin := range []string{"0", "1"} {
+		for _, data := range []string{"0", "1"} {
+			t.Run(origin+"_to_"+data, func(t *testing.T) {
+				c := NUMAConfig()
+				c.RPS, c.Spread = 0, 0
+				c.RequestTag = nil
+				c.RequestLabels = map[string]string{"numa": data}
+				c.Overrides["cpu-1"] = NodeConfig{Labels: map[string]string{"numa": origin}}
+				e := engine(t, c)
+				tr := e.AddRequest(1)
+				pathTime := 10.0
+				if origin != data {
+					pathTime = 90
+				}
+				// Observe the DRAM visit: neither CPU nor transfer slots should
+				// remain occupied while the task waits for memory to finish.
+				e.Advance(c.Groups[1].Service + pathTime + 15)
+				if len(e.Groups["cpu"][0].Active) != 1 {
+					t.Fatal("task released its slot during the memory wait")
+				}
+				for _, group := range []string{"compute", "interconnect"} {
+					for _, n := range e.Groups[group] {
+						if len(n.Active) != 0 {
+							t.Fatalf("%s stayed occupied during the DRAM visit", n.ID)
+						}
+					}
+				}
+				memoryIndex := 0
+				if data == "1" {
+					memoryIndex = 1
+				}
+				if len(e.Groups["memory"][memoryIndex].Active) != 1 {
+					t.Fatal("request did not reach the data's DRAM node")
+				}
+				e.Advance(1000)
+				if !tr.OK || len(tr.Spans) != 5 {
+					t.Fatalf("incomplete request: %+v", tr)
+				}
+				for i, group := range []string{"cpu", "compute", "interconnect", "memory", "compute"} {
+					s := tr.Spans[i]
+					want := origin
+					if group == "interconnect" || group == "memory" {
+						want = data
+					}
+					if s.node.Group != group || s.Labels["numa"] != want {
+						t.Fatalf("visit %d went to %s with labels %v", i, s.Node, s.Labels)
+					}
+					if i > 1 && s.Start < tr.Spans[i-1].Reply {
+						t.Fatal("sequential stages overlapped")
+					}
+				}
+				near(t, tr.Spans[2].WorkCost.Duration, pathTime, .001)
+				near(t, tr.Spans[3].WorkCost.Duration, 30, .001)
+				near(t, tr.End-tr.Start, 2*c.Groups[1].Service+pathTime+30, .02)
+			})
+		}
+	}
+}
+
+func TestNUMAMemoryPathCapacityCreatesItsOwnQueue(t *testing.T) {
+	c := NUMAConfig()
+	// Constrain only memory-path capacity and offered load. The same generic
+	// queues must expose this bottleneck independently of CPU and DRAM.
+	c.RPS = 60
+	c.Groups[2].Workers = 1
+	e := engine(t, c)
+	e.Advance(10000)
+	queued := 0
+	for _, n := range e.Groups["interconnect"] {
+		queued += len(n.Queue)
+	}
+	if queued == 0 {
+		t.Fatal("constrained interconnect did not accumulate a queue")
+	}
+	otherQueues := 0
+	for _, group := range []string{"compute", "memory"} {
+		for _, n := range e.Groups[group] {
+			otherQueues += len(n.Queue)
+		}
+	}
+	if queued <= otherQueues {
+		t.Fatalf("memory path is not the main bottleneck: path=%d CPU/DRAM=%d", queued, otherQueues)
 	}
 }

@@ -334,19 +334,29 @@ func NUMAConfig() Config {
 
 func referenceNUMAConfig() Config {
 	c := referenceDefaultConfig()
-	c.Name = "NUMA · illustrative memory cost"
-	c.Description = "NUMA: by default, data is distributed 50/50 across nodes. The request label selects the memory holding the data. Access from another CPU node costs ×3. Under Request labels, enable entry preference by request.numa and compare. Times are illustrative; bandwidth and cache coherence are not modeled."
-	c.I18n = Localizations{"ru": {Name: "NUMA · условная стоимость памяти", Description: "NUMA: по умолчанию данные распределены 50/50 между нодами. Метка запроса выбирает память с данными. Доступ из другой CPU-ноды стоит ×3. В «Метках запросов» включите предпочтение входного ящика по request.numa и сравните. Время условное: пропускная способность и когерентность кешей не моделируются."}}
+	c.Name = "NUMA · CPU, interconnect and memory"
+	c.Description = "Each task runs CPU → memory path → DRAM → CPU, with separate queues in all four groups. Task slots remain occupied while CPU cores are free during memory waits. The request's numa label selects the data node; CPU calls stay on the task's node. At weight 1, CPU work takes about 13.3 ms per visit, memory-path work takes 10 ms locally or 90 ms remotely, and DRAM takes 30 ms: 40/120 ms for memory access before queueing. Data starts 50/50. Under Request labels, enable entry preference by request.numa, then try 90/10 and increase RPS. Memory paths are bounded admission/transfer slots, released before DRAM; local and remote accesses share each destination's path. Timings and capacities are illustrative, without hardware bandwidth, caches or page migration."
+	c.I18n = Localizations{"ru": {Name: "NUMA · CPU, интерконнект и память", Description: "Каждая задача проходит CPU → путь к памяти → DRAM → CPU. У всех четырёх групп отдельные очереди. Слот задачи остаётся занят во время ожидания памяти, а вычислительный CPU освобождается. Метка запроса numa выбирает узел с данными; вычисления остаются на узле задачи. При весе 1 работа CPU — около 13,3 мс за посещение, путь к памяти — 10 мс локально или 90 мс удалённо, DRAM — 30 мс: доступ к памяти занимает 40/120 мс без очередей. Данные изначально распределены 50/50. В «Метках запросов» включите предпочтение входного ящика по request.numa, затем попробуйте 90/10 и увеличьте RPS. Пути к памяти — ограниченные слоты доступа и передачи, освобождаемые до DRAM; локальные и удалённые обращения делят путь к каждому узлу. Время и ёмкости условные, без аппаратной пропускной способности, кешей и миграции страниц."}}
 	c.Entry = "cpu"
 	c.Network = 0
 	c.RPS = 200
 	c.Jitter = 0
 	c.RequestTag = &TagGenerator{"numa", "0", "1", 50}
 	c.EntryAffinity = &MatchRule{false, "request", "numa"}
-	c.Groups = []Group{
-		{ID: "cpu", Name: "CPU nodes", I18n: Localizations{"ru": {Name: "CPU-ноды"}}, Labels: map[string]string{"numa": "0"}, Count: 2, Workers: 4, Service: 4, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Stages: []Stage{{Calls: []Call{{Target: "memory", Calls: 1, Route: "round_robin", Affinity: &MatchRule{true, "request", "numa"}, Transport: "network"}}, Join: "all", Quorum: 1}}},
-		{ID: "memory", Name: "Node memory", I18n: Localizations{"ru": {Name: "Память нод"}}, Labels: map[string]string{"numa": "0"}, Cost: &CostRule{MatchRule{true, "caller", "numa"}, 1, 3}, Count: 2, Workers: 4, Service: 6, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Stages: []Stage{}},
+	stage := func(target, source string) Stage {
+		return Stage{Calls: []Call{{Target: target, Calls: 1, Route: "round_robin", Affinity: &MatchRule{true, source, "numa"}, Transport: "ideal"}}, Join: "all"}
 	}
-	c.Overrides = map[string]NodeConfig{"cpu-2": {Labels: map[string]string{"numa": "1"}}, "memory-2": {Labels: map[string]string{"numa": "1"}}}
+	c.Groups = []Group{
+		{ID: "cpu", Name: "Task execution", I18n: Localizations{"ru": {Name: "Выполнение задач"}}, Count: 2, Workers: 4, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Stages: []Stage{stage("compute", "caller"), stage("interconnect", "request"), stage("memory", "request"), stage("compute", "caller")}},
+		{ID: "compute", Name: "CPU cores", I18n: Localizations{"ru": {Name: "Вычисления CPU"}}, Count: 2, Workers: 1, Service: 2, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Stages: []Stage{}},
+		{ID: "interconnect", Name: "Memory paths · interconnect", I18n: Localizations{"ru": {Name: "Доступ к памяти · интерконнект"}}, Cost: &CostRule{MatchRule{true, "caller", "numa"}, 1, 9}, Count: 2, Workers: 2, Service: 1.5, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Stages: []Stage{}},
+		{ID: "memory", Name: "DRAM", I18n: Localizations{"ru": {Name: "Память DRAM"}}, Count: 2, Workers: 1, Service: 4.5, Timeout: 1000, ConnectTimeout: 100, QueueLimit: 500, Stages: []Stage{}},
+	}
+	c.Overrides = map[string]NodeConfig{}
+	for i := range c.Groups {
+		g := &c.Groups[i]
+		g.Labels = map[string]string{"numa": "0"}
+		c.Overrides[g.ID+"-2"] = NodeConfig{Labels: map[string]string{"numa": "1"}}
+	}
 	return c
 }

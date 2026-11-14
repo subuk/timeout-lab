@@ -651,48 +651,76 @@
   },
   "numa": {
     "Metrics": {
-      "goodput": 191.4,
-      "outRps": 191.4,
-      "p95": 25.63579803245011,
+      "goodput": 197.6,
+      "outRps": 197.6,
+      "p95": 29.24083192739272,
       "errorRate": 0,
-      "pending": 3,
-      "busy": 4,
+      "pending": 7,
+      "busy": 12,
       "capacity": 16,
-      "queue": 0,
+      "queue": 2,
       "ghosts": 0,
       "reasons": {},
-      "arrivals": 1917,
-      "ok": 1914,
+      "arrivals": 1983,
+      "ok": 1976,
       "failed": 0
     },
     "Nodes": {
-      "cpu-1": {
-        "Arrivals": 959,
-        "Exited": 958,
-        "Queue": 0,
-        "Active": 1,
-        "SumW": 15405.975085858847
-      },
-      "cpu-2": {
-        "Arrivals": 958,
-        "Exited": 956,
-        "Queue": 0,
-        "Active": 2,
-        "SumW": 15650.599971590778
-      },
-      "memory-1": {
-        "Arrivals": 991,
-        "Exited": 990,
-        "Queue": 0,
-        "Active": 1,
-        "SumW": 11999.958511601777
-      },
-      "memory-2": {
-        "Arrivals": 924,
-        "Exited": 924,
+      "compute-1": {
+        "Arrivals": 1980,
+        "Exited": 1980,
         "Queue": 0,
         "Active": 0,
-        "SumW": 11263.418795852767
+        "SumW": 4600.397312916997
+      },
+      "compute-2": {
+        "Arrivals": 1979,
+        "Exited": 1979,
+        "Queue": 0,
+        "Active": 0,
+        "SumW": 4643.987585206973
+      },
+      "cpu-1": {
+        "Arrivals": 992,
+        "Exited": 988,
+        "Queue": 0,
+        "Active": 4,
+        "SumW": 18439.984215923694
+      },
+      "cpu-2": {
+        "Arrivals": 991,
+        "Exited": 988,
+        "Queue": 0,
+        "Active": 3,
+        "SumW": 18858.676411051838
+      },
+      "interconnect-1": {
+        "Arrivals": 1026,
+        "Exited": 1024,
+        "Queue": 0,
+        "Active": 2,
+        "SumW": 8529.594122855286
+      },
+      "interconnect-2": {
+        "Arrivals": 957,
+        "Exited": 956,
+        "Queue": 0,
+        "Active": 1,
+        "SumW": 7744.2940760974225
+      },
+      "memory-1": {
+        "Arrivals": 1024,
+        "Exited": 1022,
+        "Queue": 1,
+        "Active": 1,
+        "SumW": 6076.166414287794
+      },
+      "memory-2": {
+        "Arrivals": 956,
+        "Exited": 954,
+        "Queue": 1,
+        "Active": 1,
+        "SumW": 5423.443026754208
       }
     }
   },

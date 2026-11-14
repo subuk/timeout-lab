@@ -5,6 +5,7 @@
 
 # Frontend and engine build output.
 /dist/
+/public/schema.json
 /public/core.wasm
 /public/wasm_exec.js
 /public/worker.js

@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T215555Z
-Backup: /var/backups/tmlab/20261114T215555Z
+Current release: /var/www/tmlab-releases/20261114T220623Z
+Backup: /var/backups/tmlab/20261114T220623Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -529,3 +529,16 @@ invalid-character details, JSON parser details and normal-scenario recovery,
 with no page errors. Installer passed nginx and origin checks.
 Release: /var/www/tmlab-releases/20261114T215555Z.
 Backup before update: /var/backups/tmlab/20261114T215555Z.
+
+2026-11-14 generated JSON Schema: Published /schema.json (Draft 2020-12),
+regenerated from core.Config and reachable Go types during every build. The
+public /skill.md links to it and explains the structural validation boundary.
+Ajv validates all eight engine-validated presets, the public example and
+structural regressions (recursive/embedded types, maps, required fields,
+unknown fields, pointer values and numeric types). Generated output stays out
+of Git. Checks: go test ./..., i18n, full build including TypeScript and schema
+checks, HTTP/standalone Worker checks, git diff --check. No UI behavior changed;
+Playwright was not rerun. nginx validation and origin checks passed; all nine
+public static files match the local SHA-256 digests.
+Release: /var/www/tmlab-releases/20261114T220623Z
+Backup: /var/backups/tmlab/20261114T220623Z

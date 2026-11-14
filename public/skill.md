@@ -7,6 +7,12 @@ description: Build or edit Timeout Lab simulation configurations from a user's s
 
 This is a self-contained skill for an agent that can read URLs and generate text/code. No repository clone, installation, account, backend or deployment is required. The user gives you this page and describes their system. Produce a working **[Open model](https://tmlab.krglv.com/#model=...)** link containing their configuration, with a short explanation of assumptions and what to observe. Do not return a built-in preset link as if it contained the user's changes.
 
+## JSON Schema
+
+Fetch the [generated JSON Schema](https://tmlab.krglv.com/schema.json) before building or editing a model. It is generated from the Go configuration types and published with each application build. Use a JSON Schema Draft 2020-12 validator to check field names, types, required fields and nested structures before encoding the link. Non-`omitempty` Go fields are required for complete authored models; collections use arrays/objects and optional pointers may be null. Prefer omitting optional values to using null.
+
+The schema is a structural authoring contract. Numeric ranges, allowed enum values, references, graph constraints and other simulation rules still require the modeling rules below and engine validation. A schema-valid model is not necessarily runnable. Configure the schema externally in your editor or validator: do not add a `$schema` property to model JSON, because the engine rejects unknown fields.
+
 ## Workflow
 
 1. Map the description to groups of instances, processing slots, queues and explicit calls. Ask only for missing choices that materially affect the experiment; choose and disclose illustrative numbers when real measurements are unavailable. Preserve user-provided names. Model queues and bounded resources, not protocol fidelity, storage capacity, replication or data consistency.

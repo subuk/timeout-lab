@@ -353,3 +353,9 @@ Idle timeout starts when the last response returns over the connection, includin
 Generator-to-entry connections are configured separately in `client`: `keepalive`, `keepaliveTimeout`, and `connectTimeout` (defaults true / 30000 / 200 when omitted in imported models). Built-in presets explicitly carry their retimed values: true / 200000 / approximately 1333.33 for the normal preset. The total budget remains `deadline`. The interface exposes these under Connections to entry group. LB settings no longer control the generator's connect timeout.
 
 Internal boxes can have downstream calls and their own optional `keepalive`, `keepaliveTimeout`, `connectTimeout`, `timeout`, and `retryConnect`. Missing fields inherit their containing definition’s settings recursively; individual node overrides apply only to that caller. For example, `overrides["api-1/~app"]` changes one application box’s outgoing calls. Ordinary and internal boxes use the same caller connection machinery, regardless of CPU/Disk/LB/API names.
+
+### Published JSON Schema
+
+The [model JSON Schema](https://tmlab.krglv.com/schema.json) (Draft 2020-12) is generated from `core.Config` and its reachable Go types by `go run ./cmd/schema`. The build regenerates `public/schema.json`, validates all presets and the public skill example with Ajv, and copies the schema into `dist/` for publication. Generated schema output is not committed.
+
+The schema describes field names, types, required non-`omitempty` fields, embedded fields, maps and recursive resources. Optional pointers accept null; authored collections must be arrays/objects. It is a structural authoring contract, not a replacement for engine checks of ranges, enums, references, graph validity or simulation rules. Associate it externally in editors/validators; do not add `$schema` to a model (unknown model fields are rejected). The public `skill.md` links to the schema and explains these limits.

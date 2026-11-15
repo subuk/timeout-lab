@@ -14,6 +14,13 @@ for (const width of [320, 360, 390, 430, 760]) {
     await page.goto("/");
     await expect(page.locator("#clock")).not.toHaveText("00:00.0");
     await expect(page.locator("#settings-window")).toBeHidden();
+    for (const id of ["metrics", "activity"]) {
+      await expect(page.locator(`#${id}-toggle`)).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      await expect(page.locator(`#${id}-content`)).toBeHidden();
+    }
     await page.locator("#pause").click();
     await expect(page.locator("body")).toHaveClass(/\bpaused\b/);
     const time = await page.locator("#clock").textContent();

@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261115T170446Z
-Backup: /var/backups/tmlab/20261115T170446Z
+Current release: /var/www/tmlab-releases/20261115T172616Z
+Backup: /var/backups/tmlab/20261115T172616Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -663,3 +663,20 @@ screenshots inspected. nginx validation, graceful reload and origin checks passe
 Previous release: /var/www/tmlab-releases/20261115T164443Z.
 Current release: /var/www/tmlab-releases/20261115T170446Z.
 Backup: /var/backups/tmlab/20261115T170446Z.
+
+
+2026-11-15 folded mobile charts:
+System metrics and activity panels now start collapsed on screens up to 760 px
+wide, in addition to the existing short-screen behavior. Either panel remains
+available from its heading, freeing canvas space by default on mobile.
+Checks: TypeScript, i18n, full WASM/Vite/standalone build, git diff --check and
+12 relevant browser scenarios passed, including initial mobile folding at five
+widths, manual opening, preserved virtual time, localization, HTTP/offline
+behavior and desktop defaults. All nine public files match local SHA-256.
+Public Chromium verified collapsed mobile panels, working toggles without a
+time reset and initially open desktop panels without page or console errors.
+Published mobile screenshot inspected. nginx validation, graceful reload and
+origin checks passed.
+Previous release: /var/www/tmlab-releases/20261115T170446Z.
+Current release: /var/www/tmlab-releases/20261115T172616Z.
+Backup: /var/backups/tmlab/20261115T172616Z.

@@ -137,37 +137,66 @@ for (const offline of [false, true]) {
   });
 }
 
-test("all metric charts remain reachable on a narrow screen", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  await expect(page.locator("#clock")).not.toHaveText("00:00.0");
-  await page.locator("#pause").click();
-  await page.evaluate(() =>
-    Array.from({ length: 5 }, () =>
-      window.metricAudit.worker.postMessage({ type: "step", ms: 10000 }),
-    ),
-  );
-  await expect
-    .poll(() => page.evaluate(() => window.metricAudit.snapshot.t))
-    .toBeGreaterThanOrEqual(45000);
-  for (const chart of await page.locator(".metric-chart").all()) {
-    await chart.scrollIntoViewIfNeeded();
-    await expect(chart).toBeInViewport();
-    const bounds = (await chart.boundingBox())!;
-    expect(bounds.width).toBeGreaterThan(150);
-    expect(bounds.x).toBeGreaterThanOrEqual(0);
-    expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
-  }
-  expect(
-    await page.evaluate(() => [
-      document.documentElement.scrollWidth,
-      document.documentElement.scrollHeight,
-    ]),
-  ).toEqual([390, 844]);
-  await page
-    .locator(".metrics")
-    .evaluate((element) => (element.scrollLeft = 0));
-  await page.screenshot({ path: "/tmp/tmlab-metric-charts-mobile.png" });
-});
+for (const offline of [false, true])
+  test(`mobile charts start folded and remain reachable${offline ? " offline" : ""}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(
+      offline ? `file://${resolve("dist/standalone.html")}` : "/",
+    );
+    await expect(page.locator("#clock")).not.toHaveText("00:00.0");
+    await page.locator("#pause").click();
+    for (const id of ["metrics", "activity"]) {
+      await expect(page.locator(`#${id}-toggle`)).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      await expect(page.locator(`#${id}-content`)).toBeHidden();
+    }
+    const foldedArea = (await page.locator(".canvas-fit-area").boundingBox())!;
+    await page.evaluate(() =>
+      Array.from({ length: 5 }, () =>
+        window.metricAudit.worker.postMessage({ type: "step", ms: 10000 }),
+      ),
+    );
+    await expect
+      .poll(() => page.evaluate(() => window.metricAudit.snapshot.t))
+      .toBeGreaterThanOrEqual(45000);
+    const time = await page.locator("#clock").textContent();
+    await page.locator("#metrics-toggle").click();
+    await expect(page.locator("#metrics-content")).toBeVisible();
+    const expandedArea = (await page
+      .locator(".canvas-fit-area")
+      .boundingBox())!;
+    expect(foldedArea.height).toBeGreaterThan(expandedArea.height);
+    await page.locator("#language").selectOption("ru");
+    await expect(page.locator("#metrics-content")).toBeVisible();
+    for (const chart of await page.locator(".metric-chart").all()) {
+      await chart.scrollIntoViewIfNeeded();
+      await expect(chart).toBeInViewport();
+      const bounds = (await chart.boundingBox())!;
+      expect(bounds.width).toBeGreaterThan(150);
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
+    }
+    expect(
+      await page.evaluate(() => [
+        document.documentElement.scrollWidth,
+        document.documentElement.scrollHeight,
+      ]),
+    ).toEqual([390, 844]);
+    await page
+      .locator(".metrics")
+      .evaluate((element) => (element.scrollLeft = 0));
+    await page.locator("#metrics-toggle").click();
+    await page.locator("#activity-toggle").click();
+    await expect(page.locator("#activity-content")).toBeVisible();
+    await page.locator("#activity-toggle").click();
+    await expect(page.locator("#clock")).toHaveText(time!);
+    expect(
+      (await page.locator(".canvas-fit-area").boundingBox())!.height,
+    ).toEqual(foldedArea.height);
+    if (!offline)
+      await page.screenshot({ path: "/tmp/tmlab-mobile-folded.png" });
+  });

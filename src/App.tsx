@@ -52,7 +52,7 @@ export function App() {
   const [notesOpen, setNotesOpen] = useState(false);
   const [agentGuideOpen, setAgentGuideOpen] = useState(false);
   useEffect(() => {
-    const compact = matchMedia("(max-height: 600px)");
+    const compact = matchMedia("(max-width: 760px), (max-height: 600px)");
     const fold = () => {
       if (compact.matches) {
         setMetricsOpen(false);

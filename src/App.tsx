@@ -411,7 +411,7 @@ export function App() {
             open={metricsOpen}
             toggle={() => setMetricsOpen(!metricsOpen)}
           >
-            <Metrics snapshot={s} />
+            <Metrics key={`metrics-${engine.epoch}`} snapshot={s} />
           </Dock>
           <Dock
             id="activity"

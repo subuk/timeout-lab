@@ -30,9 +30,25 @@ test("pan, zoom and fit move only the diagram and preserve virtual time", async 
   const shifted = (await generator.boundingBox())!;
   await page.keyboard.press("ArrowRight");
   expect((await generator.boundingBox())!.x).toBeCloseTo(shifted.x - 50, 0);
-  await page.mouse.move(700, 760);
+  // Find exposed canvas background rather than relying on a node-free fixed coordinate.
+  const background = await canvas.evaluate((element) => {
+    for (let y = 400; y < 800; y += 40)
+      for (let x = 40; x < 1300; x += 40) {
+        const target = document.elementFromPoint(x, y);
+        if (
+          target &&
+          element.contains(target) &&
+          !target.closest(
+            "button,input,select,textarea,a,summary,[data-node],.group-summary",
+          )
+        )
+          return { x, y };
+      }
+    throw new Error("No exposed canvas background");
+  });
+  await page.mouse.move(background.x, background.y);
   await page.mouse.down();
-  await page.mouse.move(800, 780, { steps: 5 });
+  await page.mouse.move(background.x + 100, background.y + 20, { steps: 5 });
   await page.mouse.up();
   await page.mouse.wheel(80, 50);
   await expect

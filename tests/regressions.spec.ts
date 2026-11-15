@@ -549,7 +549,7 @@ test("locality edits respect scope, preserve overrides, and do not reset virtual
     )
     .toEqual({ labels: { rack: "request" }, percent: 50, source: "request" });
   await expect(page.locator("#clock")).toHaveText(time!);
-  await expect(page.locator(".sparkline")).toHaveCount(4);
+  await expect(page.locator(".metric-chart")).toHaveCount(4);
   await page.locator("#notes-toggle").click();
   await expect(page.locator(".diagram-legend")).toBeVisible();
 });

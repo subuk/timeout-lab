@@ -146,6 +146,8 @@ L = λ × W + sum of unfinished visit ages / T
 
 The last equation is an exact finite-horizon balance when starting empty. It prevents misinterpreting Little's law during overload and transitions. RPS, p95, and average time components use a 10-second window; charts retain 60 seconds.
 
+System metrics plot successful response rate, successful-request p95, user error rate, and requests inside the system on a shared virtual-time axis. Hover over any chart or focus it and use arrow keys to inspect all four values at the same sampled time (Home/End jump to the ends; Escape returns to current values). A p95 gap means there were no successful responses in that sample's 10-second window. Charts remain available with settings open; swipe horizontally to reach all four on narrow screens.
+
 ## Configuration and extension
 
 The Configuration button opens the JSON editor; Export JSON saves group and node parameters. Importing a new graph restarts the experiment. Node counts change live: new instances immediately join routing, while removed instances stop receiving new assignments and finish accepted work, including requests still in transit. Queues do not migrate. Time, RNG state, counters, charts, and traces are preserved; retired-node history remains in group-level Little's law accounting. A hung node without cancellation can remain draining until it recovers or is explicitly taken down. Scaling back up returns an unfinished draining node to routing; an already retired slot returns healthy with group settings. Other settings also apply live, preserving already scheduled durations and call budgets. Individual edits appear in `overrides` and survive reset.

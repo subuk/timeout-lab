@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261115T164443Z
-Backup: /var/backups/tmlab/20261115T164443Z
+Current release: /var/www/tmlab-releases/20261115T170446Z
+Backup: /var/backups/tmlab/20261115T170446Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -643,3 +643,23 @@ graceful reload and origin checks passed.
 Previous release: /var/www/tmlab-releases/20261115T164047Z.
 Current release: /var/www/tmlab-releases/20261115T164443Z.
 Backup: /var/backups/tmlab/20261115T164443Z.
+
+
+2026-11-15 system metric history charts:
+Replaced summary sparklines with readable 60-second virtual-time charts for
+successful response rate, successful-request p95, user error rate and requests
+inside the system. Shared pointer/keyboard inspection shows all four sampled
+values at one time; latency gaps preserve the absence of successful responses.
+Settings no longer hide charts, and narrow screens scroll them horizontally.
+Single-request mode retains its background-arrivals-stopped indicator.
+Checks: Go tests, TypeScript, i18n, full WASM/Vite/standalone build, HTTP/offline
+manual checks and git diff --check passed. Thirty relevant browser scenarios
+passed across the verification runs, covering real history values, keyboard and
+pointer inspection, resets, missing p95, localization, offline mode, settings,
+canvas navigation and mobile layouts. All nine public files match local SHA-256.
+Public Chromium verified real Go/WASM history, shared inspection, settings and
+English desktop/Russian mobile layouts without page or console errors. Published
+screenshots inspected. nginx validation, graceful reload and origin checks passed.
+Previous release: /var/www/tmlab-releases/20261115T164443Z.
+Current release: /var/www/tmlab-releases/20261115T170446Z.
+Backup: /var/backups/tmlab/20261115T170446Z.

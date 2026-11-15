@@ -164,7 +164,7 @@ Visual edge editing, separate request classes, two synchronized comparison runs,
 
 ## Autoscaling
 
-Enable autoscaling separately for each group in the inspector. JSON stores it in `groups[].autoscale`. Autoscaler durations use milliseconds in both JSON and the labeled form fields. The status shows sampled queue/utilization, target count, and remaining virtual time in seconds.
+Each group has an autoscaling card below its heading on the canvas, showing live statistics, instance bounds, and the selected signal/resource. Click the card to open the dedicated autoscaling settings. The card stays visible when the group is collapsed, including when autoscaling is disabled. JSON stores it in `groups[].autoscale`. Autoscaler durations use milliseconds in both JSON and the labeled form fields. The status shows sampled queue/utilization, target count, and remaining virtual time in seconds.
 
 - `enabled`: enables the controller; defaults to false.
 - `min` / `max`: desired instance bounds, from 1 to 16.

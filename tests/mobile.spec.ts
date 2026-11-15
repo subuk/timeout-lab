@@ -38,7 +38,9 @@ for (const width of [320, 360, 390, 430, 760]) {
       await page.locator("#close-settings").click();
       await page.locator('[data-node="db-1"] .node-select').click();
       await page.locator("#box-locality > summary").click();
-      await page.locator("#auto-controls > summary").click();
+      await page.locator("#close-settings").click();
+      await page.locator('[data-group="db"] .autoscale-card').click();
+      await expect(page.locator("#auto-controls")).toBeVisible();
       await page.setViewportSize({ width: 844, height: width });
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),

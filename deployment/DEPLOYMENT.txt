@@ -1,10 +1,10 @@
-Published: 2026-11-14 UTC
+Published: 2026-11-15 UTC
 URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261114T224557Z
-Backup: /var/backups/tmlab/20261114T224557Z
+Current release: /var/www/tmlab-releases/20261115T161922Z
+Backup: /var/backups/tmlab/20261115T161922Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -574,3 +574,21 @@ console warnings/errors. All nine public static files match local SHA-256.
 nginx validation, graceful reload and origin checks passed.
 Release: /var/www/tmlab-releases/20261114T224557Z
 Backup: /var/backups/tmlab/20261114T224557Z
+
+
+2026-11-15 canvas autoscaling:
+Moved group autoscaling into a canvas card below each group heading. The card
+shows controller status, current/target instances, queue/utilization readings,
+remaining time, bounds and signal/resource. Clicking it opens dedicated settings;
+autoscaling is removed from the machine/resource inspector. Cards remain visible
+for collapsed groups and disabled controllers. Settings apply without reset.
+Checks: TypeScript, i18n, full WASM/Vite/standalone build, HTTP/embedded Worker
+checks, git diff --check, and nine relevant browser cases passed (including
+mobile layouts, live configuration, validation and resource names). Desktop and
+mobile screenshots inspected. All nine public static files match local SHA-256.
+Public Chromium verified card navigation, dedicated settings, no-reset edits,
+English/Russian and mobile layout with no page or console errors. nginx validation,
+graceful reload and origin checks passed. Previous release/config retained.
+Previous release: /var/www/tmlab-releases/20261114T224557Z.
+Current release: /var/www/tmlab-releases/20261115T161922Z.
+Backup: /var/backups/tmlab/20261115T161922Z.

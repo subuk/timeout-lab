@@ -3,6 +3,7 @@ import { useEngine, command, editConfig, run, startEngine } from "./engine";
 import { I18n, t, useLocale } from "./locale";
 import { Generator } from "./components/Generator";
 import { Topology, DiagramNotes, type Selection } from "./components/Topology";
+import { Autoscale } from "./components/Autoscale";
 import { Inspector } from "./components/Inspector";
 import { ModelEditor } from "./components/ModelEditor";
 import { ModelHelp } from "./components/ModelHelp";
@@ -41,7 +42,10 @@ export function App() {
     resource: "",
     scope: "node",
   });
-  const [settings, setSettings] = useState<"box" | "generator" | null>(null);
+  const [settings, setSettings] = useState<
+    "box" | "generator" | "autoscale" | null
+  >(null);
+  const [autoscaleGroup, setAutoscaleGroup] = useState<string | null>(null);
   const [metricsOpen, setMetricsOpen] = useState(true);
   const [activityOpen, setActivityOpen] = useState(true);
   const [tracesOpen, setTracesOpen] = useState(false);
@@ -102,6 +106,8 @@ export function App() {
       if (request === presetRequest.current) {
         setModelReady(true);
         select(nextSelection);
+        setSettings((current) => (current === "autoscale" ? null : current));
+        setAutoscaleGroup(null);
       }
     } catch {
     } finally {
@@ -200,6 +206,10 @@ export function App() {
     select(next);
     setSettings("box");
   }
+  const autoGroup = s?.config.groups.find((g) => g.id === autoscaleGroup);
+  useEffect(() => {
+    if (settings === "autoscale" && !autoGroup?.autoscale) setSettings(null);
+  }, [settings, autoGroup?.autoscale]);
   const sec = (s?.t || 0) / 1000;
   const error = linkError || engine.error;
   return (
@@ -387,6 +397,11 @@ export function App() {
               active={settings === "box"}
               generatorSelected={settings === "generator"}
               openGenerator={() => setSettings("generator")}
+              autoscaleGroup={settings === "autoscale" ? autoscaleGroup : null}
+              openAutoscale={(group) => {
+                setAutoscaleGroup(group);
+                setSettings("autoscale");
+              }}
             />
           </Canvas>
           <Dock
@@ -439,7 +454,13 @@ export function App() {
           </Dock>
           <SettingsWindow
             open={settings !== null}
-            label={t(settings === "generator" ? "Generator" : "Box settings")}
+            label={t(
+              settings === "generator"
+                ? "Generator"
+                : settings === "autoscale"
+                  ? "Group autoscaling"
+                  : "Box settings",
+            )}
             close={() => setSettings(null)}
           >
             <div hidden={settings !== "generator"}>
@@ -461,6 +482,15 @@ export function App() {
                 edit={(group) => setEditor({ group })}
               />
             </div>
+            {autoGroup && (
+              <div hidden={settings !== "autoscale"}>
+                <Autoscale
+                  key={`${engine.epoch}/${autoGroup.id}`}
+                  group={autoGroup}
+                  snapshot={s}
+                />
+              </div>
+            )}
           </SettingsWindow>
           {editor && (
             <ModelEditor

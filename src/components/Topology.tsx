@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { Snapshot, Group, NodeView, Trace } from "../model";
 import { aggregate, outgoing, resources } from "../model-utils";
 import { fmt, name, t, I18n } from "../locale";
+import { AutoscaleCard } from "./Autoscale";
 export interface Selection {
   node: string;
   resource: string;
@@ -14,6 +15,8 @@ export function Topology({
   select,
   generatorSelected,
   openGenerator,
+  autoscaleGroup,
+  openAutoscale,
   active,
 }: {
   snapshot: Snapshot;
@@ -22,6 +25,8 @@ export function Topology({
   select: (s: Selection) => void;
   generatorSelected: boolean;
   openGenerator: () => void;
+  autoscaleGroup: string | null;
+  openAutoscale: (group: string) => void;
   active: boolean;
 }) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -214,6 +219,12 @@ export function Topology({
                   {fold ? "＋" : "−"}
                 </button>
               </div>
+              <AutoscaleCard
+                group={g}
+                snapshot={s}
+                selected={autoscaleGroup === g.id}
+                open={() => openAutoscale(g.id)}
+              />
               {fold && nodes[0] ? (
                 <div
                   className={`group-summary ${active && selection.scope === "group" && nodes.some((n) => n.id === selection.node) ? "selected" : ""}`}

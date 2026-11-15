@@ -323,7 +323,6 @@ test("bounds and autoscale integer limits keep invalid drafts without sending co
 }) => {
   await ready(page, "autoscale");
   await pause(page);
-  await page.locator("#auto-controls > summary").click();
   await page.evaluate(() => {
     window.audit.commands = [];
   });
@@ -337,6 +336,7 @@ test("bounds and autoscale integer limits keep invalid drafts without sending co
     "true",
   );
   await page.locator('[data-node="api-1"] .node-select').click();
+  await page.locator('[data-group="api"] .autoscale-card').click();
   const min = page
     .locator("#auto-controls")
     .getByRole("spinbutton", { name: "Minimum", exact: true });
@@ -451,11 +451,12 @@ test("resource names stay literal in autoscale and structured editor adds, reord
     ),
   ).toBe(true);
   await page.locator("#language").selectOption("ru");
-  await page.locator("#auto-controls > summary").click();
+  await page.locator('[data-group="db"] .autoscale-card').click();
   await expect(page.locator('#auto-controls option[value="r1"]')).toHaveText(
     "Queue",
   );
   await page.locator("#language").selectOption("en");
+  await page.locator('[data-node="db-1"] .node-select').click();
   await page.locator("#edit-resources").click();
   const addedStage = editor
     .locator(".stage-editor")
@@ -551,4 +552,78 @@ test("locality edits respect scope, preserve overrides, and do not reset virtual
   await expect(page.locator(".sparkline")).toHaveCount(4);
   await page.locator("#notes-toggle").click();
   await expect(page.locator(".diagram-legend")).toBeVisible();
+});
+
+test("canvas autoscaling opens independent group settings and preserves live state", async ({
+  page,
+}) => {
+  await ready(page, "autoscale");
+  await pause(page);
+  const time = await page.locator("#clock").textContent();
+  const group = page.locator('[data-group="api"]');
+  const card = group.locator(".autoscale-card");
+  await expect(page.locator(".inspector #auto-controls")).toHaveCount(0);
+  await expect(group.locator(".group-title + .autoscale-card")).toBeVisible();
+  await expect(card).toContainText("Minimum");
+  await expect(card).toContainText("Queue per node");
+  await expect(card).toContainText("Utilization");
+  await card.click();
+  await expect(card).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByRole("dialog", { name: "Group autoscaling", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("#workers")).toBeHidden();
+  const controls = page.locator("#auto-controls");
+  await controls
+    .getByRole("switch", { name: "Enabled", exact: true })
+    .click();
+  await expect(card).toContainText("Disabled");
+  const max = controls.getByRole("spinbutton", {
+    name: "Maximum",
+    exact: true,
+  });
+  await max.fill("7");
+  await max.blur();
+  await expect(card).toContainText("Maximum 7");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          window.audit.snapshot.config.groups.find((g) => g.id === "api")!
+            .autoscale!.max,
+      ),
+    )
+    .toBe(7);
+  await expect(page.locator("#clock")).toHaveText(time!);
+  await page.locator("#close-settings").click();
+  await group.locator(".group-toggle").click();
+  await expect(card).toBeVisible();
+  await card.focus();
+  await page.keyboard.press("Enter");
+  await expect(max).toHaveValue("7");
+  await page.locator("#language").selectOption("ru");
+  await expect(card).toContainText("Автоскейлинг");
+  await expect(page.locator("#clock")).toHaveText(time!);
+  await page.locator("#language").selectOption("en");
+  await page.locator('[data-group="db"] .autoscale-card').click();
+  await expect(
+    page.locator('[data-group="db"] .autoscale-card'),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(card).toHaveAttribute("aria-pressed", "false");
+  await expect(
+    controls.getByRole("spinbutton", { name: "Maximum", exact: true }),
+  ).not.toHaveValue("7");
+  await card.click();
+  await expect(max).toHaveValue("7");
+  await page.locator("#pause").click();
+  await max.fill("6");
+  await expect.poll(() => page.locator("#clock").textContent()).not.toBe(time);
+  await expect(max).toBeFocused();
+  await expect(max).toHaveValue("6");
+  await max.blur();
+  await expect(card).toContainText("Maximum 6");
+  await pause(page);
+  await page.screenshot({ path: "/tmp/tmlab-autoscale-desktop.png" });
+  await page.locator("#preset").selectOption("normal");
+  await expect(page.locator("#settings-window")).toBeHidden();
 });

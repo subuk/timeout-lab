@@ -3,7 +3,6 @@ import { definition, resources, aggregate } from "../model-utils";
 import { editConfig, command, run } from "../engine";
 import { name, fmt, t } from "../locale";
 import { NumberField, Panel, Select, Toggle } from "./Fields";
-import { Autoscale } from "./Autoscale";
 import { BoxLocality } from "./Locality";
 import { Residence } from "./Residence";
 import type { Selection } from "./Topology";
@@ -287,7 +286,6 @@ export function Inspector({
           <button id="edit-resources" onClick={() => edit(g.id)}>
             {t("Boxes and request paths")}
           </button>
-          <Autoscale group={g} snapshot={s} />
         </div>
       </Panel>
       <Residence stats={stats} />

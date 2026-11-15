@@ -194,21 +194,30 @@ export function AutoscaleCard({
       aria-controls="settings-window"
       onClick={open}
     >
-      <span className="autoscale-card-heading">
-        <strong>{t("Autoscaling")}</strong>
-        {p.enabled ? (
-          <span aria-hidden="true">⚙</span>
-        ) : (
-          <span>{t("Disabled")}</span>
-        )}
-      </span>
-      {p.enabled && (
+      {p.enabled ? (
         <span className="autoscale-card-metrics">
+          <strong className="autoscale-card-name" title={name(g)}>
+            {name(g)}
+          </strong>
           <span title={`${t("Current instances")} → ${t("Target")}`}>
             {g.count} → {sensor?.target ?? g.count}
           </span>
           <span title={t("Queue per node")}>Q {fmt(sensor?.queue, 2)}</span>
           <span title={t("Utilization")}>{fmt(sensor?.utilization, 1)}%</span>
+          <span
+            className="autoscale-card-timer"
+            title={`${t("Remaining")} · ${t(sensor?.message || "Waiting to check conditions")}`}
+          >
+            {sensor &&
+            ["holding_up", "holding_down", "cooldown"].includes(sensor.mode)
+              ? `${sensor.mode === "cooldown" ? "↻ " : ""}${fmt(sensor.remaining / 1000, 1)} ${t("s")}`
+              : "—"}
+          </span>
+        </span>
+      ) : (
+        <span className="autoscale-card-heading">
+          <strong>{t("Autoscaling")}</strong>
+          <span>{t("Disabled")}</span>
         </span>
       )}
     </button>

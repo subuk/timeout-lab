@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261115T162449Z
-Backup: /var/backups/tmlab/20261115T162449Z
+Current release: /var/www/tmlab-releases/20261115T164047Z
+Backup: /var/backups/tmlab/20261115T164047Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -608,3 +608,21 @@ match local SHA-256. nginx validation, graceful reload and origin checks passed.
 Previous release: /var/www/tmlab-releases/20261115T161922Z.
 Current release: /var/www/tmlab-releases/20261115T162449Z.
 Backup: /var/backups/tmlab/20261115T162449Z.
+
+
+2026-11-15 single-row autoscaling and countdown:
+Enabled cards now show group name, current/target count, queue, utilization and
+remaining virtual seconds in one row, without the Autoscaling heading. Long
+names truncate with the full name in a tooltip. Hold timers count down to scaling;
+other timers are marked with a cooldown arrow, and inactive timers show a dash.
+Disabled cards and the detailed settings panel retain their previous behavior.
+Checks: TypeScript, i18n, full WASM/Vite/standalone build, git diff --check and
+seven relevant browser scenarios passed, including hold/cooldown transitions,
+inactive timers, literal long names, one-row layout and mobile viewport widths.
+All nine public files match local SHA-256. Public Chromium verified live countdown,
+settings access and one-row layout in English desktop and Russian mobile without
+page or console errors. Published desktop/mobile screenshots inspected. nginx
+validation, graceful reload and origin checks passed.
+Previous release: /var/www/tmlab-releases/20261115T162449Z.
+Current release: /var/www/tmlab-releases/20261115T164047Z.
+Backup: /var/backups/tmlab/20261115T164047Z.

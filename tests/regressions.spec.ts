@@ -570,7 +570,9 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   ).toBeVisible();
   await expect(card.getByTitle("Utilization", { exact: true })).toBeVisible();
   const enabledHeight = (await card.boundingBox())!.height;
-  expect(enabledHeight).toBeLessThan(75);
+  expect(enabledHeight).toBeLessThan(40);
+  await expect(card).not.toContainText("Autoscaling");
+  await expect(card.locator(".autoscale-card-name")).toHaveText("Backends");
   await card.click();
   await expect(card).toHaveAttribute("aria-pressed", "true");
   await expect(
@@ -581,7 +583,7 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   await controls.getByRole("switch", { name: "Enabled", exact: true }).click();
   await expect(card).toContainText("Disabled");
   await expect(card.locator(".autoscale-card-metrics")).toHaveCount(0);
-  expect((await card.boundingBox())!.height).toBeLessThan(enabledHeight);
+  expect((await card.boundingBox())!.height).toBeLessThan(40);
   const max = controls.getByRole("spinbutton", {
     name: "Maximum",
     exact: true,
@@ -644,4 +646,76 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   await page.screenshot({ path: "/tmp/tmlab-autoscale-compact-desktop.png" });
   await page.locator("#preset").selectOption("normal");
   await expect(page.locator("#settings-window")).toBeHidden();
+});
+
+test("autoscaling row shows hold and cooldown timers without wrapping", async ({
+  page,
+}) => {
+  await ready(page, "autoscale");
+  await pause(page);
+  const area = await json(page);
+  const config = JSON.parse(await area.inputValue());
+  config.rps = 0;
+  const api = config.groups.find((g: { id: string }) => g.id === "api");
+  api.name = "A long custom service group name";
+  delete api.i18n;
+  Object.assign(api.autoscale, {
+    enabled: true,
+    min: 2,
+    max: 2,
+    upDelay: 5000,
+    cooldown: 2000,
+  });
+  await area.fill(JSON.stringify(config));
+  await page
+    .getByRole("button", { name: "Apply without reset", exact: true })
+    .click();
+  await page.locator("#reset").click();
+  await expect(page.locator("#clock")).toHaveText("00:00.0");
+  const card = page.locator('[data-group="api"] .autoscale-card');
+  const timer = card.locator(".autoscale-card-timer");
+  await page.locator("#step").click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          window.audit.snapshot.autoscalers.find((a) => a.group === "api")!
+            .mode,
+      ),
+    )
+    .toBe("holding_up");
+  await expect(timer).toHaveText("4.5 s");
+  await expect(card.getByTitle("Current instances → Target")).toHaveText(
+    "1 → 2",
+  );
+  await page.locator("#step").click();
+  await expect(timer).toHaveText("3.5 s");
+  for (let i = 0; i < 4; i++) await page.locator("#step").click();
+  await expect(timer).toHaveText("↻ 1.5 s");
+  await expect(card.getByTitle("Current instances → Target")).toHaveText(
+    "2 → 2",
+  );
+  await page.locator("#language").selectOption("ru");
+  await expect(timer).toHaveText("↻ 1,5 с");
+  await expect(card.locator(".autoscale-card-name")).toHaveText(api.name);
+  await page.locator("#close-settings").click();
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect
+      .poll(() =>
+        card.locator(".autoscale-card-metrics").evaluate((el) => {
+          const children = Array.from(el.children) as HTMLElement[];
+          return new Set(children.map((child) => child.offsetTop)).size;
+        }),
+      )
+      .toBe(1);
+    expect(await card.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
+      true,
+    );
+  }
+  await card.click();
+  await expect(page.locator("#auto-controls")).toBeVisible();
+  await page.locator("#step").click();
+  await page.locator("#step").click();
+  await expect(timer).toHaveText("—");
 });

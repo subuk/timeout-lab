@@ -147,12 +147,6 @@ body,
   right: 40px;
   pointer-events: none;
 }
-.has-metrics .canvas-fit-area {
-  top: 240px;
-}
-.has-activity .canvas-fit-area {
-  bottom: var(--bottom-height);
-}
 .has-traces .canvas-fit-area {
   bottom: max(var(--bottom-height), 43dvh);
 }
@@ -407,23 +401,6 @@ body,
   bottom: 11px;
   opacity: 0.65;
 }
-.activity-dock {
-  left: var(--gutter);
-  bottom: var(--gutter);
-  width: 300px;
-}
-.activity-dock .panel > .panel-head {
-  display: none;
-}
-.activity-dock .legend-inline {
-  gap: 9px;
-  padding: 12px 14px 0;
-  font-size: 9px;
-}
-.activity-dock .chart-wrap {
-  height: 152px;
-  padding: 8px 12px 9px;
-}
 .notes-dock {
   top: var(--toolbar-bottom);
   right: var(--gutter);
@@ -496,9 +473,6 @@ body,
   align-items: center;
   padding: 4px;
   gap: 2px;
-}
-.has-activity .canvas-navigation {
-  bottom: 248px;
 }
 .canvas-navigation button {
   font-size: 11px;
@@ -708,12 +682,6 @@ body,
   .has-settings .metrics-dock .metrics article {
     height: 92px;
   }
-  .has-metrics .canvas-fit-area {
-    top: 290px;
-  }
-  .has-settings.has-metrics .canvas-fit-area {
-    top: 370px;
-  }
 }
 @media (max-width: 760px) {
   .lab-workspace {
@@ -812,16 +780,6 @@ body,
     padding: 9px 12px;
     font-size: 11px;
   }
-  .activity-dock {
-    width: calc(100% - 20px);
-    bottom: 56px;
-  }
-  .activity-dock .chart-wrap {
-    height: 110px;
-  }
-  .activity-dock .legend-inline {
-    padding-top: 9px;
-  }
   .traces-dock,
   .has-settings .traces-dock {
     left: 10px;
@@ -839,10 +797,6 @@ body,
     width: 168px;
     z-index: 11;
   }
-  .has-activity .notes-dock,
-  .has-settings.has-activity .notes-dock {
-    bottom: 244px;
-  }
   .notes-dock.is-open,
   .has-settings .notes-dock.is-open {
     width: calc(100% - 20px);
@@ -854,9 +808,6 @@ body,
   .canvas-navigation {
     bottom: 100px;
     left: 10px;
-  }
-  .has-activity .canvas-navigation {
-    bottom: 244px;
   }
   .canvas-navigation #fit-canvas {
     font-size: 0;
@@ -879,13 +830,6 @@ body,
     right: 16px;
     top: 170px;
     bottom: 150px;
-  }
-  .has-metrics .canvas-fit-area,
-  .has-settings.has-metrics .canvas-fit-area {
-    top: 244px;
-  }
-  .has-activity .canvas-fit-area {
-    bottom: 294px;
   }
   .has-traces .canvas-fit-area {
     bottom: 294px;
@@ -944,22 +888,12 @@ body,
   .lab-workspace {
     --bottom-height: 168px;
   }
-  .activity-dock .chart-wrap {
-    height: 72px;
-  }
-  .has-activity .canvas-navigation {
-    bottom: 170px;
-  }
   .metrics-dock .metrics article,
   .has-settings .metrics-dock .metrics article {
     height: 70px;
   }
   .metrics-dock .metric-foot {
     display: none;
-  }
-  .has-metrics .canvas-fit-area,
-  .has-settings.has-metrics .canvas-fit-area {
-    top: calc(var(--toolbar-bottom) + 118px);
   }
   .canvas-fit-area {
     bottom: 170px;
@@ -1050,12 +984,9 @@ body,
   .agent-create-button { order: 2; flex: 1 0 auto; }
   .lab-toolbar .github-link { order: 2; }
   .lab-workspace { --toolbar-bottom: 164px; }
-  .has-metrics .canvas-fit-area { top: 332px; }
-  .has-settings.has-metrics .canvas-fit-area { top: 412px; }
 }
 @media (max-width: 760px) and (min-height: 601px) {
   .lab-workspace { --toolbar-bottom: 156px; }
-  .has-metrics .canvas-fit-area, .has-settings.has-metrics .canvas-fit-area { top: 286px; }
 }
 @media (max-height: 600px) {
   .agent-create-button { padding: 7px; font-size: 10px; }
@@ -1207,10 +1138,6 @@ body,
   color: var(--muted);
   font-size: 9px;
 }
-.has-metrics .canvas-fit-area,
-.has-settings.has-metrics .canvas-fit-area {
-  top: calc(var(--toolbar-bottom) + 292px);
-}
 @media (max-width: 900px) {
   .metrics-dock,
   .has-settings .metrics-dock {
@@ -1233,13 +1160,73 @@ body,
     height: 82px;
     margin: 5px 0;
   }
-  .has-metrics .canvas-fit-area,
-  .has-settings.has-metrics .canvas-fit-area {
-    top: calc(var(--toolbar-bottom) + 268px);
-  }
 }
 @media (max-height: 600px) {
   .metrics-dock .dock-content {
     max-height: calc(100dvh - var(--toolbar-bottom) - 64px);
   }
+}
+
+/* Metrics and traces share a measured bottom stack so they never overlap. */
+.telemetry-stack {
+  position: absolute;
+  z-index: 10;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: var(--gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: max(88px, min(64dvh, calc(100dvh - var(--toolbar-bottom) - 192px)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.has-settings .telemetry-stack {
+  right: calc(var(--inspector-width) + 32px);
+}
+.telemetry-stack .dock {
+  position: static;
+  width: 100%;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 38px;
+  flex-shrink: 0;
+}
+.telemetry-stack .dock-toggle { flex: none; }
+.telemetry-stack .metrics-dock .dock-content { max-height: 250px; }
+.telemetry-stack .traces-dock { max-height: 41dvh; }
+.telemetry-stack .metrics-dock .metrics {
+  grid-template-columns: repeat(4, minmax(190px, 1fr)) minmax(240px, 1.2fr);
+}
+.telemetry-stack .metrics-dock .metrics .activity-metric { padding: 0; border-right: 0; }
+.activity-metric > .panel { border: 0; border-radius: 0; height: 100%; }
+.activity-metric .panel-head { padding: 12px 14px 8px; border: 0; }
+.activity-metric .panel-head h2 { font-size: 11px; font-weight: 400; color: #687385; }
+.activity-metric .legend-inline { padding: 0 14px; gap: 10px; font-size: 9px; }
+.activity-metric .legend-inline > span:last-child { display: none; }
+.activity-metric .chart-wrap { height: 135px; padding: 10px 12px 0; }
+.activity-metric .chart-wrap canvas { position: static; display: block; width: 100%; height: 100%; opacity: 1; }
+.lab-workspace .canvas-fit-area,
+.lab-workspace.has-settings .canvas-fit-area {
+  top: calc(var(--toolbar-bottom) + 16px);
+  bottom: calc(var(--gutter) + var(--telemetry-height, 0px) + 60px);
+}
+.lab-workspace .canvas-navigation {
+  bottom: calc(var(--gutter) + var(--telemetry-height, 0px) + 12px);
+}
+@media (max-width: 900px) {
+  .lab-workspace .notes-dock,
+  .lab-workspace.has-settings .notes-dock {
+    top: auto;
+    left: auto;
+    right: var(--gutter);
+    bottom: calc(var(--gutter) + var(--telemetry-height, 0px) + 12px);
+  }
+}
+@media (max-width: 760px) {
+  .has-settings .telemetry-stack { right: var(--gutter); }
+  .telemetry-stack .metrics-dock .dock-content { max-height: min(240px, 38dvh); }
+  .activity-metric .chart-wrap { height: 110px; }
 }

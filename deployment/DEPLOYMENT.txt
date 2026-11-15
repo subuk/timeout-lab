@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261115T172616Z
-Backup: /var/backups/tmlab/20261115T172616Z
+Current release: /var/www/tmlab-releases/20261115T173516Z
+Backup: /var/backups/tmlab/20261115T173516Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -680,3 +680,23 @@ origin checks passed.
 Previous release: /var/www/tmlab-releases/20261115T170446Z.
 Current release: /var/www/tmlab-releases/20261115T172616Z.
 Backup: /var/backups/tmlab/20261115T172616Z.
+
+
+2026-11-15 combined bottom metrics panel:
+Moved System metrics below the canvas and included System activity as its fifth
+chart. Metrics and traces share a bottom stack with measured space for canvas
+fitting and navigation. Short screens can scroll the stack when both panels are
+open. Mobile defaults remain collapsed; settings preserve one chart row and
+horizontal scrolling keeps all five charts accessible on narrow screens.
+Checks: TypeScript, i18n, full WASM/Vite/standalone build, HTTP/offline manual
+checks and git diff --check passed. Thirteen relevant browser cases passed across
+verification runs, covering data inspection, offline operation, settings, canvas
+navigation, mobile folding, all five charts and simultaneous metrics/traces at
+four viewport sizes. All nine public files match local SHA-256. Public Chromium
+verified five bottom charts, settings, Russian mobile folding, activity access,
+traces and remaining canvas space without page or console errors. Published
+desktop/mobile screenshots inspected. nginx validation, graceful reload and
+origin checks passed.
+Previous release: /var/www/tmlab-releases/20261115T172616Z.
+Current release: /var/www/tmlab-releases/20261115T173516Z.
+Backup: /var/backups/tmlab/20261115T173516Z.

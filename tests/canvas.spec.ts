@@ -16,11 +16,11 @@ test("pan, zoom and fit move only the diagram and preserve virtual time", async 
   await expect(page.locator("#generator-node")).toHaveCount(1);
   await expect(page.locator("#traces-content")).toBeHidden();
   await expect(page.locator("#metrics-content")).toBeVisible();
-  await expect(page.locator("#activity-content")).toBeVisible();
+  await expect(page.locator("#metrics-content #load-chart")).toBeVisible();
   await page.locator("#pause").click();
   const time = await page.locator("#clock").textContent();
   const metrics = await page.locator(".metrics-dock").boundingBox();
-  const activity = await page.locator(".activity-dock").boundingBox();
+  const activity = await page.locator(".activity-metric").boundingBox();
   const generator = page.locator("#generator-node");
   const before = (await generator.boundingBox())!;
   await page.locator("#zoom-in").click();
@@ -55,7 +55,9 @@ test("pan, zoom and fit move only the diagram and preserve virtual time", async 
     .poll(async () => (await generator.boundingBox())!.x)
     .not.toBe(shifted.x - 50);
   expect(await page.locator(".metrics-dock").boundingBox()).toEqual(metrics);
-  expect(await page.locator(".activity-dock").boundingBox()).toEqual(activity);
+  expect(await page.locator(".activity-metric").boundingBox()).toEqual(
+    activity,
+  );
   await page.locator("#fit-canvas").click();
   const fitted = (await page.locator(".canvas-world").boundingBox())!;
   const area = (await page.locator(".canvas-fit-area").boundingBox())!;
@@ -188,7 +190,6 @@ test("graph send uses the generator draft, reveals validation and retains folded
     selected!,
   );
   await page.locator("#metrics-toggle").click();
-  await page.locator("#activity-toggle").click();
   await expect(page.locator("#metrics-content")).toBeHidden();
-  await expect(page.locator("#activity-content")).toBeHidden();
+  await expect(page.locator("#metrics-content #load-chart")).toBeHidden();
 });

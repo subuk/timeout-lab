@@ -51,6 +51,14 @@ for (const offline of [false, true]) {
     const points = before.history;
     const charts = page.locator(".metric-chart");
     await expect(charts).toHaveCount(4);
+    await expect(page.locator(".activity-dock, #activity-toggle")).toHaveCount(
+      0,
+    );
+    await expect(page.locator("#metrics-content #load-chart")).toBeVisible();
+    const dock = (await page.locator(".metrics-dock").boundingBox())!;
+    const traces = (await page.locator(".traces-dock").boundingBox())!;
+    expect(dock.y + dock.height).toBeLessThanOrEqual(traces.y);
+    expect(dock.y).toBeGreaterThan(500);
     for (const chart of await charts.all()) {
       await expect(chart).toBeVisible();
       expect(
@@ -95,6 +103,12 @@ for (const offline of [false, true]) {
     await expect(page.locator(".metric-chart-cursor")).toHaveCount(0);
     await page.locator("#generator-node").click();
     for (const chart of await charts.all()) await expect(chart).toBeVisible();
+    const rows = await page
+      .locator(".metrics > article")
+      .evaluateAll((elements) =>
+        elements.map((element) => element.getBoundingClientRect().y),
+      );
+    expect(new Set(rows).size).toBe(1);
     await page.locator("#language").selectOption("ru");
     await expect(page.locator(".metrics-timeline")).toContainText(
       "Последние 60 с",
@@ -147,7 +161,7 @@ for (const offline of [false, true])
     );
     await expect(page.locator("#clock")).not.toHaveText("00:00.0");
     await page.locator("#pause").click();
-    for (const id of ["metrics", "activity"]) {
+    for (const id of ["metrics"]) {
       await expect(page.locator(`#${id}-toggle`)).toHaveAttribute(
         "aria-expanded",
         "false",
@@ -166,10 +180,12 @@ for (const offline of [false, true])
     const time = await page.locator("#clock").textContent();
     await page.locator("#metrics-toggle").click();
     await expect(page.locator("#metrics-content")).toBeVisible();
-    const expandedArea = (await page
-      .locator(".canvas-fit-area")
-      .boundingBox())!;
-    expect(foldedArea.height).toBeGreaterThan(expandedArea.height);
+    await expect
+      .poll(
+        async () =>
+          (await page.locator(".canvas-fit-area").boundingBox())!.height,
+      )
+      .toBeLessThan(foldedArea.height);
     await page.locator("#language").selectOption("ru");
     await expect(page.locator("#metrics-content")).toBeVisible();
     for (const chart of await page.locator(".metric-chart").all()) {
@@ -189,14 +205,66 @@ for (const offline of [false, true])
     await page
       .locator(".metrics")
       .evaluate((element) => (element.scrollLeft = 0));
+    await page.locator("#load-chart").scrollIntoViewIfNeeded();
+    await expect(page.locator("#metrics-content #load-chart")).toBeInViewport();
+    const activity = (await page.locator(".activity-metric").boundingBox())!;
+    const chart = (await page.locator("#load-chart").boundingBox())!;
+    expect(chart.y).toBeGreaterThan(activity.y);
+    expect(chart.y + chart.height).toBeLessThanOrEqual(
+      activity.y + activity.height,
+    );
+    expect(chart.width).toBeLessThan(activity.width);
     await page.locator("#metrics-toggle").click();
-    await page.locator("#activity-toggle").click();
-    await expect(page.locator("#activity-content")).toBeVisible();
-    await page.locator("#activity-toggle").click();
+    await expect(page.locator("#load-chart")).toBeHidden();
     await expect(page.locator("#clock")).toHaveText(time!);
-    expect(
-      (await page.locator(".canvas-fit-area").boundingBox())!.height,
-    ).toEqual(foldedArea.height);
+    await expect
+      .poll(
+        async () =>
+          (await page.locator(".canvas-fit-area").boundingBox())!.height,
+      )
+      .toEqual(foldedArea.height);
     if (!offline)
       await page.screenshot({ path: "/tmp/tmlab-mobile-folded.png" });
   });
+
+test("combined bottom panels stay separate and leave a usable canvas", async ({
+  page,
+}) => {
+  for (const [width, height] of [
+    [1440, 1100],
+    [1000, 800],
+    [390, 844],
+    [844, 390],
+  ]) {
+    await page.setViewportSize({ width, height });
+    await page.goto("/");
+    await expect(page.locator("#clock")).not.toHaveText("00:00.0");
+    await page.locator("#pause").click();
+    await page.evaluate(() => {
+      for (let i = 0; i < 3; i++)
+        window.metricAudit.worker.postMessage({ type: "step", ms: 10000 });
+    });
+    if (await page.locator("#metrics-content").isHidden())
+      await page.locator("#metrics-toggle").click();
+    await page.locator("#traces-toggle").click();
+    await expect(page.locator(".trace-summary")).toBeVisible();
+    const metrics = (await page.locator(".metrics-dock").boundingBox())!;
+    const traces = (await page.locator(".traces-dock").boundingBox())!;
+    const toolbar = (await page.locator(".lab-toolbar").boundingBox())!;
+    expect(metrics.y + metrics.height).toBeLessThanOrEqual(traces.y);
+    const stack = (await page.locator(".telemetry-stack").boundingBox())!;
+    expect(stack.y).toBeGreaterThanOrEqual(toolbar.y + toolbar.height);
+    expect(stack.y + stack.height).toBeLessThanOrEqual(height);
+    await page.locator("#traces-toggle").scrollIntoViewIfNeeded();
+    await expect(page.locator("#traces-toggle")).toBeInViewport();
+    await page.locator("#metrics-toggle").scrollIntoViewIfNeeded();
+    await expect(page.locator("#metrics-toggle")).toBeInViewport();
+    await expect
+      .poll(
+        async () =>
+          (await page.locator(".canvas-fit-area").boundingBox())!.height,
+      )
+      .toBeGreaterThan(40);
+    await page.screenshot({ path: `/tmp/tmlab-combined-panels-${width}.png` });
+  }
+});

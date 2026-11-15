@@ -146,7 +146,7 @@ L = λ × W + sum of unfinished visit ages / T
 
 The last equation is an exact finite-horizon balance when starting empty. It prevents misinterpreting Little's law during overload and transitions. RPS, p95, and average time components use a 10-second window; charts retain 60 seconds.
 
-System metrics plot successful response rate, successful-request p95, user error rate, and requests inside the system on a shared virtual-time axis. Hover over any chart or focus it and use arrow keys to inspect all four values at the same sampled time (Home/End jump to the ends; Escape returns to current values). A p95 gap means there were no successful responses in that sample's 10-second window. Charts remain available with settings open; swipe horizontally to reach all four on narrow screens. Metric and activity panels start collapsed on mobile and short screens to leave more room for the canvas; open either panel with its heading.
+System metrics plot successful response rate, successful-request p95, user error rate, and requests inside the system on a shared virtual-time axis. Hover over any chart or focus it and use arrow keys to inspect all four values at the same sampled time (Home/End jump to the ends; Escape returns to current values). A p95 gap means there were no successful responses in that sample's 10-second window. Charts remain available with settings open; swipe horizontally to reach all four on narrow screens. System activity (busy workers and queue) is included in the same bottom metrics panel, above the traces. The combined panel starts collapsed on mobile and short screens to leave more room for the canvas; open it with its heading.
 
 ## Configuration and extension
 

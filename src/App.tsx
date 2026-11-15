@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { useEngine, command, editConfig, run, startEngine } from "./engine";
 import { I18n, t, useLocale } from "./locale";
 import { Generator } from "./components/Generator";
@@ -12,7 +18,7 @@ import { AgentGuide } from "./components/AgentGuide";
 import { ErrorMessage } from "./components/ErrorMessage";
 import { modelFromHash, modelURL } from "./sharing";
 import { Traces } from "./components/Traces";
-import { Metrics, Activity } from "./components/Metrics";
+import { Metrics } from "./components/Metrics";
 import { Canvas } from "./components/Canvas";
 import { Dock, SettingsWindow } from "./components/Overlay";
 import type { Trace } from "./model";
@@ -47,7 +53,6 @@ export function App() {
   >(null);
   const [autoscaleGroup, setAutoscaleGroup] = useState<string | null>(null);
   const [metricsOpen, setMetricsOpen] = useState(true);
-  const [activityOpen, setActivityOpen] = useState(true);
   const [tracesOpen, setTracesOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [agentGuideOpen, setAgentGuideOpen] = useState(false);
@@ -56,13 +61,24 @@ export function App() {
     const fold = () => {
       if (compact.matches) {
         setMetricsOpen(false);
-        setActivityOpen(false);
       }
     };
     fold();
     compact.addEventListener("change", fold);
     return () => compact.removeEventListener("change", fold);
   }, []);
+  const telemetry = useRef<HTMLDivElement>(null);
+  const [telemetryHeight, setTelemetryHeight] = useState(0);
+  useLayoutEffect(() => {
+    const element = telemetry.current;
+    if (!element) return;
+    const measure = () =>
+      setTelemetryHeight(element.getBoundingClientRect().height);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [modelReady]);
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
   const [linkError, setLinkError] = useState<Error | string>("");
   const [shareURL, setShareURL] = useState("");
@@ -214,7 +230,8 @@ export function App() {
   const error = linkError || engine.error;
   return (
     <main
-      className={`lab-workspace ${settings ? "has-settings" : ""} ${metricsOpen ? "has-metrics" : ""} ${activityOpen ? "has-activity" : ""} ${tracesOpen ? "has-traces" : ""}`}
+      style={{ "--telemetry-height": `${telemetryHeight}px` } as CSSProperties}
+      className={`lab-workspace ${settings ? "has-settings" : ""} ${metricsOpen ? "has-metrics" : ""} ${tracesOpen ? "has-traces" : ""}`}
     >
       <header className="lab-toolbar floating-block">
         <a className="brand" href="./" aria-label="boxes · systems lab">
@@ -404,24 +421,30 @@ export function App() {
               }}
             />
           </Canvas>
-          <Dock
-            id="metrics"
-            title="System metrics"
-            className="metrics-dock"
-            open={metricsOpen}
-            toggle={() => setMetricsOpen(!metricsOpen)}
-          >
-            <Metrics key={`metrics-${engine.epoch}`} snapshot={s} />
-          </Dock>
-          <Dock
-            id="activity"
-            title="System activity"
-            className="activity-dock"
-            open={activityOpen}
-            toggle={() => setActivityOpen(!activityOpen)}
-          >
-            <Activity snapshot={s} />
-          </Dock>
+          <div className="telemetry-stack" ref={telemetry}>
+            <Dock
+              id="metrics"
+              title="System metrics"
+              className="metrics-dock"
+              open={metricsOpen}
+              toggle={() => setMetricsOpen(!metricsOpen)}
+            >
+              <Metrics key={`metrics-${engine.epoch}`} snapshot={s} />
+            </Dock>
+            <Dock
+              id="traces"
+              title="End-to-end traces"
+              className="traces-dock"
+              open={tracesOpen}
+              toggle={() => setTracesOpen(!tracesOpen)}
+            >
+              <Traces
+                key={`traces-${engine.epoch}`}
+                snapshot={s}
+                onTraceChange={setSelectedTrace}
+              />
+            </Dock>
+          </div>
           <Dock
             id="notes"
             title="About this experiment"
@@ -438,19 +461,6 @@ export function App() {
             >
               {t("Build a model with an agent ↗")}
             </a>
-          </Dock>
-          <Dock
-            id="traces"
-            title="End-to-end traces"
-            className="traces-dock"
-            open={tracesOpen}
-            toggle={() => setTracesOpen(!tracesOpen)}
-          >
-            <Traces
-              key={`traces-${engine.epoch}`}
-              snapshot={s}
-              onTraceChange={setSelectedTrace}
-            />
           </Dock>
           <SettingsWindow
             open={settings !== null}

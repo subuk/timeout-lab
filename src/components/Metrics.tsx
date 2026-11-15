@@ -112,6 +112,9 @@ export function Metrics({ snapshot: s }: { snapshot: Snapshot }) {
             </article>
           );
         })}
+        <article className="activity-metric">
+          <Activity snapshot={s} />
+        </article>
       </section>
       <div className="metrics-hint">
         <span className="metrics-pointer-hint">
@@ -257,7 +260,7 @@ function MetricChart({
   );
 }
 
-export function Activity({ snapshot: s }: { snapshot: Snapshot }) {
+function Activity({ snapshot: s }: { snapshot: Snapshot }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = ref.current;
@@ -280,9 +283,9 @@ export function Activity({ snapshot: s }: { snapshot: Snapshot }) {
         start = Math.max(0, s.t - 60000),
         span = Math.max(1000, s.t - start);
       ctx.font = "10px monospace";
-      for (let i = 0; i <= 4; i++) {
-        const y = h - 25 - (i / 4) * (h - 40),
-          x = 35 + (i / 4) * (w - 45);
+      for (let i = 0; i <= 2; i++) {
+        const y = h - 25 - (i / 2) * (h - 40),
+          x = 35 + (i / 2) * (w - 45);
         ctx.strokeStyle = "#e8ecf3";
         ctx.beginPath();
         ctx.moveTo(35, y);
@@ -290,9 +293,13 @@ export function Activity({ snapshot: s }: { snapshot: Snapshot }) {
         ctx.stroke();
         ctx.fillStyle = "#687385";
         ctx.textAlign = "right";
-        ctx.fillText(fmt((max * i) / 4), 30, y + 3);
-        ctx.textAlign = i === 4 ? "right" : i === 0 ? "left" : "center";
-        ctx.fillText(`${fmt((start + (span * i) / 4) / 1000, 1)} s`, x, h - 5);
+        ctx.fillText(fmt((max * i) / 2), 30, y + 3);
+        ctx.textAlign = i === 2 ? "right" : i === 0 ? "left" : "center";
+        ctx.fillText(
+          `${fmt((start + (span * i) / 2) / 1000, 1)} ${t("s")}`,
+          x,
+          h - 5,
+        );
       }
       for (const [key, color] of [
         ["busy", "#4464e8"],

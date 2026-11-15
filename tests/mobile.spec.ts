@@ -14,7 +14,7 @@ for (const width of [320, 360, 390, 430, 760]) {
     await page.goto("/");
     await expect(page.locator("#clock")).not.toHaveText("00:00.0");
     await expect(page.locator("#settings-window")).toBeHidden();
-    for (const id of ["metrics", "activity"]) {
+    for (const id of ["metrics"]) {
       await expect(page.locator(`#${id}-toggle`)).toHaveAttribute(
         "aria-expanded",
         "false",
@@ -55,10 +55,6 @@ for (const width of [320, 360, 390, 430, 760]) {
       await expect(page.locator("#close-settings")).toBeInViewport();
       if (width <= 600) {
         await expect(page.locator("#metrics-toggle")).toHaveAttribute(
-          "aria-expanded",
-          "false",
-        );
-        await expect(page.locator("#activity-toggle")).toHaveAttribute(
           "aria-expanded",
           "false",
         );

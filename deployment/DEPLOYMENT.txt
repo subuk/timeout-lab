@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261115T164047Z
-Backup: /var/backups/tmlab/20261115T164047Z
+Current release: /var/www/tmlab-releases/20261115T164443Z
+Backup: /var/backups/tmlab/20261115T164443Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -626,3 +626,20 @@ validation, graceful reload and origin checks passed.
 Previous release: /var/www/tmlab-releases/20261115T162449Z.
 Current release: /var/www/tmlab-releases/20261115T164047Z.
 Backup: /var/backups/tmlab/20261115T164047Z.
+
+
+2026-11-15 autoscaling width correction:
+Removed the duplicated group name from the enabled autoscaling row and removed
+the width override that expanded machine cards. Counts, queue, utilization and
+timer remain in one row at the normal group width. Settings remain available
+by clicking the card; group identity remains in the heading and accessible label.
+Checks: TypeScript, i18n, full WASM/Vite/standalone build, git diff --check and
+seven relevant browser cases passed, including unchanged machine widths when
+toggling autoscaling, hold/cooldown timers and mobile layouts. All nine public
+files match local SHA-256. Public Chromium verified the heading-only name,
+unchanged widths, settings access and Russian mobile layout without browser
+errors. Published desktop/mobile screenshots inspected. nginx validation,
+graceful reload and origin checks passed.
+Previous release: /var/www/tmlab-releases/20261115T164047Z.
+Current release: /var/www/tmlab-releases/20261115T164443Z.
+Backup: /var/backups/tmlab/20261115T164443Z.

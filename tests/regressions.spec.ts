@@ -572,7 +572,16 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   const enabledHeight = (await card.boundingBox())!.height;
   expect(enabledHeight).toBeLessThan(40);
   await expect(card).not.toContainText("Autoscaling");
-  await expect(card.locator(".autoscale-card-name")).toHaveText("Backends");
+  await expect(card).not.toContainText("Backends");
+  const machineWidth = await group
+    .locator(".box")
+    .first()
+    .evaluate((el) => el.clientWidth);
+  const otherWidth = await page
+    .locator('[data-group="db"] .box')
+    .first()
+    .evaluate((el) => el.clientWidth);
+  expect(machineWidth).toBe(otherWidth);
   await card.click();
   await expect(card).toHaveAttribute("aria-pressed", "true");
   await expect(
@@ -582,6 +591,12 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   const controls = page.locator("#auto-controls");
   await controls.getByRole("switch", { name: "Enabled", exact: true }).click();
   await expect(card).toContainText("Disabled");
+  expect(
+    await group
+      .locator(".box")
+      .first()
+      .evaluate((el) => el.clientWidth),
+  ).toBe(machineWidth);
   await expect(card.locator(".autoscale-card-metrics")).toHaveCount(0);
   expect((await card.boundingBox())!.height).toBeLessThan(40);
   const max = controls.getByRole("spinbutton", {
@@ -697,7 +712,10 @@ test("autoscaling row shows hold and cooldown timers without wrapping", async ({
   );
   await page.locator("#language").selectOption("ru");
   await expect(timer).toHaveText("↻ 1,5 с");
-  await expect(card.locator(".autoscale-card-name")).toHaveText(api.name);
+  await expect(card).not.toContainText(api.name);
+  await expect(page.locator('[data-group="api"] .group-heading')).toHaveText(
+    api.name,
+  );
   await page.locator("#close-settings").click();
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });

@@ -196,9 +196,6 @@ export function AutoscaleCard({
     >
       {p.enabled ? (
         <span className="autoscale-card-metrics">
-          <strong className="autoscale-card-name" title={name(g)}>
-            {name(g)}
-          </strong>
           <span title={`${t("Current instances")} → ${t("Target")}`}>
             {g.count} → {sensor?.target ?? g.count}
           </span>

@@ -1104,22 +1104,10 @@ body,
 .autoscale-card-metrics {
   color: #506383;
   display: grid;
-  grid-template-columns: minmax(32px, 1fr) repeat(4, max-content);
-  gap: 6px;
+  grid-template-columns: repeat(4, max-content);
+  gap: 4px;
   font: 10px/1.6 var(--mono);
 }
 .autoscale-card-metrics > span {
   white-space: nowrap;
-}
-
-.autoscale-card-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font: 600 10px/1.6 var(--sans);
-}
-/* Leave room for the countdown without wrapping metrics onto a second row. */
-.lab-workspace .group:not(.group-wide):has(.autoscale-card.enabled) {
-  width: 260px;
-  min-width: 260px;
 }

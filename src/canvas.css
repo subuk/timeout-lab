@@ -1062,20 +1062,20 @@ body,
   .preset-picker { max-width: 130px; }
 }
 
+/* Keep controller details in the settings panel; cards only summarize state. */
 .autoscale-card {
   display: flex;
   flex-direction: column;
   gap: 7px;
   width: 100%;
-  padding: 12px;
+  padding: 8px 10px;
   text-align: left;
   color: #718096;
   background: #f8fafc;
   border: 1px solid #dce3ef;
-  border-radius: 9px;
+  border-radius: 7px;
   font-size: 10px;
   line-height: 1.45;
-  overflow-wrap: anywhere;
 }
 .autoscale-card.enabled {
   background: #f0f4ff;
@@ -1091,37 +1091,21 @@ body,
   outline-offset: 3px;
 }
 .autoscale-card-heading,
-.autoscale-card-row {
+.autoscale-card-metrics {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
-.autoscale-card-heading {
+.autoscale-card-heading strong {
   color: #506383;
   font-size: 11px;
 }
-.autoscale-card-status {
-  min-height: 2.9em;
-}
-.autoscale-card-count {
+.autoscale-card-metrics {
   color: #506383;
-  font: 20px var(--mono);
+  font: 11px/1.5 var(--mono);
+  flex-wrap: wrap;
 }
-.autoscale-card-count small {
-  display: block;
-  margin-top: 4px;
-  color: #718096;
-  font: 9px/1.5 var(--sans);
-}
-.autoscale-card-row b {
-  font-family: var(--mono);
-  font-weight: 500;
+.autoscale-card-metrics > span {
   white-space: nowrap;
-}
-.autoscale-card-policy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-top: 1px solid #dce3ef;
-  padding-top: 8px;
 }

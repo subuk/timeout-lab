@@ -185,7 +185,6 @@ export function AutoscaleCard({
   const p = g.autoscale;
   if (!p) return null;
   const sensor = s.autoscalers?.find((a) => a.group === g.id);
-  const resource = resources(g).find((r) => r.path === p.resource);
   return (
     <button
       className={`autoscale-card ${p.enabled ? "enabled" : ""}`}
@@ -197,48 +196,21 @@ export function AutoscaleCard({
     >
       <span className="autoscale-card-heading">
         <strong>{t("Autoscaling")}</strong>
-        <span aria-hidden="true">⚙</span>
+        {p.enabled ? (
+          <span aria-hidden="true">⚙</span>
+        ) : (
+          <span>{t("Disabled")}</span>
+        )}
       </span>
-      <span className="autoscale-card-status">
-        {t(sensor?.message || "Disabled")}
-      </span>
-      <span className="autoscale-card-count">
-        {g.count} → {sensor?.target ?? g.count}
-        <small>
-          {t("Current instances")} → {t("Target")}
-        </small>
-      </span>
-      <span className="autoscale-card-row">
-        <span>{t("Queue per node")}</span>
-        <b>{fmt(sensor?.queue, 2)}</b>
-      </span>
-      <span className="autoscale-card-row">
-        <span>{t("Utilization")}</span>
-        <b>{fmt(sensor?.utilization, 1)}%</b>
-      </span>
-      {!!sensor?.remaining && (
-        <span className="autoscale-card-row">
-          <span>{t("Remaining")}</span>
-          <b>
-            {fmt(sensor.remaining / 1000, 1)} {t("s")}
-          </b>
+      {p.enabled && (
+        <span className="autoscale-card-metrics">
+          <span title={`${t("Current instances")} → ${t("Target")}`}>
+            {g.count} → {sensor?.target ?? g.count}
+          </span>
+          <span title={t("Queue per node")}>Q {fmt(sensor?.queue, 2)}</span>
+          <span title={t("Utilization")}>{fmt(sensor?.utilization, 1)}%</span>
         </span>
       )}
-      <span className="autoscale-card-policy">
-        <span>
-          {t("Minimum")} {p.min} · {t("Maximum")} {p.max}
-        </span>
-        <span>
-          {t(
-            p.signal === "both"
-              ? "Queue or utilization"
-              : p.signal === "utilization"
-                ? "Utilization"
-                : "Queue",
-          )}{" "}
-          · {resource ? name(resource.box) : t("Requests")}
-        </span>
-      </span>
     </button>
   );
 }

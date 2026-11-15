@@ -3,8 +3,8 @@ URL: https://tmlab.krglv.com/
 Server: subuk@net.krglv.com
 Nginx config: /etc/nginx/conf.d/tmlab.conf
 Web root symlink: /var/www/tmlab
-Current release: /var/www/tmlab-releases/20261115T161922Z
-Backup: /var/backups/tmlab/20261115T161922Z
+Current release: /var/www/tmlab-releases/20261115T162449Z
+Backup: /var/backups/tmlab/20261115T162449Z
 
 Published all seven files from dist, including standalone.html. No source files
 or repository metadata are served. Release directories are retained for rollback.
@@ -592,3 +592,19 @@ graceful reload and origin checks passed. Previous release/config retained.
 Previous release: /var/www/tmlab-releases/20261114T224557Z.
 Current release: /var/www/tmlab-releases/20261115T161922Z.
 Backup: /var/backups/tmlab/20261115T161922Z.
+
+
+2026-11-15 compact autoscaling cards:
+Disabled controllers now occupy one row with their status. Enabled cards show
+only current/target instances, queue per node and utilization below the heading.
+Full status, timing, bounds, signal/resource and controls remain in the dedicated
+panel opened by clicking either card state.
+Checks: TypeScript, i18n, full WASM/Vite/standalone build, git diff --check and
+six relevant browser scenarios passed, including five mobile viewport widths.
+Public Chromium verified both compact states, details on click, enable/disable
+without resetting virtual time, English/Russian and mobile layout without page
+or console errors. Desktop/mobile screenshots inspected. All nine public files
+match local SHA-256. nginx validation, graceful reload and origin checks passed.
+Previous release: /var/www/tmlab-releases/20261115T161922Z.
+Current release: /var/www/tmlab-releases/20261115T162449Z.
+Backup: /var/backups/tmlab/20261115T162449Z.

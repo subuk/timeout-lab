@@ -564,9 +564,13 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   const card = group.locator(".autoscale-card");
   await expect(page.locator(".inspector #auto-controls")).toHaveCount(0);
   await expect(group.locator(".group-title + .autoscale-card")).toBeVisible();
-  await expect(card).toContainText("Minimum");
-  await expect(card).toContainText("Queue per node");
-  await expect(card).toContainText("Utilization");
+  await expect(card).not.toContainText("Minimum");
+  await expect(
+    card.getByTitle("Queue per node", { exact: true }),
+  ).toBeVisible();
+  await expect(card.getByTitle("Utilization", { exact: true })).toBeVisible();
+  const enabledHeight = (await card.boundingBox())!.height;
+  expect(enabledHeight).toBeLessThan(75);
   await card.click();
   await expect(card).toHaveAttribute("aria-pressed", "true");
   await expect(
@@ -574,17 +578,17 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   ).toBeVisible();
   await expect(page.locator("#workers")).toBeHidden();
   const controls = page.locator("#auto-controls");
-  await controls
-    .getByRole("switch", { name: "Enabled", exact: true })
-    .click();
+  await controls.getByRole("switch", { name: "Enabled", exact: true }).click();
   await expect(card).toContainText("Disabled");
+  await expect(card.locator(".autoscale-card-metrics")).toHaveCount(0);
+  expect((await card.boundingBox())!.height).toBeLessThan(enabledHeight);
   const max = controls.getByRole("spinbutton", {
     name: "Maximum",
     exact: true,
   });
   await max.fill("7");
   await max.blur();
-  await expect(card).toContainText("Maximum 7");
+  await expect(card).not.toContainText("Maximum");
   await expect
     .poll(() =>
       page.evaluate(
@@ -603,6 +607,7 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   await expect(max).toHaveValue("7");
   await page.locator("#language").selectOption("ru");
   await expect(card).toContainText("Автоскейлинг");
+  await expect(card).toContainText("Выключен");
   await expect(page.locator("#clock")).toHaveText(time!);
   await page.locator("#language").selectOption("en");
   await page.locator('[data-group="db"] .autoscale-card').click();
@@ -621,9 +626,22 @@ test("canvas autoscaling opens independent group settings and preserves live sta
   await expect(max).toBeFocused();
   await expect(max).toHaveValue("6");
   await max.blur();
-  await expect(card).toContainText("Maximum 6");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          window.audit.snapshot.config.groups.find((g) => g.id === "api")!
+            .autoscale!.max,
+      ),
+    )
+    .toBe(6);
   await pause(page);
-  await page.screenshot({ path: "/tmp/tmlab-autoscale-desktop.png" });
+  await controls.getByRole("switch", { name: "Enabled", exact: true }).click();
+  await expect(
+    card.getByTitle("Queue per node", { exact: true }),
+  ).toBeVisible();
+  await expect(card).not.toContainText("Disabled");
+  await page.screenshot({ path: "/tmp/tmlab-autoscale-compact-desktop.png" });
   await page.locator("#preset").selectOption("normal");
   await expect(page.locator("#settings-window")).toBeHidden();
 });
